@@ -52,9 +52,9 @@ export const defaultState = {
     { date: "Mar 31", day: "Tue", time: "3:00 PM",  role: "Server",       logged: false },
   ],
   goals: [
-    { name: "Emergency Fund",    target: 5000,  current: 3256.03 },
-    { name: "Flip Capital Pool", target: 2000,  current: 500 },
-    { name: "Stock Portfolio",   target: 10000, current: 2165.23 },
+    { name: "Emergency Fund",    target: 5000,  current: 3256.03, autoKey: "bank" },
+    { name: "Flip Capital Pool", target: 2000,  current: 500,     autoKey: "flips" },
+    { name: "Stock Portfolio",   target: 10000, current: 2165.23, autoKey: "stocks" },
   ],
   expenses: [],
   budget: {

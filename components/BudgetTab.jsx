@@ -13,25 +13,45 @@ const CAT_COLOR  = {
   "Other":            "#888",
 };
 
-export default function BudgetTab({ data, save }) {
-  const [modal, setModal] = useState(null); // "add-expense" | "edit-budget"
-  const [form, setForm] = useState({});
+const toMonthKey = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
-  const budget  = data.budget  || {};
+const monthLabel = (key) => {
+  const [y, m] = key.split("-");
+  return new Date(+y, +m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+};
+
+const offsetMonth = (key, delta) => {
+  const [y, m] = key.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return toMonthKey(d);
+};
+
+export default function BudgetTab({ data, save }) {
+  const now = new Date();
+  const currentMonthKey = toMonthKey(now);
+
+  const [viewMonth, setViewMonth] = useState(currentMonthKey);
+  const [modal, setModal] = useState(null);
+  const [form, setForm]   = useState({});
+
+  const budget   = data.budget   || {};
   const expenses = data.expenses || [];
 
-  // Current month expenses only
-  const now = new Date();
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthExpenses = expenses.filter(e => e.month === monthKey);
+  const monthExpenses = expenses.filter(e => e.month === viewMonth);
 
   const spentByCategory = {};
   CATEGORIES.forEach(c => { spentByCategory[c] = 0; });
   monthExpenses.forEach(e => { spentByCategory[e.category] = (spentByCategory[e.category] || 0) + e.amount; });
 
-  const totalBudget  = Object.values(budget).reduce((a, b) => a + b, 0);
-  const totalSpent   = monthExpenses.reduce((a, e) => a + e.amount, 0);
-  const remaining    = totalBudget - totalSpent;
+  const totalBudget = Object.values(budget).reduce((a, b) => a + b, 0);
+  const totalSpent  = monthExpenses.reduce((a, e) => a + e.amount, 0);
+  const remaining   = totalBudget - totalSpent;
+  const isCurrentMonth = viewMonth === currentMonthKey;
+
+  // All months that have expenses, for the picker
+  const allMonths = [...new Set(expenses.map(e => e.month))].sort();
+  if (!allMonths.includes(currentMonthKey)) allMonths.push(currentMonthKey);
 
   const addExpense = () => {
     const { desc, amount, category } = form;
@@ -42,7 +62,7 @@ export default function BudgetTab({ data, save }) {
       amount: +amount,
       category: category || "Other",
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      month: monthKey,
+      month: currentMonthKey,
     };
     save({ ...data, expenses: [...expenses, exp] });
     setModal(null); setForm({});
@@ -54,9 +74,7 @@ export default function BudgetTab({ data, save }) {
 
   const saveBudget = () => {
     const newBudget = {};
-    CATEGORIES.forEach(c => {
-      newBudget[c] = +(form[c] ?? budget[c] ?? 0);
-    });
+    CATEGORIES.forEach(c => { newBudget[c] = +(form[c] ?? budget[c] ?? 0); });
     save({ ...data, budget: newBudget });
     setModal(null); setForm({});
   };
@@ -64,8 +82,18 @@ export default function BudgetTab({ data, save }) {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2 }}>BUDGET TRACKER · {now.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+        <div>
+          <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2 }}>BUDGET TRACKER</div>
+          {/* Month picker */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+            <button onClick={() => setViewMonth(offsetMonth(viewMonth, -1))}
+              style={{ background: "none", border: "1px solid #1a1a1a", color: "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: "pointer" }}>‹</button>
+            <span style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, minWidth: 140, textAlign: "center" }}>{monthLabel(viewMonth)}</span>
+            <button onClick={() => setViewMonth(offsetMonth(viewMonth, 1))} disabled={isCurrentMonth}
+              style={{ background: "none", border: "1px solid #1a1a1a", color: isCurrentMonth ? "#222" : "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: isCurrentMonth ? "default" : "pointer" }}>›</button>
+          </div>
+        </div>
         <div style={{ display: "flex", gap: 8 }}>
           <Btn onClick={() => { setForm({}); setModal("edit-budget"); }} color="#34d399" style={{ fontSize: 10 }}>EDIT BUDGET</Btn>
           <Btn onClick={() => { setForm({ category: "Food & Dining" }); setModal("add-expense"); }} color="#34d399">+ ADD EXPENSE</Btn>
@@ -92,11 +120,11 @@ export default function BudgetTab({ data, save }) {
       <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: 20, marginBottom: 20 }}>
         <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 16 }}>CATEGORY BREAKDOWN</div>
         {CATEGORIES.map(cat => {
-          const spent  = spentByCategory[cat] || 0;
-          const limit  = budget[cat] || 0;
-          const pct    = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
-          const over   = spent > limit && limit > 0;
-          const color  = CAT_COLOR[cat];
+          const spent = spentByCategory[cat] || 0;
+          const limit = budget[cat] || 0;
+          const pct   = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+          const over  = spent > limit && limit > 0;
+          const color = CAT_COLOR[cat];
           return (
             <div key={cat} style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -116,12 +144,14 @@ export default function BudgetTab({ data, save }) {
         })}
       </div>
 
-      {/* Recent expenses */}
-      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>RECENT EXPENSES · {monthExpenses.length} THIS MONTH</div>
+      {/* Expense list */}
+      <div style={{ marginBottom: 16, color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
+        EXPENSES · {monthExpenses.length} IN {monthLabel(viewMonth)}
       </div>
       {monthExpenses.length === 0 ? (
-        <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>No expenses logged this month. Add one above.</div>
+        <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>
+          No expenses logged for {monthLabel(viewMonth)}.
+        </div>
       ) : (
         <div style={{ display: "grid", gap: 8 }}>
           {[...monthExpenses].reverse().map(e => {
@@ -165,14 +195,10 @@ export default function BudgetTab({ data, save }) {
       {modal === "edit-budget" && (
         <Modal title="MONTHLY BUDGET LIMITS" onClose={() => setModal(null)}>
           {CATEGORIES.map(cat => (
-            <Input
-              key={cat}
-              label={cat}
-              type="number"
+            <Input key={cat} label={cat} type="number"
               value={form[cat] !== undefined ? form[cat] : (budget[cat] || "")}
               onChange={v => setForm({ ...form, [cat]: v })}
-              placeholder={String(budget[cat] || 0)}
-            />
+              placeholder={String(budget[cat] || 0)} />
           ))}
           <Btn onClick={saveBudget} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE BUDGET</Btn>
         </Modal>

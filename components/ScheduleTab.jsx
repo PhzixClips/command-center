@@ -14,6 +14,7 @@ export default function ScheduleTab({ data, save }) {
     { label: "Week of Mar 23", dates: ["Mar 20","Mar 23","Mar 24","Mar 25","Mar 27"] },
     { label: "Week of Mar 30", dates: ["Mar 30","Mar 31"] },
   ];
+  const todayLabel = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const logShift = (shift) => {
     const newSched = data.schedule.map(s =>
       s.date === shift.date && s.time === shift.time ? { ...s, logged: true } : s
@@ -61,7 +62,7 @@ export default function ScheduleTab({ data, save }) {
       </div>
       <div style={{ display: "grid", gap: 8 }}>
         {upcoming.map((s, i) => {
-          const isToday = s.date === "Mar 2";
+          const isToday = s.date === todayLabel;
           return (
             <div key={i} style={{
               background: isToday ? "#00ff8808" : "#0d0d0d",
