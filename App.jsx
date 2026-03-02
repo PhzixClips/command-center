@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 // ── Gemini API helper ─────────────────────────────────────────────────────────
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY;
+const GEMINI_KEY = "AIzaSyBBgUBXOTweNZievW3iM6tnI6hrxYjgiW8";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
 const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
