@@ -6,11 +6,12 @@ import Btn from "./Btn.jsx";
 
 // ── Lane metadata ─────────────────────────────────────────────────────────────
 const LANE_META = {
-  FLIP:    { label: "Item Flip",   color: "#ff8c00", icon: "💰" },
-  TICKETS: { label: "Tickets",     color: "#a78bfa", icon: "🎟️" },
-  TRUCK:   { label: "Truck",       color: "#38bdf8", icon: "🚛" },
-  ARB:     { label: "Retail Arb",  color: "#ffd700", icon: "📦" },
-  SERVICE: { label: "Service",     color: "#00ff88", icon: "💡" },
+  FBMKT:   { label: "FB Marketplace", color: "#00d4aa", icon: "📱" },
+  FLIP:    { label: "Item Flip",      color: "#ff8c00", icon: "💰" },
+  TICKETS: { label: "Tickets",        color: "#a78bfa", icon: "🎟️" },
+  TRUCK:   { label: "Truck",          color: "#38bdf8", icon: "🚛" },
+  ARB:     { label: "Retail Arb",     color: "#ffd700", icon: "📦" },
+  SERVICE: { label: "Service",        color: "#00ff88", icon: "💡" },
 };
 
 const RISK_COLOR = {
@@ -41,17 +42,17 @@ const OPP_LIBRARY = [
   },
   {
     id: "gpu-flip", lane: "FLIP",
-    title: "RTX 5080 GPU Flip",
-    detail: "MSRP $999, still selling $1,400–1,650 on eBay. Newegg/Best Buy restock multiple times weekly. 40-65% ROI in under 48 hours if you're fast.",
-    action: "Set NowInStock.net + Camel3x alerts for RTX 5080. Buy immediately on restock. List on eBay within 1 hour with 'fast shipping' in title. Sells same day.",
-    minCapital: 900, maxCapital: 1700,
-    roiRange: [40, 65], risk: "MED", timeframe: "1–3 days", effort: 2,
+    title: "GPU / Console Resell Flip",
+    detail: "High-demand GPUs and consoles frequently sell above MSRP when supply is tight. Check eBay sold listings BEFORE buying to confirm current margin — don't assume.",
+    action: "Step 1: Hit the eBay sold listings link to see real current resale prices today. Step 2: Set NowInStock alerts for any GPU/console with confirmed margin >20%. Step 3: Buy on restock, list within 1 hour.",
+    minCapital: 300, maxCapital: 1700,
+    roiRange: [20, 60], risk: "MED", timeframe: "1–5 days", effort: 2,
     links: [
-      { label: "NowInStock — RTX 5080 Alerts", url: "https://www.nowinstock.net/computers/videocards/nvidia/rtx5080/" },
-      { label: "Best Buy — RTX 5080", url: "https://www.bestbuy.com/site/searchpage.jsp?st=rtx+5080" },
-      { label: "eBay — RTX 5080 Sold Listings", url: "https://www.ebay.com/sch/i.html?_nkw=rtx+5080&_sop=10&LH_Complete=1&LH_Sold=1" },
+      { label: "eBay — GPU Sold Prices (check first)", url: "https://www.ebay.com/sch/i.html?_nkw=nvidia+rtx+gpu&LH_Complete=1&LH_Sold=1&_sop=16" },
+      { label: "NowInStock — GPU Alerts", url: "https://www.nowinstock.net/computers/videocards/" },
+      { label: "Best Buy — GPUs", url: "https://www.bestbuy.com/site/searchpage.jsp?st=rtx+gpu" },
     ],
-    urgency: "hot-now", truckRequired: false,
+    urgency: "seasonal", truckRequired: false,
   },
   {
     id: "lego-arb", lane: "FLIP",
@@ -85,14 +86,15 @@ const OPP_LIBRARY = [
   {
     id: "nba-playoffs", lane: "TICKETS",
     title: "NBA Playoffs Ticket Flip",
-    detail: "Playoffs start ~Apr 19. Phoenix Suns home games: face $120-300 → resale $350-800 once matchups confirmed. Buy NOW — price spikes 2-3x when bracket drops.",
-    action: "Buy 2 Suns playoff tickets on Ticketmaster today. Hold. The moment bracket is announced, list on StubHub with auto-price at 2x face. Sell within 48hr.",
+    detail: "Playoffs start ~Apr 19. Strategy: only buy for teams confirmed in playoff position — check standings first. Face $120-300 → resale $350-800 once bracket is set.",
+    action: "Step 1: Check NBA standings RIGHT NOW (link below) — only buy for a team with a clinched or near-certain playoff spot. Step 2: Buy 2 floor/lower bowl tickets. Step 3: List at 2x face the moment their first-round matchup is announced.",
     minCapital: 250, maxCapital: 1200,
     roiRange: [80, 200], risk: "MED", timeframe: "4–8 weeks", effort: 1,
     links: [
-      { label: "Ticketmaster — Suns Tickets", url: "https://www.ticketmaster.com/phoenix-suns-tickets/artist/805979" },
+      { label: "NBA Standings — Check Now", url: "https://www.nba.com/standings" },
+      { label: "Ticketmaster — NBA Tickets", url: "https://www.ticketmaster.com/search?q=nba+playoffs" },
       { label: "StubHub — Sell Tickets", url: "https://www.stubhub.com/sell" },
-      { label: "SeatGeek — Suns", url: "https://seatgeek.com/phoenix-suns-tickets" },
+      { label: "SeatGeek — NBA", url: "https://seatgeek.com/nba-tickets" },
     ],
     urgency: "hot-now", truckRequired: false,
   },
@@ -112,13 +114,13 @@ const OPP_LIBRARY = [
   },
   {
     id: "concert-flip", lane: "TICKETS",
-    title: "Major Concert Ticket Flip",
-    detail: "2026 touring cycle is massive — Beyoncé, Post Malone, Peso Pluma, Zach Bryan. 1.5-3x face on GA/floor. Presales are your edge.",
-    action: "Sign up for Ticketmaster artist alerts. Use Citi/Chase card for presale access. Buy 4 tickets. List 2 at 1.8x immediately, hold 2 for night-of surge pricing.",
-    minCapital: 400, maxCapital: 1200,
-    roiRange: [70, 150], risk: "MED", timeframe: "1–6 weeks", effort: 2,
+    title: "Concert Presale Ticket Flip",
+    detail: "Major touring acts consistently resell 1.5-3x face. The edge is presale access — you buy before the public, at face, and list immediately. Check what's actually on sale right now.",
+    action: "Step 1: Check Ticketmaster presales happening today (link below). Step 2: Use Citi/Chase card for presale code access. Step 3: Buy 4 GA/floor. List 2 at 1.8x on StubHub immediately, hold 2 to sell week-of show.",
+    minCapital: 300, maxCapital: 1200,
+    roiRange: [50, 150], risk: "MED", timeframe: "1–6 weeks", effort: 2,
     links: [
-      { label: "Ticketmaster — Browse Concerts", url: "https://www.ticketmaster.com/discover/concerts" },
+      { label: "Ticketmaster — Active Presales", url: "https://www.ticketmaster.com/discover/concerts" },
       { label: "StubHub — Sell", url: "https://www.stubhub.com/sell" },
       { label: "Vivid Seats — Sell", url: "https://www.vividseats.com/sell-tickets" },
     ],
@@ -249,6 +251,72 @@ const OPP_LIBRARY = [
       { label: "Post on Nextdoor", url: "https://nextdoor.com" },
     ],
     urgency: "evergreen", truckRequired: true,
+  },
+
+  // FB MARKETPLACE ─────────────────────────────────────────────────────────────
+  {
+    id: "fb-exercise", lane: "FBMKT", icon: "💪",
+    title: "Exercise Equipment",
+    detail: "New Year guilt gear is hitting the market hard. Pelotons, treadmills, Bowflex, weight benches — people pay to clear their garage. Your truck moves what others can't.",
+    searchTerms: ["free treadmill", "peloton", "$50 exercise bike", "bowflex", "weight bench"],
+    minCapital: 0, maxCapital: 150, buyRange: [0, 150], sellRange: [200, 700], roiRange: [150, 500],
+    daysToSell: "3–7", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-power-tools", lane: "FBMKT", icon: "🔧",
+    title: "Power Tool Lots",
+    detail: "DeWalt/Milwaukee combo kits retail $500-800, sell for $250-500 used. Phoenix construction = constant tool demand. Bundle multiple tools to raise your asking price.",
+    searchTerms: ["dewalt lot", "milwaukee tools", "tool bundle", "circular saw", "drill set"],
+    minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [150, 600], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-riding-mowers", lane: "FBMKT", icon: "🌿",
+    title: "Riding Mowers",
+    detail: "Spring in AZ = peak lawn equipment season right now. Buy end-of-winter $150-400, sell $500-1,200 when everyone's prepping yards. Truck required — that's your edge.",
+    searchTerms: ["riding mower", "zero turn mower", "lawn tractor", "john deere", "husqvarna mower"],
+    minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [400, 1200], roiRange: [100, 300],
+    daysToSell: "5–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-large-tvs", lane: "FBMKT", icon: "📺",
+    title: "Large TVs (55\"+)",
+    detail: "People upgrading to OLED dump their 55-65\" TVs for $50-150. Clean it up, relist $200-350. High turnover, sells in days, no truck needed under 65\".",
+    searchTerms: ["55 inch tv", "65 inch tv", "samsung 4k tv", "smart tv lot", "lg oled"],
+    minCapital: 30, maxCapital: 150, buyRange: [30, 150], sellRange: [150, 400], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-patio", lane: "FBMKT", icon: "☀️",
+    title: "Patio / Outdoor Furniture",
+    detail: "Phoenix patio season starts NOW — March through May is peak. Outdoor sectionals, fire pits, dining sets. Buy cheap, relist clean. High ticket, moves fast in AZ.",
+    searchTerms: ["patio furniture", "outdoor sectional", "fire pit", "patio dining set", "pool furniture"],
+    minCapital: 50, maxCapital: 250, buyRange: [50, 250], sellRange: [200, 800], roiRange: [100, 400],
+    daysToSell: "4–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-appliances", lane: "FBMKT", icon: "🏠",
+    title: "Washer / Dryer / Fridge",
+    detail: "Working appliances sell same day in Phoenix. W/D sets buy $75-200, sell $250-500. Your truck closes the deal — most buyers can't haul a washer and neither can most flippers.",
+    searchTerms: ["washer dryer set", "$75 refrigerator", "washer", "dryer", "appliance lot"],
+    minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [200, 600], roiRange: [100, 300],
+    daysToSell: "1–4", risk: "LOW", truckRequired: true, urgency: "evergreen",
+  },
+  {
+    id: "fb-baby-gear", lane: "FBMKT", icon: "🍼",
+    title: "Premium Baby Gear",
+    detail: "UPPAbaby strollers buy $80-150, relist $250-400. Cribs, bouncers, high chairs move fast. Low weight so no truck needed. Parents buying used = reliable daily demand.",
+    searchTerms: ["uppababy stroller", "crib", "baby gear lot", "graco stroller", "nuna car seat"],
+    minCapital: 20, maxCapital: 150, buyRange: [20, 150], sellRange: [80, 400], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-gaming", lane: "FBMKT", icon: "🎮",
+    title: "Gaming Setups / Consoles",
+    detail: "Gaming PCs, PS5/Xbox with extra controllers and games. Bundle everything together — FB buyers pay more than eBay for local no-ship. Sell as a complete setup.",
+    searchTerms: ["gaming pc", "ps5 bundle", "xbox series x", "gaming setup", "gaming monitor lot"],
+    minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [200, 700], roiRange: [75, 200],
+    daysToSell: "2–7", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
   },
 
   // SERVICE / SKILL ────────────────────────────────────────────────────────────
@@ -484,6 +552,105 @@ function OppCard({ opp, liquid, onExecute }) {
   );
 }
 
+// ── FB Marketplace Card ───────────────────────────────────────────────────────
+function FBMarketCard({ opp, liquid, onExecute }) {
+  const color = LANE_META.FBMKT.color;
+  const isHot = opp.urgency === "hot-now";
+  const gap   = opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0;
+
+  const scout = (term) =>
+    window.open(`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(term)}`, "_blank");
+
+  return (
+    <div style={{
+      background: "#0d0d0d",
+      border: `1px solid ${isHot ? color + "55" : "#1a1a1a"}`,
+      borderRadius: 10, padding: "16px 18px",
+    }}>
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
+        <span style={{ fontSize: 24, lineHeight: 1 }}>{opp.icon}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 5 }}>{opp.title}</div>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>📱 FB MARKETPLACE</span>
+            {isHot && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🔴 HOT NOW</span>}
+            {opp.truckRequired && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Detail */}
+      <div style={{ color: "#777", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{opp.detail}</div>
+
+      {/* Scout section — the main feature */}
+      <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
+        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8, fontFamily: "monospace" }}>🔍 SCOUT FB MARKETPLACE NOW</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {opp.searchTerms.map(t => (
+            <button
+              key={t} onClick={() => scout(t)}
+              style={{
+                background: `${color}12`, border: `1px solid ${color}55`, color,
+                fontFamily: "monospace", fontSize: 10, padding: "5px 11px",
+                borderRadius: 4, cursor: "pointer",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price ladder */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>BUY</div>
+          <div style={{ color: "#ff6b6b", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>$0–${opp.buyRange[1]}</div>
+        </div>
+        <div style={{ color: "#333", fontSize: 18, fontWeight: 300 }}>→</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELL</div>
+          <div style={{ color: "#00ff88", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>PROFIT</div>
+          <div style={{ color: "#ffd700", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>+{opp.roiRange[0]}–{opp.roiRange[1]}%</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
+          <div style={{ color: "#e8e8e8", fontSize: 13, fontFamily: "monospace" }}>{opp.daysToSell}d</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>RISK</div>
+          <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+        </div>
+      </div>
+
+      {/* Execute */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {gap > 0
+          ? <span style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>NEED ${gap} TO BUY</span>
+          : <span />
+        }
+        <button
+          onClick={() => onExecute(opp)}
+          style={{
+            background: `${color}18`, border: `1px solid ${color}`, color,
+            fontFamily: "monospace", fontSize: 11, letterSpacing: 1,
+            padding: "8px 18px", borderRadius: 5, cursor: "pointer",
+          }}
+        >
+          LOG FLIP →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const [playbook,        setPlaybook]        = useState(data.cachedPlaybook || "");
@@ -531,38 +698,39 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart, aggressive financial advisor for a Phoenix AZ server/flipper who has a pickup truck. Use your search ability to find ACTUAL current event dates, current resale prices, and upcoming drops. Give ULTRA-SPECIFIC advice with real platform names, real prices from RIGHT NOW, exact dates, and direct URLs where possible. Zero generic advice. Numbers only. Direct and punchy.",
-        `MY SITUATION RIGHT NOW:
-• Checking / liquid cash (NOT selling stocks): $${liquid}
+        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. CRITICAL RULE: Before including ANY opportunity, use search to verify it is real and current RIGHT NOW. Do NOT suggest flipping a sports team's tickets unless you confirm they are actually in playoff position today. Do NOT cite artist tour dates unless you verify the tour exists. Do NOT cite GPU resale margins without checking current eBay sold listings. Only include opportunities you can verify are real this week.",
+        `MY SITUATION:
+• Liquid cash (checking only, NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
 • Net worth trend: ${netWorthTrend}
 • Flip history: ${flipSummary}
 • Pickup truck: YES — Phoenix AZ, west valley
-• Upcoming server shifts this week: ${Math.min(freeThisWeek, 4)}
+• Free days this week: ${Math.max(0, 7 - Math.min(freeThisWeek, 4))} days off
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-• Season: Tax refund season (March), spring cleaning starting, NBA playoffs approaching
 • Top scored opportunities for my capital: ${top3}
 
-Use search to look up: actual NBA playoff start date and Suns schedule, next UFC PPV event date and location, any SNKRS drops this week.
+BEFORE writing each move, search to verify:
+1. For any ticket flip — search "[team] NBA standings 2026" and confirm they have a playoff spot. Do NOT recommend Suns tickets unless standings confirm they made the playoffs.
+2. For any GPU/console flip — search "rtx [model] ebay sold 2026" to confirm actual current resale margin before citing numbers.
+3. For any concert — search "[artist] tour 2026 Phoenix" to confirm the show actually exists.
 
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Each move EXACT format:
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Only verified, real opportunities. Format:
 
 MOVE 1: [TITLE IN CAPS]
-DO TODAY: [exact specific action — platform, search term, button to click]
-BUY: [exact item + exact platform + exact dollar amount]
-SELL: [exact platform + exact listing price]
+DO TODAY: [exact action — platform, what to search/click]
+BUY: [exact item + platform + price]
+SELL: [platform + price]
 NET PROFIT: $[X]–$[Y]
-TIME: [hours of work]
-DATES: [actual relevant dates if time-sensitive, e.g. "Suns Game 1: Apr 19 vs Warriors"]
-LINK: [single most important URL to click right now]
+TIME: [hours]
+DATES: [real dates from search, e.g. "Game 1: Apr 19"]
+LINK: [most direct URL]
 
 MOVE 2: (same format)
-
 MOVE 3: (same format)
 
-FIRST MOVE: [one sentence — which to start today and the exact dollar reason why]`,
+FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]`,
         1800,
-        true  // Google Search enabled — look up actual current dates and prices
+        true  // Google Search — must verify facts before including
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
@@ -605,7 +773,7 @@ FIRST MOVE: [one sentence — which to start today and the exact dollar reason w
   const oppHistory    = data.oppHistory || [];
   const totalHustled  = oppHistory.reduce((a, o) => a + (o.earned || 0), 0);
 
-  const FILTER_TABS = ["ALL", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE"];
+  const FILTER_TABS = ["ALL", "FBMKT", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE"];
 
   return (
     <div>
@@ -679,9 +847,10 @@ FIRST MOVE: [one sentence — which to start today and the exact dollar reason w
 
       {/* Opportunity cards */}
       <div style={{ display: "grid", gap: 14 }}>
-        {displayed.map(opp => (
-          <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-        ))}
+        {displayed.map(opp => opp.lane === "FBMKT"
+          ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+          : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+        )}
       </div>
 
       {/* Opportunity History */}
