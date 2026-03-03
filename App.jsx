@@ -83,6 +83,17 @@ export default function App() {
       const lastEntry  = history[history.length - 1];
       if (!lastEntry || lastEntry.date !== todayLabel) {
         d = { ...d, netWorthHistory: [...history.slice(-29), { date: todayLabel, value: Math.round(currentNW) }] };
+      } else {
+        d = { ...d, netWorthHistory: [...history.slice(0, -1), { date: todayLabel, value: Math.round(currentNW) }] };
+      }
+
+      const currentBal = Math.round(d.bankBalance + (d.savings || 0));
+      const balHistory = d.balanceHistory || [];
+      const lastBal    = balHistory[balHistory.length - 1];
+      if (!lastBal || lastBal.date !== todayLabel) {
+        d = { ...d, balanceHistory: [...balHistory.slice(-29), { date: todayLabel, value: currentBal }] };
+      } else {
+        d = { ...d, balanceHistory: [...balHistory.slice(0, -1), { date: todayLabel, value: currentBal }] };
       }
 
       await S.set("fcc-data", d);
@@ -92,8 +103,21 @@ export default function App() {
   }, []);
 
   const save = useCallback(async (newData) => {
-    setData(newData);
-    await S.set("fcc-data", newData);
+    const lbl    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const curNW  = Math.round(newData.bankBalance + (newData.savings || 0) + newData.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
+    const curBal = Math.round(newData.bankBalance + (newData.savings || 0));
+
+    const nwH = [...(newData.netWorthHistory || [])];
+    if (nwH[nwH.length - 1]?.date === lbl) nwH[nwH.length - 1] = { date: lbl, value: curNW };
+    else { nwH.push({ date: lbl, value: curNW }); if (nwH.length > 30) nwH.shift(); }
+
+    const balH = [...(newData.balanceHistory || [])];
+    if (balH[balH.length - 1]?.date === lbl) balH[balH.length - 1] = { date: lbl, value: curBal };
+    else { balH.push({ date: lbl, value: curBal }); if (balH.length > 30) balH.shift(); }
+
+    const d = { ...newData, netWorthHistory: nwH, balanceHistory: balH };
+    setData(d);
+    await S.set("fcc-data", d);
   }, []);
 
   const fetchAIInsight = useCallback(async (d) => {
@@ -239,8 +263,10 @@ export default function App() {
   const monthNetPL = monthShiftIncome + monthFlipIncome - monthExpensesTotal;
 
   // ── EOD cash projection ──────────────────────────────────────────────────────
-  const dailySpendRate = dayOfMonth > 1 ? monthExpensesTotal / dayOfMonth : 0;
-  const projectedRemainingExpenses = dailySpendRate * daysLeft;
+  const totalBudgetLimit = Object.values(data.budget || {}).reduce((a, v) => a + v, 0);
+  const projectedRemainingExpenses = totalBudgetLimit > 0
+    ? Math.max(0, totalBudgetLimit - monthExpensesTotal)
+    : dayOfMonth > 1 ? (monthExpensesTotal / dayOfMonth) * daysLeft : 0;
   const remainingMonthShifts = (data.schedule || []).filter(s => {
     if (s.logged) return false;
     const d = parseDateLabel(s.date, thisYear);

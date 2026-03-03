@@ -10,32 +10,61 @@ const CHART_VIEWS = [
 ];
 
 function buildChartData(data, stockValue, totalShiftEarnings, netWorth) {
-  const today = new Date();
+  const today      = new Date();
+  const thisYear   = today.getFullYear();
+  const parseLabel = (s) => { const d = new Date(`${s} ${thisYear}`); return isNaN(d.getTime()) ? null : d; };
+
+  // 30-day window oldest → newest
   const base = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (29 - i));
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   });
+
+  // Real net worth history — forward-fill gaps instead of fabricating them
   const nwMap = {};
   (data.netWorthHistory || []).forEach(p => { nwMap[p.date] = p.value; });
-  const shiftMap = {};
-  let runningShift = 0;
-  data.shifts.forEach(s => { shiftMap[s.date] = s.tips; });
-  const stockBase = 1800;
-  const stockEnd = stockValue;
-  const avgShift = data.shifts.length ? totalShiftEarnings / data.shifts.length : 275;
-  const projectedMonthly = avgShift * 6;
-  return base.map((date, i) => {
-    const progress = i / 29;
-    const noise = Math.sin(i * 0.7) * 80 + Math.cos(i * 1.3) * 40;
-    const nw = nwMap[date] || Math.round(netWorth * 0.88 + netWorth * 0.12 * progress + noise * 0.5);
-    const liquid = Math.max(800, Math.round(data.bankBalance * (0.75 + 0.25 * Math.sin(i * 0.5)) + (shiftMap[date] || 0)));
-    runningShift += (shiftMap[date] || (i > 20 ? avgShift / 5 : avgShift / 8));
-    const shifts = Math.round(runningShift);
-    const stocks = Math.round(stockBase + (stockEnd - stockBase) * progress + noise * 0.3);
-    const projected = Math.round((projectedMonthly / 29) * (i + 1));
-    return { date, networth: nw, liquid, shifts, stocks, projected };
+
+  // Real balance (checking + savings) history
+  const balMap = {};
+  (data.balanceHistory || []).forEach(p => { balMap[p.date] = p.value; });
+
+  // Real cumulative shift income — all shifts, tips + wage
+  const windowStart = new Date(today);
+  windowStart.setDate(today.getDate() - 29);
+  windowStart.setHours(0, 0, 0, 0);
+
+  const shiftsByDate = {};
+  let preWindowShift = 0;
+  data.shifts.forEach(s => {
+    const earn = s.tips + s.hours * (s.wage || 0);
+    const d    = parseLabel(s.date);
+    if (!d) return;
+    if (d < windowStart) preWindowShift += earn;
+    else shiftsByDate[s.date] = (shiftsByDate[s.date] || 0) + earn;
   });
+
+  let lastNW   = null;
+  let lastBal  = null;
+  let shiftCum = preWindowShift;
+  const avgShift = data.shifts.length ? totalShiftEarnings / data.shifts.length : 275;
+  const rows = [];
+
+  for (const [i, date] of base.entries()) {
+    if (nwMap[date]  !== undefined) lastNW  = nwMap[date];
+    if (balMap[date] !== undefined) lastBal = balMap[date];
+    shiftCum += (shiftsByDate[date] || 0);
+
+    rows.push({
+      date,
+      networth:  lastNW  !== null ? lastNW  : Math.round(netWorth),
+      liquid:    lastBal !== null ? lastBal : Math.round(data.bankBalance + (data.savings || 0)),
+      shifts:    Math.round(shiftCum),
+      stocks:    Math.round(stockValue),                    // flat — no fabricated history
+      projected: Math.round(avgShift * 8 * (i / 29)),      // ramp to ~8-shift month target
+    });
+  }
+  return rows;
 }
 
 export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWorth }) {
