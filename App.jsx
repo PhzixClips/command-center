@@ -572,8 +572,9 @@ export default function App() {
                     </div>
                     <div style={{ display: "grid", gap: 8 }}>
                       {filtered.map(({ s, origIdx }) => {
-                        const total  = s.tips + s.hours * s.wage;
-                        const hourly = total / s.hours;
+                        const total     = s.tips + s.hours * s.wage;
+                        const hourly    = total / s.hours;
+                        const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
                         return (
                           <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 8, padding: "12px 16px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -581,6 +582,7 @@ export default function App() {
                                 <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
                                 <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
                                 <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                                {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
                               </div>
                               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                                 <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
@@ -622,8 +624,9 @@ export default function App() {
                       );
                     }
                     const { s, origIdx } = item;
-                    const total  = s.tips + s.hours * s.wage;
-                    const hourly = total / s.hours;
+                    const total     = s.tips + s.hours * s.wage;
+                    const hourly    = total / s.hours;
+                    const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
                     return (
                       <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -631,6 +634,7 @@ export default function App() {
                             <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
                             <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
                             <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                            {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
                           </div>
                           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                             <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
