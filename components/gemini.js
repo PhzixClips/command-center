@@ -1,4 +1,4 @@
-const GEMINI_KEY = "AIzaSyBBgUBXOTweNZievW3iM6tnI6hrxYjgiW8";
+const GEMINI_KEY = "AIzaSyB7mdxQr4Ha_JSRiZNUNstt9qXsqeXqAWc";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
 export const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
@@ -29,8 +29,9 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
     const json = await res.json();
 
     if (json.error) {
-      console.error("Gemini API error:", json.error.message || json.error);
-      return "";
+      const msg = json.error.message || JSON.stringify(json.error);
+      console.error("Gemini API error:", msg);
+      throw new Error(msg);
     }
 
     // Search-grounded responses may interleave tool-use parts with text parts.

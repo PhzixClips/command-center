@@ -840,7 +840,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. CRITICAL RULE: Before including ANY opportunity, use search to verify it is real and current RIGHT NOW. Do NOT suggest flipping a sports team's tickets unless you confirm they are actually in playoff position today. Do NOT cite artist tour dates unless you verify the tour exists. Do NOT cite GPU resale margins without checking current eBay sold listings. Only include opportunities you can verify are real this week.",
+        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. Search the web for current prices, live event listings, and eBay sold comps before giving advice. Give specific, actionable advice based on real current data.",
         `MY SITUATION:
 • Liquid cash (checking only, NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
@@ -851,20 +851,17 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
 • Top scored opportunities for my capital: ${top3}
 
-BEFORE writing each move, search to verify:
-1. For any ticket flip — search "[team] NBA standings 2026" and confirm they have a playoff spot. Do NOT recommend Suns tickets unless standings confirm they made the playoffs.
-2. For any GPU/console flip — search "rtx [model] ebay sold 2026" to confirm actual current resale margin before citing numbers.
-3. For any concert — search "[artist] tour 2026 Phoenix" to confirm the show actually exists.
+Search for: current eBay sold listings for electronics/GPUs, upcoming Phoenix AZ events (concerts, UFC, sports) with ticket prices on StubHub/SeatGeek, and current Facebook Marketplace prices for furniture/appliances in Phoenix.
 
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Only verified, real opportunities. Format:
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK based on what you find. Pick moves that fit my capital. Format:
 
 MOVE 1: [TITLE IN CAPS]
 DO TODAY: [exact action — platform, what to search/click]
-BUY: [exact item + platform + price]
-SELL: [platform + price]
+BUY: [exact item + platform + price from current listings]
+SELL: [platform + price based on current comps]
 NET PROFIT: $[X]–$[Y]
 TIME: [hours]
-DATES: [real dates from search, e.g. "Game 1: Apr 19"]
+DATES: [real dates from search]
 LINK: [most direct URL]
 
 MOVE 2: (same format)
@@ -872,14 +869,14 @@ MOVE 3: (same format)
 
 FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]`,
         1800,
-        true  // Google Search — must verify facts before including
+        true
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
       setPlaybookTime(time);
       save({ ...data, cachedPlaybook: text, playbookTime: time });
-    } catch {
-      setPlaybook("Failed to generate — check connection.");
+    } catch (err) {
+      setPlaybook(`Error: ${err.message || "check connection"}`);
     }
     setPlaybookLoading(false);
   };
