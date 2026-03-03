@@ -29,8 +29,9 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
     const json = await res.json();
 
     if (json.error) {
-      console.error("Gemini API error:", json.error.message || json.error);
-      return "";
+      const msg = json.error.message || JSON.stringify(json.error);
+      console.error("Gemini API error:", msg);
+      throw new Error(msg);
     }
 
     // Search-grounded responses may interleave tool-use parts with text parts.

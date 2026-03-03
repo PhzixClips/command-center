@@ -875,8 +875,8 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       setPlaybook(text || "Unable to generate playbook.");
       setPlaybookTime(time);
       save({ ...data, cachedPlaybook: text, playbookTime: time });
-    } catch {
-      setPlaybook("Failed to generate — check connection.");
+    } catch (err) {
+      setPlaybook(`Error: ${err.message || "check connection"}`);
     }
     setPlaybookLoading(false);
   };

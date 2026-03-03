@@ -169,7 +169,7 @@ export default function App() {
         1000
       );
       setAiInsight(text || "Unable to generate insight.");
-    } catch { setAiInsight("AI insight unavailable — check connection."); }
+    } catch (err) { setAiInsight(`Error: ${err.message || "check connection"}`); }
     setAiLoading(false);
   }, []);
 
