@@ -541,7 +541,7 @@ function PlaybookText({ text }) {
 }
 
 // ── Unified Opportunity Card (collapsible) ────────────────────────────────────
-function OppCard({ opp, liquid, onExecute, rank }) {
+function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
   const [open, setOpen] = useState(false);
   const laneColor = LANE_META[opp.lane]?.color || "#555";
   const isFB  = opp.lane === "FBMKT";
@@ -551,8 +551,8 @@ function OppCard({ opp, liquid, onExecute, rank }) {
   const locked = gap > 0;
 
   const roiLabel = opp.isService
-    ? `$${opp.hourlyRate[0]}–${opp.hourlyRate[1]}/hr`
-    : `+${opp.roiRange[0]}–${opp.roiRange[1]}%`;
+    ? `$${(opp.hourlyRate||[0,0])[0]}–${(opp.hourlyRate||[0,0])[1]}/hr`
+    : `+${(opp.roiRange||[0,0])[0]}–${(opp.roiRange||[0,0])[1]}%`;
 
   const capitalLabel = isFB
     ? `$${opp.buyRange[0]}–$${opp.buyRange[1]}`
@@ -626,6 +626,16 @@ function OppCard({ opp, liquid, onExecute, rank }) {
           {locked ? `+$${gap}` : "GO →"}
         </button>
 
+        {opp.ai && (
+          <span style={{ color: "#a78bfa", fontSize: 7, fontFamily: "monospace", border: "1px solid #a78bfa44", padding: "1px 4px", borderRadius: 3, flexShrink: 0 }}>AI</span>
+        )}
+        {onDismiss && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDismiss(opp.id); }}
+            style={{ background: "none", border: "1px solid #1a1a1a", color: "#333", fontSize: 10, width: 22, height: 22, borderRadius: 3, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+            title="Dismiss — swap for new"
+          >✕</button>
+        )}
         <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0, display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>▼</span>
       </div>
 
@@ -747,13 +757,16 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const [activeFilter,    setActiveFilter]    = useState("ALL");
   const [modal,           setModal]           = useState(null);
   const [form,            setForm]            = useState({});
+  const [dismissedIds,    setDismissedIds]    = useState(() => new Set(data.dismissedIds || []));
+  const [aiOpps,          setAiOpps]          = useState(data.aiOpps || []);
+  const [generating,      setGenerating]      = useState(false);
 
   const liquid   = data.bankBalance || 0;
   const hasTruck = data.hasTruck !== false; // defaults true
   const flips    = data.flips || [];
 
-  // Score every opportunity against current situation
-  const allScored = OPP_LIBRARY.map(o => ({
+  // Score every opportunity against current situation (library + AI-generated)
+  const allScored = [...OPP_LIBRARY, ...aiOpps].map(o => ({
     ...o,
     score: scoreOpp(o, liquid, data.bankBalance, flips, hasTruck),
   })).sort((a, b) => b.score - a.score);
@@ -761,7 +774,56 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const displayed = (activeFilter === "ALL"
     ? allScored
     : allScored.filter(o => o.lane === activeFilter)
-  ).filter(o => o.score > -50);
+  ).filter(o => o.score > -50 && !dismissedIds.has(o.id));
+
+  // ── Generate a single AI opportunity ────────────────────────────────────────
+  const generateAiOpp = async (currentAiOpps, currentDismissed) => {
+    const seenTitles = [
+      ...OPP_LIBRARY.map(o => o.title),
+      ...currentAiOpps.map(o => o.title),
+    ].join(", ");
+    try {
+      const text = await gemini(
+        "You are a street-smart money-making advisor for a Phoenix AZ server with a pickup truck. Generate ONE specific, actionable, real opportunity. Return ONLY valid JSON, nothing else.",
+        `Liquid: $${liquid}. Truck: YES. Phoenix AZ west valley. Today: ${new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}.
+Do NOT suggest anything similar to: ${seenTitles}.
+Return ONLY this exact JSON structure:
+{"id":"ai-${Date.now()}","ai":true,"lane":"FLIP","title":"Short title","detail":"2-3 sentences why this works right now in Phoenix AZ","action":"Exact steps to execute today — platform names, search terms, what to click","roiRange":[minInt,maxInt],"risk":"LOW","timeframe":"e.g. 3-7 days","links":[{"label":"Site Name","url":"https://example.com"}],"urgency":"hot-now","truckRequired":false,"minCapital":0,"maxCapital":300,"isService":false}
+lane must be one of: FLIP, TRUCK, ARB, SERVICE, STOCKS, TICKETS, FBMKT
+risk must be one of: LOW, LOW-MED, MED, MED-HIGH, HIGH
+urgency must be one of: hot-now, seasonal, evergreen
+If isService is true add: "hourlyRate":[minInt,maxInt] and set roiRange to [0,0]`,
+        700
+      );
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) return null;
+      const parsed = JSON.parse(match[0]);
+      if (!parsed.title || !parsed.lane) return null;
+      parsed.id = `ai-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+      parsed.ai  = true;
+      if (!parsed.roiRange) parsed.roiRange = [0, 0];
+      if (!parsed.minCapital) parsed.minCapital = 0;
+      if (!parsed.maxCapital) parsed.maxCapital = 500;
+      return parsed;
+    } catch { return null; }
+  };
+
+  // ── Dismiss a card and replace with AI-generated one ─────────────────────
+  const dismissOpp = async (id) => {
+    const newDismissed = new Set([...dismissedIds, id]);
+    const newAiOpps    = aiOpps.filter(o => o.id !== id);
+    setDismissedIds(newDismissed);
+    setAiOpps(newAiOpps);
+    save({ ...data, dismissedIds: [...newDismissed], aiOpps: newAiOpps });
+    setGenerating(true);
+    const newOpp = await generateAiOpp(newAiOpps, newDismissed);
+    setGenerating(false);
+    if (newOpp) {
+      const updated = [...newAiOpps, newOpp];
+      setAiOpps(updated);
+      save({ ...data, dismissedIds: [...newDismissed], aiOpps: updated });
+    }
+  };
 
   // ── Build AI Playbook ─────────────────────────────────────────────────────
   const buildPlaybook = async () => {
@@ -930,6 +992,13 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
         })}
       </div>
 
+      {/* Generating indicator */}
+      {generating && (
+        <div style={{ background: "#0a0a0a", border: "1px solid #a78bfa44", borderRadius: 8, padding: "12px 14px", marginBottom: 14, borderLeft: "3px solid #a78bfa", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: "#a78bfa", fontSize: 9, fontFamily: "monospace", letterSpacing: 2 }}>⚡ AI GENERATING NEW OPPORTUNITY...</span>
+        </div>
+      )}
+
       {/* Opportunity cards */}
       {activeFilter === "ALL" && displayed.length > 0 ? (
         <>
@@ -939,7 +1008,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
           </div>
           <div style={{ display: "grid", gap: 14, marginBottom: displayed.length > 3 ? 28 : 0 }}>
             {displayed.slice(0, 3).map((opp, i) => (
-              <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
+              <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} onDismiss={dismissOpp} rank={i + 1} />
             ))}
           </div>
           {/* Rest */}
@@ -950,7 +1019,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
               </div>
               <div style={{ display: "grid", gap: 14 }}>
                 {displayed.slice(3).map(opp => (
-                  <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+                  <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} onDismiss={dismissOpp} />
                 ))}
               </div>
             </>
@@ -959,7 +1028,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       ) : (
         <div style={{ display: "grid", gap: 14 }}>
           {displayed.map(opp => (
-            <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+            <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} onDismiss={dismissOpp} />
           ))}
         </div>
       )}
