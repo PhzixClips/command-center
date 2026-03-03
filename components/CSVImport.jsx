@@ -70,9 +70,11 @@ export default function CSVImport({ data, save, onClose }) {
   const [step, setStep] = useState("upload");
   const [rows, setRows] = useState([]);
   const [headers, setHeaders] = useState([]);
-  const [mapping, setMapping] = useState({ date: "", desc: "", amount: "" });
+  const [mapping, setMapping] = useState({ date: "", desc: "", amount: "", balance: "" });
   const [preview, setPreview] = useState([]);
-  const [imported, setImported] = useState({ expenses: 0, income: 0 });
+  const [detectedBalance, setDetectedBalance] = useState(null);
+  const [balanceForm, setBalanceForm] = useState({ checking: "", savings: "" });
+  const [imported, setImported] = useState({ expenses: 0, income: 0, transfers: 0 });
   const [error, setError] = useState("");
 
   const handleFile = (e) => {
@@ -89,9 +91,10 @@ export default function CSVImport({ data, save, onClose }) {
         setRows(result.data);
         const find = (candidates) => hdrs.find(h => candidates.some(c => h.toLowerCase().includes(c))) || "";
         setMapping({
-          date:   find(["date", "posted", "transaction date"]),
-          desc:   find(["description", "memo", "payee", "name", "transaction"]),
-          amount: find(["amount", "debit", "withdrawal"]),
+          date:    find(["date", "posted", "transaction date"]),
+          desc:    find(["description", "memo", "payee", "name", "transaction"]),
+          amount:  find(["amount", "debit", "withdrawal"]),
+          balance: find(["balance", "running balance", "available balance"]),
         });
         setStep("map");
       },
@@ -104,6 +107,20 @@ export default function CSVImport({ data, save, onClose }) {
       setError("Please map Date, Description, and Amount columns.");
       return;
     }
+
+    // Auto-fill checking balance from running balance column if mapped
+    let latestBalance = null;
+    if (mapping.balance) {
+      const sorted = [...rows].sort((a, b) => new Date(b[mapping.date]) - new Date(a[mapping.date]));
+      for (const row of sorted) {
+        const raw = (row[mapping.balance] || "").replace(/[$,\s]/g, "");
+        const val = parseFloat(raw);
+        if (!isNaN(val) && val >= 0) { latestBalance = val; break; }
+      }
+    }
+    setDetectedBalance(latestBalance);
+    setBalanceForm({ checking: latestBalance != null ? latestBalance.toFixed(2) : "", savings: "" });
+
     const parsed = [];
     for (const row of rows) {
       const rawAmt = (row[mapping.amount] || "").replace(/[$,\s]/g, "");
@@ -155,12 +172,20 @@ export default function CSVImport({ data, save, onClose }) {
     const newIncome    = preview.filter(r => r.type === "income"   && !incomeKeys.has(`${r.desc}|${r.amount}|${r.month}`)).map(clean);
     const newTransfers = preview.filter(r => r.type === "transfer" && !transferKeys.has(`${r.desc}|${r.amount}|${r.month}`)).map(clean);
 
-    save({
+    const newData = {
       ...data,
       expenses:  [...existingExpenses,  ...newExpenses],
       income:    [...existingIncome,    ...newIncome],
       transfers: [...existingTransfers, ...newTransfers],
-    });
+    };
+
+    // Update main screen balances if entered
+    const newChecking = parseFloat(balanceForm.checking);
+    const newSavings  = parseFloat(balanceForm.savings);
+    if (!isNaN(newChecking) && newChecking >= 0) newData.bankBalance = newChecking;
+    if (!isNaN(newSavings)  && newSavings  >= 0) newData.savings     = newSavings;
+
+    save(newData);
     setImported({ expenses: newExpenses.length, income: newIncome.length, transfers: newTransfers.length });
     setStep("done");
   };
@@ -230,9 +255,10 @@ export default function CSVImport({ data, save, onClose }) {
                 Columns found: {headers.join(", ")}
               </div>
               {[
-                { key: "date",   label: "Date column",        required: true  },
-                { key: "desc",   label: "Description column",  required: true  },
-                { key: "amount", label: "Amount column (negative = expense, positive = income)", required: true },
+                { key: "date",    label: "Date column",                                             required: true  },
+                { key: "desc",    label: "Description column",                                      required: true  },
+                { key: "amount",  label: "Amount (negative = expense, positive = income)",          required: true  },
+                { key: "balance", label: "Running Balance column (optional — auto-fills Checking)", required: false },
               ].map(({ key, label, required }) => (
                 <div key={key} style={{ marginBottom: 14 }}>
                   <label style={{ color: required ? "#e8e8e8" : "#555", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>
@@ -243,7 +269,7 @@ export default function CSVImport({ data, save, onClose }) {
                     onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}
                     style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none" }}
                   >
-                    <option value="">— select column —</option>
+                    <option value="">— {required ? "select column" : "skip"} —</option>
                     {headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
@@ -314,6 +340,31 @@ export default function CSVImport({ data, save, onClose }) {
                   {totalIncome - totalExpense >= 0 ? "+" : "-"}${Math.abs(totalIncome - totalExpense).toFixed(2)}
                 </span>
               </div>
+              {/* Balance sync — updates Checking + Savings on main screen */}
+              <div style={{ background: "#0d0d0d", border: "1px solid #34d39933", borderRadius: 8, padding: "14px 16px", marginBottom: 16 }}>
+                <div style={{ color: "#34d399", fontSize: 9, fontFamily: "monospace", letterSpacing: 2, marginBottom: 6 }}>UPDATE MAIN SCREEN BALANCES</div>
+                {detectedBalance != null && (
+                  <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 10 }}>
+                    Checking auto-filled from your CSV's balance column.
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ color: "#666", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>CHECKING ($)</label>
+                    <input type="number" value={balanceForm.checking} onChange={e => setBalanceForm(f => ({ ...f, checking: e.target.value }))}
+                      placeholder={`${data.bankBalance?.toFixed(2) || "0.00"} current`}
+                      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "8px 10px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ color: "#666", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>SAVINGS ($)</label>
+                    <input type="number" value={balanceForm.savings} onChange={e => setBalanceForm(f => ({ ...f, savings: e.target.value }))}
+                      placeholder={`${(data.savings || 0).toFixed(2)} current`}
+                      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "8px 10px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                </div>
+                <div style={{ color: "#333", fontSize: 9, fontFamily: "monospace", marginTop: 8 }}>Leave blank to keep current balances unchanged.</div>
+              </div>
+
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setStep("map")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
                 <button onClick={doImport} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>IMPORT {preview.length} TRANSACTIONS</button>
@@ -326,12 +377,22 @@ export default function CSVImport({ data, save, onClose }) {
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
               <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>IMPORT COMPLETE</div>
-              <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 16 }}>
-                <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13 }}>{imported.expenses} expenses</div>
-                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 13 }}>{imported.income} income</div>
-                <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 13 }}>{imported.transfers} transfers</div>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 12 }}>{imported.expenses} expenses</div>
+                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 12 }}>{imported.income} income</div>
+                <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 12 }}>{imported.transfers} transfers</div>
               </div>
-              <button onClick={onClose} style={{ background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 12, padding: "12px 32px", borderRadius: 7, cursor: "pointer" }}>DONE</button>
+              {(!isNaN(parseFloat(balanceForm.checking)) && parseFloat(balanceForm.checking) >= 0) && (
+                <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}>
+                  Checking updated → ${parseFloat(balanceForm.checking).toFixed(2)}
+                </div>
+              )}
+              {(!isNaN(parseFloat(balanceForm.savings)) && parseFloat(balanceForm.savings) >= 0) && (
+                <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}>
+                  Savings updated → ${parseFloat(balanceForm.savings).toFixed(2)}
+                </div>
+              )}
+              <button onClick={onClose} style={{ marginTop: 16, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 12, padding: "12px 32px", borderRadius: 7, cursor: "pointer" }}>DONE</button>
             </div>
           )}
 
