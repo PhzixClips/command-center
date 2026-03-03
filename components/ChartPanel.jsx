@@ -21,47 +21,40 @@ function buildChartData(data, stockValue, totalShiftEarnings, netWorth) {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   });
 
-  // Real net worth history — forward-fill gaps instead of fabricating them
-  const nwMap = {};
-  (data.netWorthHistory || []).forEach(p => { nwMap[p.date] = p.value; });
-
-  // Real balance (checking + savings) history
+  // Real histories — forward-fill gaps
+  const nwMap  = {};
+  (data.netWorthHistory || []).forEach(p => { nwMap[p.date]  = p.value; });
   const balMap = {};
-  (data.balanceHistory || []).forEach(p => { balMap[p.date] = p.value; });
+  (data.balanceHistory  || []).forEach(p => { balMap[p.date] = p.value; });
+  const stkMap = {};
+  (data.stockHistory    || []).forEach(p => { stkMap[p.date] = p.value; });
 
-  // Real cumulative shift income — all shifts, tips + wage
-  const windowStart = new Date(today);
-  windowStart.setDate(today.getDate() - 29);
-  windowStart.setHours(0, 0, 0, 0);
-
+  // Daily shift earnings per date (NOT cumulative)
   const shiftsByDate = {};
-  let preWindowShift = 0;
   data.shifts.forEach(s => {
     const earn = s.tips + s.hours * (s.wage || 0);
-    const d    = parseLabel(s.date);
-    if (!d) return;
-    if (d < windowStart) preWindowShift += earn;
-    else shiftsByDate[s.date] = (shiftsByDate[s.date] || 0) + earn;
+    if (!parseLabel(s.date)) return;
+    shiftsByDate[s.date] = (shiftsByDate[s.date] || 0) + earn;
   });
 
-  let lastNW   = null;
-  let lastBal  = null;
-  let shiftCum = preWindowShift;
+  let lastNW  = null;
+  let lastBal = null;
+  let lastStk = null;
   const avgShift = data.shifts.length ? totalShiftEarnings / data.shifts.length : 275;
   const rows = [];
 
   for (const [i, date] of base.entries()) {
     if (nwMap[date]  !== undefined) lastNW  = nwMap[date];
     if (balMap[date] !== undefined) lastBal = balMap[date];
-    shiftCum += (shiftsByDate[date] || 0);
+    if (stkMap[date] !== undefined) lastStk = stkMap[date];
 
     rows.push({
       date,
       networth:  lastNW  !== null ? lastNW  : Math.round(netWorth),
       liquid:    lastBal !== null ? lastBal : Math.round(data.bankBalance + (data.savings || 0)),
-      shifts:    Math.round(shiftCum),
-      stocks:    Math.round(stockValue),                    // flat — no fabricated history
-      projected: Math.round(avgShift * 8 * (i / 29)),      // ramp to ~8-shift month target
+      shifts:    Math.round(shiftsByDate[date] || 0),       // daily — goes up/down
+      stocks:    lastStk !== null ? lastStk : Math.round(stockValue),
+      projected: Math.round(avgShift * 8 * (i / 29)),
     });
   }
   return rows;
@@ -70,18 +63,24 @@ function buildChartData(data, stockValue, totalShiftEarnings, netWorth) {
 export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWorth }) {
   const [view, setView] = useState("networth");
   const chartData = buildChartData(data, stockValue, totalShiftEarnings, netWorth);
-  const current = CHART_VIEWS.find(v => v.key === view);
+  const current   = CHART_VIEWS.find(v => v.key === view);
   const first = chartData[0]?.[view] || 0;
   const last  = chartData[chartData.length - 1]?.[view] || 0;
   const delta = last - first;
   const deltaPct = first > 0 ? ((delta / first) * 100).toFixed(1) : "0.0";
+
+  // Shifts-specific stats
+  const weeklyShift     = chartData.slice(-7).reduce((a, r) => a + r.shifts, 0);
+  const windowShiftTotal = chartData.reduce((a, r) => a + r.shifts, 0);
+
   const labels = {
     networth:  { title: "30-DAY NET WORTH",        suffix: "" },
     liquid:    { title: "LIQUID CAPITAL FLOW",      suffix: "" },
-    shifts:    { title: "CUMULATIVE SHIFT INCOME",  suffix: "" },
-    stocks:    { title: "PORTFOLIO VALUE",          suffix: "" },
+    shifts:    { title: "DAILY SHIFT EARNINGS",     suffix: "" },
+    stocks:    { title: "PORTFOLIO VALUE",           suffix: "" },
     projected: { title: "PROJECTED MONTHLY INCOME", suffix: "/mo" },
   };
+
   return (
     <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: "20px", marginBottom: 24 }}>
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
@@ -99,15 +98,27 @@ export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWo
         <div>
           <div style={{ color: "#444", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>{labels[view].title}</div>
           <div style={{ color: current.color, fontSize: 22, fontWeight: 700, fontFamily: "monospace" }}>
-            ${last.toLocaleString()}{labels[view].suffix}
+            ${(view === "shifts" ? windowShiftTotal : last).toLocaleString()}{labels[view].suffix}
           </div>
+          {view === "shifts" && (
+            <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>30-day total</div>
+          )}
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ color: delta >= 0 ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>
-            {delta >= 0 ? "▲" : "▼"} ${Math.abs(Math.round(delta)).toLocaleString()}
+        {view === "shifts" ? (
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>
+              ${weeklyShift.toLocaleString()}
+            </div>
+            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>last 7 days</div>
           </div>
-          <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>{delta >= 0 ? "+" : ""}{deltaPct}% · 30d</div>
-        </div>
+        ) : (
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: delta >= 0 ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>
+              {delta >= 0 ? "▲" : "▼"} ${Math.abs(Math.round(delta)).toLocaleString()}
+            </div>
+            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>{delta >= 0 ? "+" : ""}{deltaPct}% · 30d</div>
+          </div>
+        )}
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -122,7 +133,14 @@ export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWo
               </div>
             );
           }} />
-          <Line type="monotone" dataKey={view} stroke={current.color} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: current.color }} />
+          <Line
+            type={view === "shifts" ? "linear" : "monotone"}
+            dataKey={view}
+            stroke={current.color}
+            strokeWidth={view === "shifts" ? 1.5 : 2}
+            dot={view === "shifts" ? { r: 2, fill: current.color, strokeWidth: 0 } : false}
+            activeDot={{ r: 4, fill: current.color }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

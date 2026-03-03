@@ -96,6 +96,15 @@ export default function App() {
         d = { ...d, balanceHistory: [...balHistory.slice(0, -1), { date: todayLabel, value: currentBal }] };
       }
 
+      const currentStk = Math.round(d.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
+      const stkHistory = d.stockHistory || [];
+      const lastStk    = stkHistory[stkHistory.length - 1];
+      if (!lastStk || lastStk.date !== todayLabel) {
+        d = { ...d, stockHistory: [...stkHistory.slice(-29), { date: todayLabel, value: currentStk }] };
+      } else {
+        d = { ...d, stockHistory: [...stkHistory.slice(0, -1), { date: todayLabel, value: currentStk }] };
+      }
+
       await S.set("fcc-data", d);
       setData(d);
       setLoading(false);
@@ -107,6 +116,8 @@ export default function App() {
     const curNW  = Math.round(newData.bankBalance + (newData.savings || 0) + newData.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
     const curBal = Math.round(newData.bankBalance + (newData.savings || 0));
 
+    const curStk = Math.round(newData.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
+
     const nwH = [...(newData.netWorthHistory || [])];
     if (nwH[nwH.length - 1]?.date === lbl) nwH[nwH.length - 1] = { date: lbl, value: curNW };
     else { nwH.push({ date: lbl, value: curNW }); if (nwH.length > 30) nwH.shift(); }
@@ -115,7 +126,11 @@ export default function App() {
     if (balH[balH.length - 1]?.date === lbl) balH[balH.length - 1] = { date: lbl, value: curBal };
     else { balH.push({ date: lbl, value: curBal }); if (balH.length > 30) balH.shift(); }
 
-    const d = { ...newData, netWorthHistory: nwH, balanceHistory: balH };
+    const stkH = [...(newData.stockHistory || [])];
+    if (stkH[stkH.length - 1]?.date === lbl) stkH[stkH.length - 1] = { date: lbl, value: curStk };
+    else { stkH.push({ date: lbl, value: curStk }); if (stkH.length > 30) stkH.shift(); }
+
+    const d = { ...newData, netWorthHistory: nwH, balanceHistory: balH, stockHistory: stkH };
     setData(d);
     await S.set("fcc-data", d);
   }, []);
@@ -445,7 +460,7 @@ export default function App() {
               <StatCard label="Savings"     value={`$${(data.savings||0).toFixed(2)}`} sub="Membership Savings" accent="#34d399" />
               <StatCard label="Portfolio"   value={`$${stockValue.toLocaleString(undefined,{maximumFractionDigits:0})}`} sub="CHPY · GDXY · TDAX" accent="#60a5fa" />
               <StatCard label="Flip Income" value={`$${Math.round(flipProfit)}`} sub="Realized net of fees" accent="#ff8c00" />
-              <StatCard label="Shift Income" value={`$${Math.round(totalShiftEarnings).toLocaleString()}`} sub={`Avg $${Math.round(avgTips)}/shift · 6hr`} accent="#a78bfa" />
+              <StatCard label="Shift Income" value={`$${Math.round(totalShiftEarnings).toLocaleString()}`} sub={`Avg $${Math.round(avgPerShift)}/shift · $${Math.round(avgTips)} tips`} accent="#a78bfa" />
             </div>
 
             {/* Monthly P&L */}
@@ -482,7 +497,7 @@ export default function App() {
               </div>
               <div style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: 24, fontSize: 11, fontFamily: "monospace", lineHeight: 2, color: "#555" }}>
                 <div>${data.bankBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} current</div>
-                <div style={{ color: "#a78bfa" }}>+${Math.round(projectedShiftIncome)} from {remainingMonthShifts.length} scheduled shifts</div>
+                <div style={{ color: "#a78bfa" }}>+${Math.round(projectedShiftIncome)} from {remainingMonthShifts.length} shifts (${Math.round(avgPerShift)} avg)</div>
                 <div style={{ color: "#ff3b3b" }}>−${Math.round(projectedRemainingExpenses)} est. remaining spend</div>
               </div>
             </div>
