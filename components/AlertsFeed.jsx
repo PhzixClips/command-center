@@ -11,10 +11,10 @@ const FALLBACK_ALERTS = [
 const TYPE_COLOR = { SNEAKER: "#ff8c00", TICKET: "#a78bfa", FLIP: "#ffd700", INVEST: "#60a5fa" };
 const URG_COLOR  = { HOT: "#ff3b3b", WARM: "#ffd700", WATCH: "#555" };
 
-export default function AlertsFeed({ liquid }) {
-  const [alerts, setAlerts] = useState(null);
+export default function AlertsFeed({ liquid, onStartFlip }) {
+  const [alerts,  setAlerts]  = useState(null);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open,    setOpen]    = useState(false);
 
   const fetchAlerts = async () => {
     setLoading(true);
@@ -26,7 +26,7 @@ export default function AlertsFeed({ liquid }) {
         900,
         true
       );
-      const match = text.match(/\[[\s\S]*?\]/);
+      const match  = text.match(/\[[\s\S]*?\]/);
       const parsed = match ? JSON.parse(match[0]) : [];
       setAlerts(parsed.length ? parsed.slice(0, 4) : FALLBACK_ALERTS);
     } catch {
@@ -64,10 +64,17 @@ export default function AlertsFeed({ liquid }) {
                   </div>
                 </div>
                 <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 13, marginBottom: 5 }}>{a.title}</div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <div style={{ color: "#00ff88", fontSize: 11, fontFamily: "monospace" }}>▶ {a.action}</div>
                   <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>{a.window}</div>
                 </div>
+                {onStartFlip && (a.type === "FLIP" || a.type === "SNEAKER" || a.type === "TICKET") && (
+                  <button
+                    onClick={() => onStartFlip({ title: a.title, capital: a.capital || 0 })}
+                    style={{ marginTop: 10, background: "#ff8c0018", border: "1px solid #ff8c0055", color: "#ff8c00", fontFamily: "monospace", fontSize: 9, padding: "5px 12px", borderRadius: 4, cursor: "pointer", letterSpacing: 1, width: "100%" }}>
+                    📦 START THIS FLIP
+                  </button>
+                )}
               </div>
             );
           })}
