@@ -59,6 +59,7 @@ export default function App() {
   const [apiKeyDraft,      setApiKeyDraft]      = useState("");
   const [modelDraft,       setModelDraft]       = useState("");
   const [filterDay,        setFilterDay]        = useState(null);
+  const [openWeeks,        setOpenWeeks]        = useState(() => new Set(["__latest__"]));
   const [priceAlerts,      setPriceAlerts]      = useState([]);
   const [showBackupPrompt, setShowBackupPrompt] = useState(false);
   const importRef       = useRef(null);
@@ -790,50 +791,114 @@ export default function App() {
                 );
               }
 
-              // Default mode: chronological with day-of-week dividers
-              const items = [];
-              let lastDOW = null;
+              // Default mode: grouped by calendar week (Sun–Sat), newest week first
+              const getWeekStart = (dateStr) => {
+                const d = parseDateLabel(dateStr, thisYear);
+                if (!d) return null;
+                const day = d.getDay(); // 0=Sun
+                const sun = new Date(d);
+                sun.setDate(d.getDate() - day);
+                sun.setHours(0, 0, 0, 0);
+                return sun;
+              };
+
+              // Build week buckets
+              const weekMap = new Map(); // key = ISO week-start string
               sorted.forEach(({ s, origIdx }) => {
-                const dow = getDOW(s.date);
-                if (dow && dow !== lastDOW) {
-                  items.push({ type: "divider", dow });
-                  lastDOW = dow;
-                }
-                items.push({ type: "shift", s, origIdx });
+                const ws = getWeekStart(s.date);
+                if (!ws) return;
+                const key = ws.toISOString();
+                if (!weekMap.has(key)) weekMap.set(key, { weekStart: ws, shifts: [] });
+                weekMap.get(key).shifts.push({ s, origIdx });
               });
 
+              const weeks = [...weekMap.entries()]
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                .map(([key, val]) => ({ key, ...val }));
+
+              const toggleWeek = (key) => {
+                setOpenWeeks(prev => {
+                  const next = new Set(prev);
+                  if (next.has(key)) next.delete(key);
+                  else next.add(key);
+                  return next;
+                });
+              };
+
               return (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {items.map((item, i) => {
-                    if (item.type === "divider") {
-                      return (
-                        <div key={`div-${i}`} style={{ textAlign: "center", padding: "12px 0 4px" }}>
-                          <div style={{ color: "#a78bfa", fontSize: 22, fontWeight: 900, fontFamily: "monospace", letterSpacing: 3, opacity: 0.7 }}>
-                            {item.dow.toUpperCase()}
-                          </div>
-                          <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #a78bfa44, transparent)", marginTop: 6 }} />
-                        </div>
-                      );
-                    }
-                    const { s, origIdx } = item;
-                    const total     = s.tips + s.hours * s.wage;
-                    const hourly    = total / s.hours;
-                    const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {weeks.map(({ key, weekStart, shifts: wShifts }, wi) => {
+                    const weekKey   = wi === 0 ? "__latest__" : key;
+                    const isOpen    = openWeeks.has(weekKey);
+                    const weekEnd   = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    const label     = weekStart.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+                    const weekTotal = wShifts.reduce((a, { s }) => a + s.tips + s.hours * s.wage, 0);
+                    const weekHours = wShifts.reduce((a, { s }) => a + s.hours, 0);
+                    const weekTips  = wShifts.reduce((a, { s }) => a + s.tips, 0);
+                    const weekAvg   = wShifts.length ? weekTotal / wShifts.length : 0;
+
                     return (
-                      <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div key={weekKey} style={{ border: "1px solid #1a1a1a", borderRadius: 10, overflow: "hidden" }}>
+                        {/* Week header — clickable */}
+                        <div
+                          onClick={() => toggleWeek(weekKey)}
+                          style={{ background: "#0d0d0d", padding: "14px 18px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none" }}>
                           <div>
-                            <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
-                            <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
-                            <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
-                            {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                            <div style={{ color: "#a78bfa", fontSize: 11, fontFamily: "monospace", letterSpacing: 2 }}>
+                              {isOpen ? "▼" : "▶"} WEEK OF {label.toUpperCase()}
+                            </div>
+                            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>
+                              {wShifts.length} shift{wShifts.length !== 1 ? "s" : ""} · {weekHours}hrs · ${Math.round(weekTips)} tips
+                            </div>
                           </div>
-                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                            <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
-                            <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                            <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ color: "#a78bfa", fontSize: 22, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(weekTotal)}</div>
+                            <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace" }}>${Math.round(weekAvg)}/shift avg</div>
                           </div>
                         </div>
+
+                        {/* Expanded shifts */}
+                        {isOpen && (
+                          <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8, background: "#080808" }}>
+                            {wShifts.map(({ s, origIdx }) => {
+                              const total     = s.tips + s.hours * s.wage;
+                              const hourly    = total / s.hours;
+                              const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
+                              return (
+                                <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div>
+                                      <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
+                                      <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
+                                      <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                                      {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                                    </div>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                      <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
+                                      <button onClick={(e) => { e.stopPropagation(); openEditShift(origIdx); }} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
+                                      <button onClick={(e) => { e.stopPropagation(); deleteShift(origIdx); }} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {/* Week summary bar */}
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginTop: 4 }}>
+                              {[
+                                { label: "WEEK TOTAL", value: `$${Math.round(weekTotal)}`, color: "#a78bfa" },
+                                { label: "AVG/SHIFT",  value: `$${Math.round(weekAvg)}`,  color: "#ffd700" },
+                                { label: "HOURS",      value: `${weekHours}h`,             color: "#60a5fa" },
+                                { label: "TIPS",       value: `$${Math.round(weekTips)}`,  color: "#00ff88" },
+                              ].map((st, i) => (
+                                <div key={i} style={{ background: "#111", borderRadius: 6, padding: "8px 10px" }}>
+                                  <div style={{ color: "#444", fontSize: 8, letterSpacing: 1, fontFamily: "monospace" }}>{st.label}</div>
+                                  <div style={{ color: st.color, fontSize: 14, fontWeight: 700, fontFamily: "monospace", marginTop: 2 }}>{st.value}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
