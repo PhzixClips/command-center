@@ -29,11 +29,13 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
     setError(null);
     try {
       const text = await gemini(
-        'You are an aggressive financial allocator. Return ONLY a JSON object: {"buffer":number,"emergency":number,"flipFund":number,"invest":number,"spend":number,"reasoning":"one punchy sentence"}. All numbers must sum to the total amount. No markdown.',
+        'You are a financial allocator. Return ONLY a raw JSON object with no markdown, no explanation, no code fences: {"buffer":number,"emergency":number,"flipFund":number,"invest":number,"spend":number,"reasoning":"one sentence"}. Numbers must sum to the total amount.',
         `Allocate $${amt}. Liquid: $${liquid}, net worth: $${Math.round(netWorth)}, emergency gap: $${emergencyGap}, flip capital gap: $${flipCapGap}, avg shift: $${Math.round(avgTips)}, active flips: ${(data.flips||[]).filter(f=>f.status==="listed").length}. Risk: AGGRESSIVE.`,
-        500
+        600
       );
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      const match  = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("No JSON in response — try again.");
+      const parsed = JSON.parse(match[0]);
       setPlan({ total: amt, ...parsed });
     } catch (err) {
       setError(err.message || "AI unavailable");

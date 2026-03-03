@@ -168,9 +168,9 @@ export default function App() {
     }, 0);
     try {
       const text = await gemini(
-        "You are an aggressive, street-smart financial advisor for a server who flips items, trades stocks, and hustles. Be direct, specific, and bold. No generic advice. Short punchy paragraphs. Use numbers. No bullet points — write in flowing punchy prose like a financial coach text message. 3-4 sentences max.",
-        `My financial snapshot: Checking $${d.bankBalance} (Desert Financial CU), Savings $${d.savings||0}, Portfolio $${Math.round(sv)}, Net worth ~$${Math.round(nw)}, Shift income $${Math.round(te)}, Flip profits $${Math.round(fp)} (net of fees). Risk: AGGRESSIVE. Give me my weekly money brief and the single highest-leverage move I should make right now.`,
-        1000
+        "You are a direct, numbers-driven financial coach for a server who flips items and trades stocks. Give balanced feedback: call out what is working well AND what to improve. Always pair a problem with a specific, actionable fix using real dollar amounts. Write 4-5 complete sentences in flowing prose — no bullet points. Never cut off mid-sentence; always finish your last thought.",
+        `Financial snapshot: Checking $${d.bankBalance} (Desert Financial CU), Savings $${d.savings||0}, Stock portfolio $${Math.round(sv)}, Net worth ~$${Math.round(nw)}, All-time shift income $${Math.round(te)}, Flip profit $${Math.round(fp)} after fees. Risk appetite: AGGRESSIVE. Give my weekly money brief: (1) what I'm doing right, (2) the single biggest gap holding me back with a specific fix and dollar target, (3) the one move to make this week.`,
+        1500
       );
       setAiInsight(text || "Unable to generate insight.");
     } catch (err) { setAiInsight(`Error: ${err.message || "check connection"}`); }
