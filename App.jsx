@@ -820,7 +820,15 @@ export default function App() {
         {tab === "flips" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ color: "#ff8c00", fontSize: 11, letterSpacing: 2 }}>FLIP TRACKER</div>
+              <div>
+                <div style={{ color: "#ff8c00", fontSize: 11, letterSpacing: 2 }}>FLIP TRACKER</div>
+                <button
+                  onClick={() => setTab("opportunities")}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#ffd700", fontFamily: "monospace", fontSize: 10, letterSpacing: 1, padding: 0, marginTop: 4 }}
+                >
+                  ⚡ Find opportunities →
+                </button>
+              </div>
               <Btn onClick={() => { setModal("flip"); setForm({ status: "listed" }); }} color="#ff8c00">+ ADD FLIP</Btn>
             </div>
 

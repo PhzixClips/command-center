@@ -12,6 +12,7 @@ const LANE_META = {
   TRUCK:   { label: "Truck",          color: "#38bdf8", icon: "🚛" },
   ARB:     { label: "Retail Arb",     color: "#ffd700", icon: "📦" },
   SERVICE: { label: "Service",        color: "#00ff88", icon: "💡" },
+  STOCKS:  { label: "Stocks",         color: "#60a5fa", icon: "📈" },
 };
 
 const RISK_COLOR = {
@@ -257,66 +258,172 @@ const OPP_LIBRARY = [
   {
     id: "fb-exercise", lane: "FBMKT", icon: "💪",
     title: "Exercise Equipment",
-    detail: "New Year guilt gear is hitting the market hard. Pelotons, treadmills, Bowflex, weight benches — people pay to clear their garage. Your truck moves what others can't.",
-    searchTerms: ["free treadmill", "peloton", "$50 exercise bike", "bowflex", "weight bench"],
-    minCapital: 0, maxCapital: 150, buyRange: [0, 150], sellRange: [200, 700], roiRange: [150, 500],
+    detail: "New Year guilt gear floods the market Jan-March. Pelotons, treadmills, Bowflex — people pay to clear their garage. Your truck moves what other flippers physically can't.",
+    searchTerms: ["free treadmill", "peloton", "exercise bike", "bowflex", "nordictrack"],
+    minCapital: 0, maxCapital: 200, buyRange: [0, 200], sellRange: [200, 1200], roiRange: [150, 500],
     daysToSell: "3–7", risk: "LOW", truckRequired: true, urgency: "hot-now",
+    hotItems: [
+      { model: "Peloton Bike+", buy: "$400–$600", sell: "$900–$1,200", roi: "+80–150%" },
+      { model: "NordicTrack 1750 Treadmill", buy: "$200–$350", sell: "$600–$900", roi: "+100–200%" },
+      { model: "Bowflex Velocore Bike", buy: "$100–$200", sell: "$400–$600", roi: "+100–300%" },
+      { model: "Life Fitness 95T Treadmill", buy: "$100–$250", sell: "$500–$800", roi: "+100–400%" },
+    ],
   },
   {
     id: "fb-power-tools", lane: "FBMKT", icon: "🔧",
     title: "Power Tool Lots",
-    detail: "DeWalt/Milwaukee combo kits retail $500-800, sell for $250-500 used. Phoenix construction = constant tool demand. Bundle multiple tools to raise your asking price.",
+    detail: "DeWalt/Milwaukee combo kits retail $500-800, sell fast at $250-500 used. Phoenix construction never stops — constant demand. Bundle multiple tools to raise your ask.",
     searchTerms: ["dewalt lot", "milwaukee tools", "tool bundle", "circular saw", "drill set"],
     minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [150, 600], roiRange: [100, 300],
     daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+    hotItems: [
+      { model: "DeWalt DCK277C2 20V Combo Kit", buy: "$80–$150", sell: "$280–$380", roi: "+100–250%" },
+      { model: "Milwaukee 2997-22 M18 FUEL Kit", buy: "$100–$200", sell: "$350–$500", roi: "+100–200%" },
+      { model: "DeWalt DCS575 7-1/4\" Circ. Saw", buy: "$80–$120", sell: "$220–$300", roi: "+80–200%" },
+      { model: "Makita XDT16 Impact Driver Kit", buy: "$60–$100", sell: "$180–$250", roi: "+80–200%" },
+    ],
   },
   {
     id: "fb-riding-mowers", lane: "FBMKT", icon: "🌿",
     title: "Riding Mowers",
-    detail: "Spring in AZ = peak lawn equipment season right now. Buy end-of-winter $150-400, sell $500-1,200 when everyone's prepping yards. Truck required — that's your edge.",
+    detail: "Spring in AZ = peak lawn equipment season right now. Buy end-of-winter at discount, sell $500-1,200 when everyone's prepping yards. Truck required — that's your edge.",
     searchTerms: ["riding mower", "zero turn mower", "lawn tractor", "john deere", "husqvarna mower"],
     minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [400, 1200], roiRange: [100, 300],
     daysToSell: "5–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+    hotItems: [
+      { model: "John Deere E110 42\"", buy: "$300–$500", sell: "$700–$1,000", roi: "+80–150%" },
+      { model: "Husqvarna YTH18542 46\"", buy: "$200–$400", sell: "$600–$900", roi: "+100–150%" },
+      { model: "Cub Cadet XT1 LT42", buy: "$250–$450", sell: "$700–$950", roi: "+100–150%" },
+      { model: "Ariens Ikon XD 42\"", buy: "$200–$350", sell: "$600–$850", roi: "+100–200%" },
+    ],
   },
   {
     id: "fb-large-tvs", lane: "FBMKT", icon: "📺",
     title: "Large TVs (55\"+)",
-    detail: "People upgrading to OLED dump their 55-65\" TVs for $50-150. Clean it up, relist $200-350. High turnover, sells in days, no truck needed under 65\".",
-    searchTerms: ["55 inch tv", "65 inch tv", "samsung 4k tv", "smart tv lot", "lg oled"],
-    minCapital: 30, maxCapital: 150, buyRange: [30, 150], sellRange: [150, 400], roiRange: [100, 300],
+    detail: "People upgrading to OLED dump perfectly good 55-75\" TVs for $50-200. Clean the screen, relist $200-500. High turnover, sells in days, no truck needed under 65\".",
+    searchTerms: ["55 inch tv", "65 inch tv", "samsung 4k tv", "lg oled", "75 inch tv"],
+    minCapital: 30, maxCapital: 200, buyRange: [30, 200], sellRange: [150, 600], roiRange: [100, 300],
     daysToSell: "2–5", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
+    hotItems: [
+      { model: "LG C2/C3 65\" OLED", buy: "$400–$700", sell: "$900–$1,200", roi: "+70–150%" },
+      { model: "Samsung QN90B 65\" QLED", buy: "$300–$500", sell: "$700–$1,000", roi: "+80–200%" },
+      { model: "Sony X90J 75\"", buy: "$300–$500", sell: "$750–$1,100", roi: "+80–180%" },
+      { model: "TCL 75\" 6-Series R655", buy: "$150–$300", sell: "$420–$600", roi: "+80–200%" },
+    ],
   },
   {
     id: "fb-patio", lane: "FBMKT", icon: "☀️",
     title: "Patio / Outdoor Furniture",
-    detail: "Phoenix patio season starts NOW — March through May is peak. Outdoor sectionals, fire pits, dining sets. Buy cheap, relist clean. High ticket, moves fast in AZ.",
-    searchTerms: ["patio furniture", "outdoor sectional", "fire pit", "patio dining set", "pool furniture"],
-    minCapital: 50, maxCapital: 250, buyRange: [50, 250], sellRange: [200, 800], roiRange: [100, 400],
+    detail: "Phoenix patio season starts NOW — March through May is peak. Outdoor sectionals, fire pits, grills. Buy cheap, relist clean. High ticket, moves fast in AZ.",
+    searchTerms: ["patio furniture", "outdoor sectional", "traeger grill", "big green egg", "patio set"],
+    minCapital: 50, maxCapital: 400, buyRange: [50, 400], sellRange: [200, 1200], roiRange: [100, 400],
     daysToSell: "4–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+    hotItems: [
+      { model: "Traeger Pro 575 Pellet Grill", buy: "$200–$350", sell: "$500–$750", roi: "+80–200%" },
+      { model: "Big Green Egg (Large)", buy: "$400–$600", sell: "$800–$1,200", roi: "+80–150%" },
+      { model: "POLYWOOD Outdoor Sectional 4pc", buy: "$100–$250", sell: "$400–$700", roi: "+100–300%" },
+      { model: "Hampton Bay 6-Pc Patio Set", buy: "$100–$200", sell: "$400–$650", roi: "+100–300%" },
+    ],
   },
   {
     id: "fb-appliances", lane: "FBMKT", icon: "🏠",
     title: "Washer / Dryer / Fridge",
-    detail: "Working appliances sell same day in Phoenix. W/D sets buy $75-200, sell $250-500. Your truck closes the deal — most buyers can't haul a washer and neither can most flippers.",
-    searchTerms: ["washer dryer set", "$75 refrigerator", "washer", "dryer", "appliance lot"],
-    minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [200, 600], roiRange: [100, 300],
+    detail: "Working appliances sell same day in Phoenix. W/D sets buy $75-200, sell $300-600. Your truck is the moat — most buyers AND most flippers can't haul a washer.",
+    searchTerms: ["washer dryer set", "refrigerator", "lg washer", "samsung fridge", "appliance lot"],
+    minCapital: 50, maxCapital: 300, buyRange: [50, 300], sellRange: [200, 700], roiRange: [100, 300],
     daysToSell: "1–4", risk: "LOW", truckRequired: true, urgency: "evergreen",
+    hotItems: [
+      { model: "LG WM3900HWA Front-Load Washer", buy: "$100–$200", sell: "$350–$500", roi: "+100–200%" },
+      { model: "Samsung 4-Door French Door Fridge", buy: "$200–$400", sell: "$600–$900", roi: "+100–200%" },
+      { model: "Samsung Front-Load W/D Set", buy: "$250–$450", sell: "$600–$900", roi: "+80–150%" },
+      { model: "Bosch 500 Series Dishwasher", buy: "$80–$150", sell: "$300–$450", roi: "+100–300%" },
+    ],
   },
   {
     id: "fb-baby-gear", lane: "FBMKT", icon: "🍼",
     title: "Premium Baby Gear",
-    detail: "UPPAbaby strollers buy $80-150, relist $250-400. Cribs, bouncers, high chairs move fast. Low weight so no truck needed. Parents buying used = reliable daily demand.",
-    searchTerms: ["uppababy stroller", "crib", "baby gear lot", "graco stroller", "nuna car seat"],
-    minCapital: 20, maxCapital: 150, buyRange: [20, 150], sellRange: [80, 400], roiRange: [100, 300],
+    detail: "UPPAbaby/Nuna gear holds value. Buy $100-200, relist $350-550. Low weight so no truck needed. Parents buying used = reliable high-margin daily demand.",
+    searchTerms: ["uppababy vista", "nuna pipa", "4moms mamaroo", "baby gear lot", "graco snugride"],
+    minCapital: 20, maxCapital: 200, buyRange: [20, 200], sellRange: [80, 550], roiRange: [100, 300],
     daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+    hotItems: [
+      { model: "UPPAbaby Vista V2 Stroller", buy: "$120–$200", sell: "$380–$550", roi: "+100–200%" },
+      { model: "Nuna PIPA Lite Car Seat", buy: "$100–$160", sell: "$250–$360", roi: "+80–150%" },
+      { model: "4moms MamaRoo 4 Swing", buy: "$60–$100", sell: "$160–$220", roi: "+80–150%" },
+      { model: "Graco TriRide 3-in-1 Car Seat", buy: "$40–$80", sell: "$140–$190", roi: "+80–200%" },
+    ],
   },
   {
     id: "fb-gaming", lane: "FBMKT", icon: "🎮",
     title: "Gaming Setups / Consoles",
-    detail: "Gaming PCs, PS5/Xbox with extra controllers and games. Bundle everything together — FB buyers pay more than eBay for local no-ship. Sell as a complete setup.",
-    searchTerms: ["gaming pc", "ps5 bundle", "xbox series x", "gaming setup", "gaming monitor lot"],
-    minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [200, 700], roiRange: [75, 200],
+    detail: "Gaming PCs, PS5/Xbox with extra controllers and games. Bundle everything — FB buyers pay more than eBay for local no-ship. Sell as a complete ready-to-play setup.",
+    searchTerms: ["gaming pc", "ps5 bundle", "xbox series x", "gaming setup", "rtx 3080 pc"],
+    minCapital: 100, maxCapital: 500, buyRange: [100, 500], sellRange: [200, 1200], roiRange: [75, 200],
     daysToSell: "2–7", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
+    hotItems: [
+      { model: "RTX 3080 Gaming PC (pre-built)", buy: "$500–$700", sell: "$900–$1,200", roi: "+60–100%" },
+      { model: "PS5 Disc + 2 AAA Games", buy: "$350–$430", sell: "$500–$640", roi: "+20–75%" },
+      { model: "Meta Quest 3 128GB", buy: "$200–$280", sell: "$380–$470", roi: "+60–100%" },
+      { model: "Nintendo Switch OLED + games", buy: "$180–$250", sell: "$340–$440", roi: "+50–100%" },
+    ],
+  },
+
+  // STOCKS ─────────────────────────────────────────────────────────────────────
+  {
+    id: "stocks-covered-calls", lane: "STOCKS",
+    title: "Covered Call Income (CHPY / TDAX)",
+    detail: "Sell covered calls on your existing holdings to collect premium every month. 1-3% monthly premium is normal on volatile names — that's 12-36% annualized on shares you're already holding.",
+    action: "For every 100 shares you own, sell 1 covered call 1-2 strikes OTM expiring 30-45 days out. Collect premium immediately. Repeat each month. Check your broker for current call premiums.",
+    minCapital: 0, maxCapital: 0,
+    roiRange: [12, 36], risk: "LOW", timeframe: "Monthly",
+    links: [
+      { label: "Options Profit Calculator", url: "https://www.optionsprofitcalculator.com" },
+      { label: "Tastytrade — Options", url: "https://www.tastytrade.com" },
+      { label: "CHPY on Yahoo Finance", url: "https://finance.yahoo.com/quote/CHPY" },
+    ],
+    urgency: "evergreen", truckRequired: false,
+  },
+  {
+    id: "stocks-swing-trade", lane: "STOCKS",
+    title: "Momentum Swing Trade",
+    detail: "Use $200-400 of checking for a 3-7 day swing trade on a stock breaking out with high relative volume. Target 15-25% gain. Cut losses immediately at -8-10% — no holding.",
+    action: "Run the Finviz screener (link below). Filter: price $5-50, volume >500k, change >3%, above 50-day MA. Buy at market open on a clean breakout. Set a 20% target and -10% stop.",
+    minCapital: 200, maxCapital: 500,
+    roiRange: [15, 40], risk: "MED-HIGH", timeframe: "3–7 days",
+    links: [
+      { label: "Finviz Screener — Momentum", url: "https://finviz.com/screener.ashx?v=111&f=sh_avgvol_o500,sh_price_u50,ta_change_u3" },
+      { label: "Unusual Whales — Options Flow", url: "https://unusualwhales.com" },
+      { label: "Market Chameleon", url: "https://marketchameleon.com" },
+    ],
+    urgency: "evergreen", truckRequired: false,
+  },
+  {
+    id: "stocks-gdxy-dividend", lane: "STOCKS",
+    title: "GDXY Monthly Dividend Capture",
+    detail: "GDXY pays monthly dividends from covered call premiums on gold miners. Current yield 35-50%+ annually. Buy before ex-dividend date, collect monthly income, hold or sell after.",
+    action: "Check GDXY ex-dividend date (Yahoo Finance link). Buy at least 2 trading days before ex-div. Collect dividend. GDXY pays monthly — this compounds quickly if you hold.",
+    minCapital: 50, maxCapital: 500,
+    roiRange: [30, 50], risk: "MED", timeframe: "Monthly",
+    links: [
+      { label: "GDXY Dividend History", url: "https://finance.yahoo.com/quote/GDXY/history/?filter=div" },
+      { label: "GDXY Quote + Chart", url: "https://finance.yahoo.com/quote/GDXY" },
+      { label: "Ex-Dividend Calendar", url: "https://finance.yahoo.com/calendar/dividend" },
+    ],
+    urgency: "seasonal", truckRequired: false,
+  },
+  {
+    id: "stocks-screener", lane: "STOCKS",
+    title: "Stock Research Tools",
+    detail: "These are the tools serious retail traders use. Finviz for scanning, Unusual Whales for tracking smart money options flow, MarketBeat for earnings calendar. Know before you trade.",
+    action: "Bookmark all 3 links. Before any trade: check Unusual Whales for unusual options activity on the stock. Check Finviz for technical setup. Check earnings calendar so you're not blindsided.",
+    minCapital: 0, maxCapital: 0,
+    roiRange: [0, 0], risk: "LOW", timeframe: "Ongoing",
+    links: [
+      { label: "Finviz — Stock Screener", url: "https://finviz.com/screener.ashx" },
+      { label: "Unusual Whales — Smart Money", url: "https://unusualwhales.com" },
+      { label: "MarketBeat Earnings Calendar", url: "https://www.marketbeat.com/financial-calendar/earnings-reports/" },
+    ],
+    urgency: "evergreen", truckRequired: false,
   },
 
   // SERVICE / SKILL ────────────────────────────────────────────────────────────
@@ -434,7 +541,7 @@ function PlaybookText({ text }) {
 }
 
 // ── Opportunity Card ──────────────────────────────────────────────────────────
-function OppCard({ opp, liquid, onExecute }) {
+function OppCard({ opp, liquid, onExecute, rank }) {
   const laneColor = LANE_META[opp.lane]?.color || "#555";
   const gap       = (!opp.isService && opp.minCapital > 0) ? Math.max(0, opp.minCapital - liquid) : 0;
   const isHot     = opp.score >= 80;
@@ -442,13 +549,14 @@ function OppCard({ opp, liquid, onExecute }) {
   return (
     <div style={{
       background: "#0d0d0d",
-      border: `1px solid ${isHot ? laneColor + "55" : "#1a1a1a"}`,
+      border: `1px solid ${rank <= 3 ? laneColor + "88" : isHot ? laneColor + "55" : "#1a1a1a"}`,
       borderRadius: 10,
       padding: "16px 18px",
       opacity: gap > 500 ? 0.6 : 1,
     }}>
       {/* Badges */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         <span style={{ color: laneColor, fontSize: 9, border: `1px solid ${laneColor}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>
           {LANE_META[opp.lane]?.icon} {LANE_META[opp.lane]?.label?.toUpperCase()}
         </span>
@@ -460,6 +568,10 @@ function OppCard({ opp, liquid, onExecute }) {
         )}
         {opp.truckRequired && (
           <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>
+        )}
+      </div>
+        {rank && rank <= 3 && (
+          <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700 }}>#{rank}</span>
         )}
       </div>
 
@@ -553,7 +665,7 @@ function OppCard({ opp, liquid, onExecute }) {
 }
 
 // ── FB Marketplace Card ───────────────────────────────────────────────────────
-function FBMarketCard({ opp, liquid, onExecute }) {
+function FBMarketCard({ opp, liquid, onExecute, rank }) {
   const color = LANE_META.FBMKT.color;
   const isHot = opp.urgency === "hot-now";
   const gap   = opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0;
@@ -564,24 +676,54 @@ function FBMarketCard({ opp, liquid, onExecute }) {
   return (
     <div style={{
       background: "#0d0d0d",
-      border: `1px solid ${isHot ? color + "55" : "#1a1a1a"}`,
+      border: `1px solid ${rank <= 3 ? color + "88" : isHot ? color + "55" : "#1a1a1a"}`,
       borderRadius: 10, padding: "16px 18px",
     }}>
       {/* Header row */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-        <span style={{ fontSize: 24, lineHeight: 1 }}>{opp.icon}</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 5 }}>{opp.title}</div>
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>📱 FB MARKETPLACE</span>
-            {isHot && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🔴 HOT NOW</span>}
-            {opp.truckRequired && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10, justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <span style={{ fontSize: 24, lineHeight: 1 }}>{opp.icon}</span>
+          <div>
+            <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 5 }}>{opp.title}</div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+              <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>📱 FB MARKETPLACE</span>
+              {isHot && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🔴 HOT NOW</span>}
+              {opp.truckRequired && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>}
+            </div>
           </div>
         </div>
+        {rank && rank <= 3 && <span style={{ color, fontSize: 10, fontFamily: "monospace", fontWeight: 700 }}>#{rank}</span>}
       </div>
 
       {/* Detail */}
       <div style={{ color: "#777", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{opp.detail}</div>
+
+      {/* Hot Items table */}
+      {opp.hotItems && opp.hotItems.length > 0 && (
+        <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
+          <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8, fontFamily: "monospace" }}>🔥 HOT ITEMS TO WATCH</div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "monospace", fontSize: 11 }}>
+            <thead>
+              <tr>
+                <th style={{ color: "#555", textAlign: "left", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>MODEL</th>
+                <th style={{ color: "#ff6b6b", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>BUY</th>
+                <th style={{ color: "#00ff88", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>SELL</th>
+                <th style={{ color: "#ffd700", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>ROI</th>
+              </tr>
+            </thead>
+            <tbody>
+              {opp.hotItems.map((item, idx) => (
+                <tr key={idx} style={{ borderTop: "1px solid #1a1a1a" }}>
+                  <td style={{ color: "#bbb", paddingTop: 5, paddingBottom: 5, paddingRight: 8 }}>{item.model}</td>
+                  <td style={{ color: "#ff6b6b", textAlign: "right", paddingTop: 5 }}>{item.buy}</td>
+                  <td style={{ color: "#00ff88", textAlign: "right", paddingTop: 5 }}>{item.sell}</td>
+                  <td style={{ color: "#ffd700", textAlign: "right", paddingTop: 5 }}>{item.roi}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Scout section — the main feature */}
       <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
@@ -773,7 +915,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
   const oppHistory    = data.oppHistory || [];
   const totalHustled  = oppHistory.reduce((a, o) => a + (o.earned || 0), 0);
 
-  const FILTER_TABS = ["ALL", "FBMKT", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE"];
+  const FILTER_TABS = ["ALL", "FBMKT", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE", "STOCKS"];
 
   return (
     <div>
@@ -846,12 +988,41 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       </div>
 
       {/* Opportunity cards */}
-      <div style={{ display: "grid", gap: 14 }}>
-        {displayed.map(opp => opp.lane === "FBMKT"
-          ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-          : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-        )}
-      </div>
+      {activeFilter === "ALL" && displayed.length > 0 ? (
+        <>
+          {/* Top 3 */}
+          <div style={{ color: "#ffd700", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 12 }}>
+            ⭐ TOP 3 PICKS — RANKED FOR YOUR SITUATION
+          </div>
+          <div style={{ display: "grid", gap: 14, marginBottom: displayed.length > 3 ? 28 : 0 }}>
+            {displayed.slice(0, 3).map((opp, i) => opp.lane === "FBMKT"
+              ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
+              : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
+            )}
+          </div>
+          {/* Rest */}
+          {displayed.length > 3 && (
+            <>
+              <div style={{ color: "#333", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 14, borderTop: "1px solid #1a1a1a", paddingTop: 16 }}>
+                MORE OPPORTUNITIES — SORTED BY SCORE
+              </div>
+              <div style={{ display: "grid", gap: 14 }}>
+                {displayed.slice(3).map(opp => opp.lane === "FBMKT"
+                  ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+                  : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+                )}
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        <div style={{ display: "grid", gap: 14 }}>
+          {displayed.map(opp => opp.lane === "FBMKT"
+            ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+            : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+          )}
+        </div>
+      )}
 
       {/* Opportunity History */}
       {oppHistory.length > 0 && (
