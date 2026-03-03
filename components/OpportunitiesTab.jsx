@@ -840,7 +840,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. Give specific, actionable advice based on the situation. For ticket flips, only suggest evergreen opportunities (UFC, concerts) — never assume a specific team is in playoffs without confirmed data. For GPU/electronics, always say 'check eBay sold listings first' before citing margins. Be specific with dollar amounts, platforms, and exact steps.",
+        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. Search the web for current prices, live event listings, and eBay sold comps before giving advice. Give specific, actionable advice based on real current data.",
         `MY SITUATION:
 • Liquid cash (checking only, NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
@@ -851,22 +851,25 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
 • Top scored opportunities for my capital: ${top3}
 
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Pick moves that fit my capital and situation. Format:
+Search for: current eBay sold listings for electronics/GPUs, upcoming Phoenix AZ events (concerts, UFC, sports) with ticket prices on StubHub/SeatGeek, and current Facebook Marketplace prices for furniture/appliances in Phoenix.
+
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK based on what you find. Pick moves that fit my capital. Format:
 
 MOVE 1: [TITLE IN CAPS]
 DO TODAY: [exact action — platform, what to search/click]
-BUY: [exact item + platform + price]
-SELL: [platform + price]
+BUY: [exact item + platform + price from current listings]
+SELL: [platform + price based on current comps]
 NET PROFIT: $[X]–$[Y]
 TIME: [hours]
-DATES: [real dates from search, e.g. "Game 1: Apr 19"]
+DATES: [real dates from search]
 LINK: [most direct URL]
 
 MOVE 2: (same format)
 MOVE 3: (same format)
 
 FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]`,
-        1800
+        1800,
+        true
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
