@@ -1,0 +1,283 @@
+import { useState, useRef } from "react";
+import Papa from "papaparse";
+
+const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Other"];
+
+const CAT_COLOR = {
+  "Food & Dining":     "#ff8c00",
+  "Transportation":    "#60a5fa",
+  "Entertainment":     "#a78bfa",
+  "Shopping":          "#ffd700",
+  "Bills & Utilities": "#34d399",
+  "Other":             "#888",
+};
+
+const KEYWORDS = {
+  "Food & Dining":     ["fry's", "walmart", "mcdonald", "starbucks", "chipotle", "subway", "pizza", "taco", "burger", "coffee", "restaurant", "doordash", "ubereats", "grubhub", "food", "grocery", "safeway", "kroger", "albertsons", "whole foods", "trader joe", "costco", "target", "sams club"],
+  "Transportation":    ["shell", "chevron", "circle k", "arco", "bp ", "exxon", "mobil", "gas", "uber", "lyft", "parking", "toll", "autozone", "o'reilly", "napa auto", "carwash", "car wash", "valvoline", "jiffy lube"],
+  "Entertainment":     ["netflix", "hulu", "disney", "spotify", "apple music", "youtube", "amazon prime", "hbo", "peacock", "amc", "movie", "cinema", "theater", "ticketmaster", "steam", "playstation", "xbox", "nintendo"],
+  "Shopping":          ["amazon", "ebay", "best buy", "home depot", "lowes", "ikea", "tj maxx", "marshalls", "ross", "old navy", "h&m", "zara", "shein", "wish", "etsy"],
+  "Bills & Utilities": ["at&t", "verizon", "tmobile", "t-mobile", "comcast", "cox", "centurylink", "electric", "water", "insurance", "geico", "state farm", "progressive", "allstate", "rent", "mortgage", "hoa", "gym", "planet fitness"],
+};
+
+const autoCategory = (desc) => {
+  const lower = (desc || "").toLowerCase();
+  for (const [cat, words] of Object.entries(KEYWORDS)) {
+    if (words.some(w => lower.includes(w))) return cat;
+  }
+  return "Other";
+};
+
+const toMonthKey = (dateStr) => {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+
+const formatDisplayDate = (dateStr) => {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const STEPS = ["upload", "map", "preview", "done"];
+
+export default function CSVImport({ data, save, onClose }) {
+  const fileRef = useRef();
+  const [step, setStep] = useState("upload");
+  const [rows, setRows] = useState([]);
+  const [headers, setHeaders] = useState([]);
+  const [mapping, setMapping] = useState({ date: "", desc: "", amount: "", credit: "" });
+  const [preview, setPreview] = useState([]);
+  const [imported, setImported] = useState(0);
+  const [error, setError] = useState("");
+
+  // Step 1: parse the file
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        if (!result.data?.length) { setError("File appears to be empty."); return; }
+        const hdrs = result.meta.fields || [];
+        setHeaders(hdrs);
+        setRows(result.data);
+        // Auto-detect common column names
+        const find = (candidates) => hdrs.find(h => candidates.some(c => h.toLowerCase().includes(c))) || "";
+        setMapping({
+          date:   find(["date", "posted", "transaction date"]),
+          desc:   find(["description", "memo", "payee", "name", "transaction"]),
+          amount: find(["amount", "debit", "withdrawal"]),
+          credit: find(["credit", "deposit"]),
+        });
+        setStep("map");
+      },
+      error: () => setError("Could not read file. Make sure it's a CSV."),
+    });
+  };
+
+  // Step 2: build preview from mapping
+  const buildPreview = () => {
+    if (!mapping.date || !mapping.desc || !mapping.amount) {
+      setError("Please map Date, Description, and Amount columns.");
+      return;
+    }
+    const parsed = [];
+    for (const row of rows) {
+      const rawAmt  = (row[mapping.amount] || "").replace(/[$,\s]/g, "");
+      const creditAmt = mapping.credit ? (row[mapping.credit] || "").replace(/[$,\s]/g, "") : "";
+      let amount = parseFloat(rawAmt);
+      // If amount is negative it's a debit — use absolute value
+      // If there's a separate credit column and this row has a credit, skip (it's income, not an expense)
+      if (creditAmt && parseFloat(creditAmt) > 0) continue;
+      if (isNaN(amount) || amount === 0) continue;
+      amount = Math.abs(amount);
+      const dateStr = row[mapping.date] || "";
+      const month = toMonthKey(dateStr);
+      if (!month) continue;
+      const desc = (row[mapping.desc] || "").trim();
+      parsed.push({
+        id:       Date.now() + Math.random(),
+        desc,
+        amount,
+        category: autoCategory(desc),
+        date:     formatDisplayDate(dateStr),
+        month,
+        _raw:     dateStr,
+      });
+    }
+    if (!parsed.length) { setError("No expense transactions found. Check your column mapping."); return; }
+    setError("");
+    setPreview(parsed);
+    setStep("preview");
+  };
+
+  // Step 3: update category in preview
+  const updateCategory = (idx, cat) => {
+    setPreview(p => p.map((r, i) => i === idx ? { ...r, category: cat } : r));
+  };
+
+  const removeRow = (idx) => {
+    setPreview(p => p.filter((_, i) => i !== idx));
+  };
+
+  // Step 4: save — deduplicate by desc+amount+month
+  const doImport = () => {
+    const existing = data.expenses || [];
+    const existingKeys = new Set(existing.map(e => `${e.desc}|${e.amount}|${e.month}`));
+    const fresh = preview
+      .filter(r => !existingKeys.has(`${r.desc}|${r.amount}|${r.month}`))
+      .map(({ _raw, ...r }) => ({ ...r, id: Date.now() + Math.random() }));
+    save({ ...data, expenses: [...existing, ...fresh] });
+    setImported(fresh.length);
+    setStep("done");
+  };
+
+  const totalAmount = preview.reduce((s, r) => s + r.amount, 0);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#000000cc", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: 12, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }}>
+
+        {/* Header */}
+        <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2, fontFamily: "monospace" }}>IMPORT CSV</div>
+            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>
+              {step === "upload"  && "Upload your bank export"}
+              {step === "map"    && `${rows.length} rows detected — map columns`}
+              {step === "preview" && `${preview.length} expenses · $${totalAmount.toFixed(2)} total`}
+              {step === "done"   && "Import complete"}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "1px solid #333", color: "#666", fontSize: 13, padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontFamily: "monospace" }}>✕</button>
+        </div>
+
+        {/* Step indicators */}
+        <div style={{ padding: "14px 24px", display: "flex", gap: 6 }}>
+          {["upload","map","preview"].map((s, i) => (
+            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: STEPS.indexOf(step) >= i ? "#34d399" : "#1a1a1a", transition: "background 0.3s" }} />
+          ))}
+        </div>
+
+        <div style={{ padding: "0 24px 24px" }}>
+
+          {/* ── STEP 1: UPLOAD ── */}
+          {step === "upload" && (
+            <div>
+              <div
+                onClick={() => fileRef.current?.click()}
+                style={{ border: "2px dashed #222", borderRadius: 10, padding: "40px 20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = "#34d399"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "#222"}
+              >
+                <div style={{ fontSize: 32, marginBottom: 12 }}>📂</div>
+                <div style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, marginBottom: 6 }}>Click to select your bank CSV</div>
+                <div style={{ color: "#444", fontFamily: "monospace", fontSize: 10 }}>Exported from Desert Financial, Chase, WF, BoA, etc.</div>
+                <input ref={fileRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFile} />
+              </div>
+              {error && <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginTop: 12 }}>{error}</div>}
+              <div style={{ marginTop: 16, color: "#333", fontSize: 10, fontFamily: "monospace", lineHeight: 1.8 }}>
+                HOW TO EXPORT FROM YOUR BANK:<br />
+                Desert Financial → Accounts → Select account → Download → CSV<br />
+                Chase → Activity → Download → CSV<br />
+                Wells Fargo → Account Activity → Download → Comma Delimited
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: MAP COLUMNS ── */}
+          {step === "map" && (
+            <div>
+              <div style={{ color: "#666", fontSize: 10, fontFamily: "monospace", marginBottom: 16 }}>
+                Columns found: {headers.join(", ")}
+              </div>
+              {[
+                { key: "date",   label: "Date column",        required: true  },
+                { key: "desc",   label: "Description column", required: true  },
+                { key: "amount", label: "Amount/Debit column", required: true  },
+                { key: "credit", label: "Credit/Deposit column (optional — rows with credits will be skipped)", required: false },
+              ].map(({ key, label, required }) => (
+                <div key={key} style={{ marginBottom: 14 }}>
+                  <label style={{ color: required ? "#e8e8e8" : "#555", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>
+                    {label.toUpperCase()}
+                  </label>
+                  <select
+                    value={mapping[key]}
+                    onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}
+                    style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none" }}
+                  >
+                    <option value="">— select column —</option>
+                    {headers.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+              ))}
+              {error && <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginBottom: 12 }}>{error}</div>}
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <button onClick={() => setStep("upload")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
+                <button onClick={buildPreview} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>PREVIEW IMPORT →</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 3: PREVIEW ── */}
+          {step === "preview" && (
+            <div>
+              <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 12 }}>
+                Review and edit categories before importing. Click ✕ to remove a row.
+              </div>
+              <div style={{ maxHeight: 360, overflow: "auto", display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+                {preview.map((row, idx) => {
+                  const color = CAT_COLOR[row.category] || "#888";
+                  return (
+                    <div key={idx} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: 7, padding: "10px 12px", display: "flex", gap: 10, alignItems: "center" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: "#e8e8e8", fontSize: 12, fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{row.desc}</div>
+                        <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{row.date} · {row.month}</div>
+                      </div>
+                      <select
+                        value={row.category}
+                        onChange={e => updateCategory(idx, e.target.value)}
+                        style={{ background: `${color}18`, border: `1px solid ${color}55`, borderRadius: 4, padding: "3px 7px", color, fontFamily: "monospace", fontSize: 9, outline: "none", cursor: "pointer" }}
+                      >
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+                        -${row.amount.toFixed(2)}
+                      </div>
+                      <button onClick={() => removeRow(idx)} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 13, padding: "0 2px" }}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>{preview.length} transactions</span>
+                <span style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>-${totalAmount.toFixed(2)}</span>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setStep("map")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
+                <button onClick={doImport} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>IMPORT {preview.length} EXPENSES</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 4: DONE ── */}
+          {step === "done" && (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
+              <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{imported} EXPENSES IMPORTED</div>
+              <div style={{ color: "#555", fontFamily: "monospace", fontSize: 11, marginBottom: 24 }}>
+                {preview.length - imported > 0 ? `${preview.length - imported} duplicates skipped` : "No duplicates found"}
+              </div>
+              <button onClick={onClose} style={{ background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 12, padding: "12px 32px", borderRadius: 7, cursor: "pointer" }}>DONE</button>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
