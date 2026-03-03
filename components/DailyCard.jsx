@@ -3,10 +3,12 @@ import { gemini } from "./gemini.js";
 
 export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
   const [card, setCard] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchCard = async () => {
     setLoading(true);
+    setError(null);
     const liquid = data.liquidCash || data.bankBalance;
     const upcoming = (data.schedule || []).filter(s => !s.logged);
     const nextShift = upcoming[0];
@@ -20,8 +22,8 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
       );
       const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
       setCard(parsed);
-    } catch {
-      setCard({ priority: "Log last shift & scan flip margins", reason: "Data discipline = better decisions every week.", category: "HUSTLE", urgency: "TODAY", bonus: "Consistency beats intensity every time" });
+    } catch (err) {
+      setError(err.message || "AI unavailable");
     }
     setLoading(false);
   };
@@ -46,6 +48,8 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
       </div>
       {loading ? (
         <div style={{ color: "#333", fontFamily: "monospace", fontSize: 13, letterSpacing: 2 }}>CALCULATING YOUR EDGE...</div>
+      ) : error ? (
+        <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11 }}>⚠ {error}</div>
       ) : card ? (
         <>
           <div style={{ color: color, fontSize: 20, fontWeight: 700, fontFamily: "monospace", lineHeight: 1.3, marginBottom: 10 }}>{card.priority}</div>

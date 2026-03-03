@@ -5,6 +5,7 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [plan, setPlan] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const liquid = data.liquidCash || data.bankBalance;
   const emergencyGap = Math.max(0, (data.goals?.[0]?.target || 5000) - (data.goals?.[0]?.current || data.bankBalance));
@@ -25,6 +26,7 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
     const amt = +(amount || liquid);
     if (!amt) return;
     setLoading(true);
+    setError(null);
     try {
       const text = await gemini(
         'You are an aggressive financial allocator. Return ONLY a JSON object: {"buffer":number,"emergency":number,"flipFund":number,"invest":number,"spend":number,"reasoning":"one punchy sentence"}. All numbers must sum to the total amount. No markdown.',
@@ -33,7 +35,9 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
       );
       const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
       setPlan({ total: amt, ...parsed });
-    } catch { quickDeploy(amt); }
+    } catch (err) {
+      setError(err.message || "AI unavailable");
+    }
     setLoading(false);
   };
 
@@ -71,6 +75,9 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
               {loading ? "..." : "AI SPLIT"}
             </button>
           </div>
+          {error && (
+            <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginBottom: 10 }}>⚠ {error}</div>
+          )}
           {plan && (
             <div>
               {plan.reasoning && <div style={{ color: "#555", fontSize: 11, fontFamily: "monospace", marginBottom: 14, fontStyle: "italic" }}>{plan.reasoning}</div>}
