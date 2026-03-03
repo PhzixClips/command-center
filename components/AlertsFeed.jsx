@@ -28,10 +28,18 @@ export default function AlertsFeed({ liquid, onStartFlip }) {
         900,
         true
       );
-      const match  = text.match(/\[[\s\S]*?\]/);
-      const parsed = match ? JSON.parse(match[0]) : [];
-      setAlerts(parsed.length ? parsed.slice(0, 4) : null);
-      if (!parsed.length) setError("No results parsed — try again.");
+      // Greedy match gets the largest [...] block (the full JSON array, not a nested one)
+      const match = text.match(/\[[\s\S]*\]/);
+      let parsed = [];
+      if (match) {
+        try { parsed = JSON.parse(match[0]); } catch { parsed = []; }
+      }
+      if (parsed.length) {
+        setAlerts(parsed.slice(0, 4));
+      } else {
+        setAlerts(FALLBACK_ALERTS);
+        setError("Live scan unavailable — showing cached plays.");
+      }
     } catch (err) {
       setError(err.message || "API error — check key or billing.");
       setAlerts(null);
