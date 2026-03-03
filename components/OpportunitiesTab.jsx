@@ -31,7 +31,12 @@ const OPP_LIBRARY = [
     action: "Check SNKRS app for upcoming drops. Enter every raffle — costs nothing. Also hit local Nike outlets. List same day on GOAT at market price.",
     minCapital: 150, maxCapital: 350,
     roiRange: [80, 180], risk: "MED-HIGH", timeframe: "3–10 days", effort: 1,
-    platforms: ["SNKRS", "GOAT", "StockX", "eBay"],
+    links: [
+      { label: "SNKRS Upcoming Drops", url: "https://www.nike.com/launch" },
+      { label: "GOAT", url: "https://www.goat.com" },
+      { label: "StockX — Sell", url: "https://stockx.com/sell" },
+      { label: "eBay Sneakers", url: "https://www.ebay.com/sch/i.html?_nkw=jordan+sneakers&_sop=10" },
+    ],
     urgency: "hot-now", truckRequired: false,
   },
   {
@@ -41,7 +46,11 @@ const OPP_LIBRARY = [
     action: "Set NowInStock.net + Camel3x alerts for RTX 5080. Buy immediately on restock. List on eBay within 1 hour with 'fast shipping' in title. Sells same day.",
     minCapital: 900, maxCapital: 1700,
     roiRange: [40, 65], risk: "MED", timeframe: "1–3 days", effort: 2,
-    platforms: ["Best Buy", "Newegg", "eBay"],
+    links: [
+      { label: "NowInStock — RTX 5080 Alerts", url: "https://www.nowinstock.net/computers/videocards/nvidia/rtx5080/" },
+      { label: "Best Buy — RTX 5080", url: "https://www.bestbuy.com/site/searchpage.jsp?st=rtx+5080" },
+      { label: "eBay — RTX 5080 Sold Listings", url: "https://www.ebay.com/sch/i.html?_nkw=rtx+5080&_sop=10&LH_Complete=1&LH_Sold=1" },
+    ],
     urgency: "hot-now", truckRequired: false,
   },
   {
@@ -51,7 +60,11 @@ const OPP_LIBRARY = [
     action: "Check Brickset.com 'Retiring Soon' list. Buy 2-3 units at Target clearance or Amazon. Store in closet. List in May on BrickLink and eBay.",
     minCapital: 80, maxCapital: 400,
     roiRange: [40, 80], risk: "LOW", timeframe: "60–120 days", effort: 1,
-    platforms: ["Target clearance", "Amazon", "BrickLink", "eBay"],
+    links: [
+      { label: "Brickset — Retiring Soon", url: "https://www.brickset.com/sets/retiring-soon" },
+      { label: "BrickLink — Sell", url: "https://www.bricklink.com" },
+      { label: "eBay LEGO Star Wars", url: "https://www.ebay.com/sch/i.html?_nkw=lego+star+wars+retired&_sop=10" },
+    ],
     urgency: "seasonal", truckRequired: false,
   },
   {
@@ -61,7 +74,10 @@ const OPP_LIBRARY = [
     action: "Buy PS5 bundle at Target. Add a used game ($40). List bundled on eBay: free shipping, 'Buy It Now'. 20-35% in 3-5 days.",
     minCapital: 500, maxCapital: 650,
     roiRange: [18, 35], risk: "LOW-MED", timeframe: "3–7 days", effort: 1,
-    platforms: ["Target", "Walmart", "eBay"],
+    links: [
+      { label: "Target — PS5 Bundles", url: "https://www.target.com/s?searchTerm=ps5+bundle" },
+      { label: "eBay — PS5 Sold Prices", url: "https://www.ebay.com/sch/i.html?_nkw=ps5+slim+bundle&LH_Complete=1&LH_Sold=1" },
+    ],
     urgency: "evergreen", truckRequired: false,
   },
 
@@ -69,11 +85,15 @@ const OPP_LIBRARY = [
   {
     id: "nba-playoffs", lane: "TICKETS",
     title: "NBA Playoffs Ticket Flip",
-    detail: "Playoffs start April 19. Phoenix Suns home games: face $120-300 → resale $350-800 once matchups are confirmed. Buy NOW — price spikes 2-3x when bracket drops.",
+    detail: "Playoffs start ~Apr 19. Phoenix Suns home games: face $120-300 → resale $350-800 once matchups confirmed. Buy NOW — price spikes 2-3x when bracket drops.",
     action: "Buy 2 Suns playoff tickets on Ticketmaster today. Hold. The moment bracket is announced, list on StubHub with auto-price at 2x face. Sell within 48hr.",
     minCapital: 250, maxCapital: 1200,
     roiRange: [80, 200], risk: "MED", timeframe: "4–8 weeks", effort: 1,
-    platforms: ["Ticketmaster", "StubHub", "SeatGeek"],
+    links: [
+      { label: "Ticketmaster — Suns Tickets", url: "https://www.ticketmaster.com/phoenix-suns-tickets/artist/805979" },
+      { label: "StubHub — Sell Tickets", url: "https://www.stubhub.com/sell" },
+      { label: "SeatGeek — Suns", url: "https://seatgeek.com/phoenix-suns-tickets" },
+    ],
     urgency: "hot-now", truckRequired: false,
   },
   {
@@ -83,7 +103,11 @@ const OPP_LIBRARY = [
     action: "Check UFC.com fight schedule. Buy 2 floor seats day-of-sale. List on Vivid Seats with auto-pricing at 1.8x face. Sell 7-10 days pre-fight for max.",
     minCapital: 200, maxCapital: 800,
     roiRange: [100, 200], risk: "MED", timeframe: "2–6 weeks", effort: 1,
-    platforms: ["Ticketmaster", "Vivid Seats", "StubHub"],
+    links: [
+      { label: "UFC — Upcoming Events", url: "https://www.ufc.com/events" },
+      { label: "Ticketmaster — UFC Tickets", url: "https://www.ticketmaster.com/search?q=ufc" },
+      { label: "Vivid Seats — Sell", url: "https://www.vividseats.com/sell-tickets" },
+    ],
     urgency: "seasonal", truckRequired: false,
   },
   {
@@ -93,7 +117,11 @@ const OPP_LIBRARY = [
     action: "Sign up for Ticketmaster artist alerts. Use Citi/Chase card for presale access. Buy 4 tickets. List 2 at 1.8x immediately, hold 2 for night-of surge pricing.",
     minCapital: 400, maxCapital: 1200,
     roiRange: [70, 150], risk: "MED", timeframe: "1–6 weeks", effort: 2,
-    platforms: ["Ticketmaster", "StubHub", "Vivid Seats"],
+    links: [
+      { label: "Ticketmaster — Browse Concerts", url: "https://www.ticketmaster.com/discover/concerts" },
+      { label: "StubHub — Sell", url: "https://www.stubhub.com/sell" },
+      { label: "Vivid Seats — Sell", url: "https://www.vividseats.com/sell-tickets" },
+    ],
     urgency: "evergreen", truckRequired: false,
   },
 
@@ -106,7 +134,10 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 0,
     isService: true, hourlyRate: [45, 85],
     risk: "LOW", timeframe: "Same day", effort: 4,
-    platforms: ["Dolly", "GoShare", "Lugg"],
+    links: [
+      { label: "Dolly — Become a Helper", url: "https://www.dolly.com" },
+      { label: "GoShare — Driver Signup", url: "https://www.goshare.co" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
   {
@@ -116,7 +147,11 @@ const OPP_LIBRARY = [
     action: "Search FB Marketplace 'free sofa', '$50 couch', 'free treadmill' every morning. Clean it up, take good photos, relist at 3-5x. Move 1-2 items per week.",
     minCapital: 0, maxCapital: 150,
     roiRange: [150, 500], risk: "LOW", timeframe: "1–7 days", effort: 3,
-    platforms: ["Facebook Marketplace", "Craigslist", "OfferUp"],
+    links: [
+      { label: "FB Marketplace — Free Stuff", url: "https://www.facebook.com/marketplace/category/free-stuff" },
+      { label: "OfferUp", url: "https://offerup.com" },
+      { label: "Craigslist — Free Phoenix", url: "https://phoenix.craigslist.org/search/zip" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
   {
@@ -127,7 +162,10 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 0,
     isService: true, hourlyRate: [60, 120],
     risk: "LOW", timeframe: "Same day", effort: 3,
-    platforms: ["Nextdoor", "Facebook Marketplace", "Craigslist"],
+    links: [
+      { label: "Post on Nextdoor", url: "https://nextdoor.com" },
+      { label: "FB Marketplace — Services", url: "https://www.facebook.com/marketplace/category/home-sales" },
+    ],
     urgency: "hot-now", truckRequired: true,
   },
   {
@@ -137,7 +175,11 @@ const OPP_LIBRARY = [
     action: "Register at bstock.com/amazon. Bid 'Customer Returns – Electronics/Misc' category. Phoenix warehouse pickup. Sell best items on eBay, bulk remainder on FB Marketplace.",
     minCapital: 200, maxCapital: 500,
     roiRange: [100, 300], risk: "MED-HIGH", timeframe: "1–3 weeks", effort: 5,
-    platforms: ["B-Stock", "eBay", "Facebook Marketplace"],
+    links: [
+      { label: "B-Stock — Amazon Returns", url: "https://bstock.com/amazon/" },
+      { label: "eBay — Sell", url: "https://www.ebay.com/sl/sell" },
+      { label: "FB Marketplace", url: "https://www.facebook.com/marketplace/" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
   {
@@ -147,7 +189,10 @@ const OPP_LIBRARY = [
     action: "Search FB Marketplace 'free metal', 'free appliances', 'free AC unit' daily. Hit active construction sites and ask foreman. Sell at Arizona Metals — Glendale or Mesa.",
     minCapital: 0, maxCapital: 30,
     roiRange: [500, 2000], risk: "LOW", timeframe: "Half day", effort: 3,
-    platforms: ["Facebook Marketplace Free", "Craigslist Free", "Arizona Metals"],
+    links: [
+      { label: "FB Marketplace — Free Stuff", url: "https://www.facebook.com/marketplace/category/free-stuff" },
+      { label: "Craigslist Free — Phoenix", url: "https://phoenix.craigslist.org/search/zip" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
   {
@@ -158,7 +203,9 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 0,
     isService: true, hourlyRate: [55, 80],
     risk: "LOW", timeframe: "Per task", effort: 4,
-    platforms: ["TaskRabbit"],
+    links: [
+      { label: "TaskRabbit — Become a Tasker", url: "https://www.taskrabbit.com/become-a-tasker" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
 
@@ -170,7 +217,10 @@ const OPP_LIBRARY = [
     action: "Buy 2-3 units: AirPods Pro 2, iPad 10th gen, DualSense controllers. List on eBay/FB in mid-March at 20-30% premium. Tax refund buyers are less price-sensitive.",
     minCapital: 300, maxCapital: 1500,
     roiRange: [20, 40], risk: "LOW-MED", timeframe: "2–4 weeks", effort: 2,
-    platforms: ["Best Buy", "Target", "eBay", "Facebook Marketplace"],
+    links: [
+      { label: "Best Buy — Electronics", url: "https://www.bestbuy.com" },
+      { label: "eBay — Electronics Sold", url: "https://www.ebay.com/sch/i.html?_nkw=airpods+pro&LH_Complete=1&LH_Sold=1" },
+    ],
     urgency: "hot-now", truckRequired: false,
   },
   {
@@ -180,7 +230,10 @@ const OPP_LIBRARY = [
     action: "Download ScoutIQ ($15/mo). Hit Target clearance (red tags, back corners). Only buy rank <300k with 50%+ margin after fees. Box it, ship to FBA.",
     minCapital: 200, maxCapital: 1000,
     roiRange: [50, 200], risk: "MED", timeframe: "2–6 weeks", effort: 3,
-    platforms: ["Target clearance", "Walmart clearance", "Amazon FBA"],
+    links: [
+      { label: "ScoutIQ — Download", url: "https://scoutiq.co" },
+      { label: "Amazon Seller Central", url: "https://sell.amazon.com" },
+    ],
     urgency: "evergreen", truckRequired: false,
   },
   {
@@ -192,7 +245,9 @@ const OPP_LIBRARY = [
     roiRange: [0, 0],
     isService: true, hourlyRate: [40, 70],
     risk: "LOW", timeframe: "30–60 min", effort: 1,
-    platforms: ["Nextdoor", "Craigslist", "Facebook Groups"],
+    links: [
+      { label: "Post on Nextdoor", url: "https://nextdoor.com" },
+    ],
     urgency: "evergreen", truckRequired: true,
   },
 
@@ -205,7 +260,11 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 0,
     isService: true, hourlyRate: [25, 45],
     risk: "LOW", timeframe: "Per event", effort: 5,
-    platforms: ["Thumbtack", "Bark.com", "GigSalad", "Facebook Groups"],
+    links: [
+      { label: "Thumbtack — Create Pro Profile", url: "https://www.thumbtack.com/pro/" },
+      { label: "Bark.com — Get Leads", url: "https://www.bark.com" },
+      { label: "GigSalad", url: "https://www.gigsalad.com" },
+    ],
     urgency: "seasonal", truckRequired: false,
   },
 ];
@@ -280,6 +339,22 @@ function PlaybookText({ text }) {
           return <div key={i} style={{ color: "#00ff88", fontWeight: 700, marginTop: 2 }}>{line}</div>;
         if (/^TIME:/i.test(line))
           return <div key={i} style={{ color: "#555", marginTop: 2 }}>{line}</div>;
+        if (/^DATES:/i.test(line))
+          return <div key={i} style={{ color: "#ffd700", marginTop: 2 }}>{line}</div>;
+        if (/^LINK:/i.test(line)) {
+          const url = line.match(/https?:\/\/[^\s)]+/)?.[0];
+          const label = line.replace(/^LINK:\s*/i, "").replace(/https?:\/\/[^\s)]+/, "").trim() || url;
+          return (
+            <div key={i} style={{ marginTop: 4 }}>
+              {url
+                ? <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", fontFamily: "monospace", fontSize: 11, textDecoration: "none", border: "1px solid #38bdf844", padding: "2px 9px", borderRadius: 4, background: "#38bdf808" }}>
+                    🔗 {label || url}
+                  </a>
+                : <span style={{ color: "#555" }}>{line}</span>
+              }
+            </div>
+          );
+        }
         if (/^FIRST MOVE:/i.test(line))
           return <div key={i} style={{ color: "#ff8c00", fontWeight: 700, marginTop: 18, borderTop: "1px solid #1a1a1a", paddingTop: 14 }}>{line}</div>;
         if (line.trim() === "")
@@ -367,10 +442,19 @@ function OppCard({ opp, liquid, onExecute }) {
         </div>
       </div>
 
-      {/* Platform chips */}
-      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
-        {opp.platforms.map(p => (
-          <span key={p} style={{ color: "#333", fontSize: 9, fontFamily: "monospace", border: "1px solid #222", padding: "2px 7px", borderRadius: 3 }}>{p}</span>
+      {/* Direct action links */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+        {(opp.links || []).map(l => (
+          <a
+            key={l.url} href={l.url} target="_blank" rel="noopener noreferrer"
+            style={{
+              color: laneColor, fontSize: 10, fontFamily: "monospace",
+              border: `1px solid ${laneColor}44`, padding: "3px 9px", borderRadius: 4,
+              textDecoration: "none", background: `${laneColor}08`,
+            }}
+          >
+            🔗 {l.label}
+          </a>
         ))}
       </div>
 
@@ -409,7 +493,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const [modal,           setModal]           = useState(null);
   const [form,            setForm]            = useState({});
 
-  const liquid   = data.liquidCash || data.bankBalance || 0;
+  const liquid   = data.bankBalance || 0;
   const hasTruck = data.hasTruck !== false; // defaults true
   const flips    = data.flips || [];
 
@@ -447,34 +531,38 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart, aggressive financial advisor for a Phoenix AZ server/flipper who has a pickup truck. Give ULTRA-SPECIFIC advice with real platform names, real current market prices, and exact actions to take TODAY. Zero generic advice. Numbers only. Direct and punchy.",
+        "You are a street-smart, aggressive financial advisor for a Phoenix AZ server/flipper who has a pickup truck. Use your search ability to find ACTUAL current event dates, current resale prices, and upcoming drops. Give ULTRA-SPECIFIC advice with real platform names, real prices from RIGHT NOW, exact dates, and direct URLs where possible. Zero generic advice. Numbers only. Direct and punchy.",
         `MY SITUATION RIGHT NOW:
-• Liquid capital to deploy: $${liquid}
-• Bank balance: $${data.bankBalance}
+• Checking / liquid cash (NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
 • Net worth trend: ${netWorthTrend}
 • Flip history: ${flipSummary}
 • Pickup truck: YES — Phoenix AZ, west valley
 • Upcoming server shifts this week: ${Math.min(freeThisWeek, 4)}
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-• Season: Tax refund season (March), spring cleaning starting, NBA playoffs in ~6 weeks
+• Season: Tax refund season (March), spring cleaning starting, NBA playoffs approaching
 • Top scored opportunities for my capital: ${top3}
 
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Each move must have this EXACT format:
+Use search to look up: actual NBA playoff start date and Suns schedule, next UFC PPV event date and location, any SNKRS drops this week.
+
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Each move EXACT format:
 
 MOVE 1: [TITLE IN CAPS]
-DO TODAY: [exact specific action to take right now — platform, search term, button to click]
+DO TODAY: [exact specific action — platform, search term, button to click]
 BUY: [exact item + exact platform + exact dollar amount]
-SELL: [exact platform + exact listing price or range]
+SELL: [exact platform + exact listing price]
 NET PROFIT: $[X]–$[Y]
 TIME: [hours of work]
+DATES: [actual relevant dates if time-sensitive, e.g. "Suns Game 1: Apr 19 vs Warriors"]
+LINK: [single most important URL to click right now]
 
 MOVE 2: (same format)
 
 MOVE 3: (same format)
 
-FIRST MOVE: [one sentence — which of the 3 to start today and the specific dollar reason why given my exact numbers]`,
-        1600
+FIRST MOVE: [one sentence — which to start today and the exact dollar reason why]`,
+        1800,
+        true  // Google Search enabled — look up actual current dates and prices
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
@@ -526,7 +614,7 @@ FIRST MOVE: [one sentence — which of the 3 to start today and the specific dol
         <div>
           <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2 }}>OPPORTUNITY ENGINE</div>
           <div style={{ color: "#555", fontSize: 12, fontFamily: "monospace", marginTop: 4 }}>
-            <span style={{ color: "#00ff88", fontWeight: 700 }}>${liquid.toLocaleString()}</span> liquid ·{" "}
+            <span style={{ color: "#00ff88", fontWeight: 700 }}>${liquid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> checking ·{" "}
             <button
               onClick={() => save({ ...data, hasTruck: !hasTruck })}
               style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 12, color: hasTruck ? "#38bdf8" : "#444", padding: 0 }}
