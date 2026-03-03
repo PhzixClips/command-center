@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "./Modal.jsx";
 import Input from "./Input.jsx";
 import Btn from "./Btn.jsx";
+import CSVImport from "./CSVImport.jsx";
 
 const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Other"];
 const CAT_COLOR  = {
@@ -34,6 +35,7 @@ export default function BudgetTab({ data, save }) {
   const [viewMonth, setViewMonth] = useState(currentMonthKey);
   const [modal, setModal] = useState(null);
   const [form, setForm]   = useState({});
+  const [showImport, setShowImport] = useState(false);
 
   const budget   = data.budget   || {};
   const expenses = data.expenses || [];
@@ -94,8 +96,9 @@ export default function BudgetTab({ data, save }) {
               style={{ background: "none", border: "1px solid #1a1a1a", color: isCurrentMonth ? "#222" : "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: isCurrentMonth ? "default" : "pointer" }}>›</button>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Btn onClick={() => { setForm({}); setModal("edit-budget"); }} color="#34d399" style={{ fontSize: 10 }}>EDIT BUDGET</Btn>
+          <Btn onClick={() => setShowImport(true)} color="#60a5fa" style={{ fontSize: 10 }}>↑ IMPORT CSV</Btn>
           <Btn onClick={() => { setForm({ category: "Food & Dining" }); setModal("add-expense"); }} color="#34d399">+ ADD EXPENSE</Btn>
         </div>
       </div>
@@ -202,6 +205,11 @@ export default function BudgetTab({ data, save }) {
           ))}
           <Btn onClick={saveBudget} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE BUDGET</Btn>
         </Modal>
+      )}
+
+      {/* CSV Import modal */}
+      {showImport && (
+        <CSVImport data={data} save={save} onClose={() => setShowImport(false)} />
       )}
     </div>
   );
