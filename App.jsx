@@ -115,7 +115,6 @@ export default function App() {
     const lbl    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
     const curNW  = Math.round(newData.bankBalance + (newData.savings || 0) + newData.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
     const curBal = Math.round(newData.bankBalance + (newData.savings || 0));
-
     const curStk = Math.round(newData.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0));
 
     const nwH = [...(newData.netWorthHistory || [])];
