@@ -3,16 +3,42 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 export const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
   const body = {
-    system_instruction: { parts: [{ text: system }] },
-    contents: [{ role: "user", parts: [{ text: userContent }] }],
+    contents: [{
+      role: "user",
+      // When using search grounding, system_instruction conflicts with the grounding tool.
+      // Merge system prompt into user content instead so search requests work correctly.
+      parts: [{ text: useSearch ? `${system}\n\n${userContent}` : userContent }],
+    }],
     generationConfig: { maxOutputTokens: maxTokens },
   };
-  if (useSearch) body.tools = [{ google_search: {} }];
-  const res = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const json = await res.json();
-  return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  if (!useSearch) {
+    body.system_instruction = { parts: [{ text: system }] };
+  } else {
+    // google_search grounding — Gemini will search the web before responding
+    body.tools = [{ google_search: {} }];
+  }
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const json = await res.json();
+
+    if (json.error) {
+      console.error("Gemini API error:", json.error.message || json.error);
+      return "";
+    }
+
+    // Search-grounded responses may interleave tool-use parts with text parts.
+    // Use find() rather than [0] so we always get the actual text part.
+    const parts = json.candidates?.[0]?.content?.parts || [];
+    return parts.find(p => typeof p.text === "string")?.text || "";
+  } catch (err) {
+    console.error("Gemini fetch failed:", err);
+    return "";
+  }
 };
