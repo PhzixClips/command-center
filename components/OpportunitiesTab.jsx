@@ -409,7 +409,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const [modal,           setModal]           = useState(null);
   const [form,            setForm]            = useState({});
 
-  const liquid   = data.liquidCash || data.bankBalance || 0;
+  const liquid   = data.bankBalance || 0;
   const hasTruck = data.hasTruck !== false; // defaults true
   const flips    = data.flips || [];
 
@@ -449,8 +449,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
       const text = await gemini(
         "You are a street-smart, aggressive financial advisor for a Phoenix AZ server/flipper who has a pickup truck. Give ULTRA-SPECIFIC advice with real platform names, real current market prices, and exact actions to take TODAY. Zero generic advice. Numbers only. Direct and punchy.",
         `MY SITUATION RIGHT NOW:
-• Liquid capital to deploy: $${liquid}
-• Bank balance: $${data.bankBalance}
+• Checking / liquid cash (NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
 • Net worth trend: ${netWorthTrend}
 • Flip history: ${flipSummary}
@@ -526,7 +525,7 @@ FIRST MOVE: [one sentence — which of the 3 to start today and the specific dol
         <div>
           <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2 }}>OPPORTUNITY ENGINE</div>
           <div style={{ color: "#555", fontSize: 12, fontFamily: "monospace", marginTop: 4 }}>
-            <span style={{ color: "#00ff88", fontWeight: 700 }}>${liquid.toLocaleString()}</span> liquid ·{" "}
+            <span style={{ color: "#00ff88", fontWeight: 700 }}>${liquid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> checking ·{" "}
             <button
               onClick={() => save({ ...data, hasTruck: !hasTruck })}
               style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 12, color: hasTruck ? "#38bdf8" : "#444", padding: 0 }}
