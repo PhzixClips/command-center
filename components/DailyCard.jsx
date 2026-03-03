@@ -20,7 +20,9 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
         `Today: ${today}. Liquid: $${liquid}. Net worth: $${Math.round(netWorth)}. Portfolio: $${Math.round(stockValue)}. Next shift: ${nextShift ? nextShift.date + " " + nextShift.time : "none"}. Active flips: ${flipsPending}. Avg tips/shift: $${Math.round(avgTips)}. Shifts logged: ${data.shifts.length}. Emergency fund: $${data.goals?.[0]?.current || 0}/$${data.goals?.[0]?.target || 5000}. Risk: AGGRESSIVE.`,
         400
       );
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON in AI response");
+      const parsed = JSON.parse(jsonMatch[0]);
       setCard(parsed);
     } catch (err) {
       setError(err.message || "AI unavailable");
