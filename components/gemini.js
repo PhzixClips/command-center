@@ -2,7 +2,7 @@ const getKey   = () => localStorage.getItem("cc-gemini-key") || "";
 const getModel = () => (localStorage.getItem("cc-gemini-model") || "gemini-3-flash").replace(/^models\//, "");
 const getUrl   = () => `https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:generateContent?key=${getKey()}`;
 
-export const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
+export const gemini = async (system, userContent, maxTokens = 400, useSearch = false, jsonMode = false) => {
   const body = {
     contents: [{
       role: "user",
@@ -10,7 +10,11 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
       // Merge system prompt into user content instead so search requests work correctly.
       parts: [{ text: useSearch ? `${system}\n\n${userContent}` : userContent }],
     }],
-    generationConfig: { maxOutputTokens: maxTokens },
+    // JSON mode forces the model to always return valid JSON (can't be used with search grounding)
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      ...(jsonMode && !useSearch ? { responseMimeType: "application/json" } : {}),
+    },
   };
 
   if (!useSearch) {

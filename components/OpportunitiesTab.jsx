@@ -793,11 +793,9 @@ lane must be one of: FLIP, TRUCK, ARB, SERVICE, STOCKS, TICKETS, FBMKT
 risk must be one of: LOW, LOW-MED, MED, MED-HIGH, HIGH
 urgency must be one of: hot-now, seasonal, evergreen
 If isService is true add: "hourlyRate":[minInt,maxInt] and set roiRange to [0,0]`,
-        700
+        700, false, true
       );
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) return null;
-      const parsed = JSON.parse(match[0]);
+      const parsed = JSON.parse(text);
       if (!parsed.title || !parsed.lane) return null;
       parsed.id = `ai-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
       parsed.ai  = true;
