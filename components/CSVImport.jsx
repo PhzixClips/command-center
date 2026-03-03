@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import Papa from "papaparse";
 
 const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Other"];
+const INCOME_CATEGORIES = ["Paycheck", "Zelle/Transfer", "Side Income", "Refund", "Other Income"];
 
 const CAT_COLOR = {
   "Food & Dining":     "#ff8c00",
@@ -10,6 +11,11 @@ const CAT_COLOR = {
   "Shopping":          "#ffd700",
   "Bills & Utilities": "#34d399",
   "Other":             "#888",
+  "Paycheck":          "#00ff88",
+  "Zelle/Transfer":    "#00ff88",
+  "Side Income":       "#00ff88",
+  "Refund":            "#00ff88",
+  "Other Income":      "#00ff88",
 };
 
 const KEYWORDS = {
@@ -20,8 +26,21 @@ const KEYWORDS = {
   "Bills & Utilities": ["at&t", "verizon", "tmobile", "t-mobile", "comcast", "cox", "centurylink", "electric", "water", "insurance", "geico", "state farm", "progressive", "allstate", "rent", "mortgage", "hoa", "gym", "planet fitness"],
 };
 
-const autoCategory = (desc) => {
+const INCOME_KEYWORDS = {
+  "Paycheck":      ["dailypay", "friday", "payroll", "direct dep", "paycheck", "ach deposit", "wage"],
+  "Zelle/Transfer":["zelle", "venmo", "cashapp", "cash app", "transfer from"],
+  "Side Income":   ["ebay", "poshmark", "mercari", "offerup", "facebook pay", "marketplace"],
+  "Refund":        ["refund", "return", "credit adj", "reversal"],
+};
+
+const autoCategory = (desc, type) => {
   const lower = (desc || "").toLowerCase();
+  if (type === "income") {
+    for (const [cat, words] of Object.entries(INCOME_KEYWORDS)) {
+      if (words.some(w => lower.includes(w))) return cat;
+    }
+    return "Other Income";
+  }
   for (const [cat, words] of Object.entries(KEYWORDS)) {
     if (words.some(w => lower.includes(w))) return cat;
   }
@@ -47,12 +66,11 @@ export default function CSVImport({ data, save, onClose }) {
   const [step, setStep] = useState("upload");
   const [rows, setRows] = useState([]);
   const [headers, setHeaders] = useState([]);
-  const [mapping, setMapping] = useState({ date: "", desc: "", amount: "", credit: "" });
+  const [mapping, setMapping] = useState({ date: "", desc: "", amount: "" });
   const [preview, setPreview] = useState([]);
-  const [imported, setImported] = useState(0);
+  const [imported, setImported] = useState({ expenses: 0, income: 0 });
   const [error, setError] = useState("");
 
-  // Step 1: parse the file
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -65,13 +83,11 @@ export default function CSVImport({ data, save, onClose }) {
         const hdrs = result.meta.fields || [];
         setHeaders(hdrs);
         setRows(result.data);
-        // Auto-detect common column names
         const find = (candidates) => hdrs.find(h => candidates.some(c => h.toLowerCase().includes(c))) || "";
         setMapping({
           date:   find(["date", "posted", "transaction date"]),
           desc:   find(["description", "memo", "payee", "name", "transaction"]),
           amount: find(["amount", "debit", "withdrawal"]),
-          credit: find(["credit", "deposit"]),
         });
         setStep("map");
       },
@@ -79,31 +95,18 @@ export default function CSVImport({ data, save, onClose }) {
     });
   };
 
-  // Step 2: build preview from mapping
   const buildPreview = () => {
     if (!mapping.date || !mapping.desc || !mapping.amount) {
       setError("Please map Date, Description, and Amount columns.");
       return;
     }
-    const allAmounts = rows.map(r => parseFloat((r[mapping.amount] || "").replace(/[$,\s]/g, ""))).filter(n => !isNaN(n));
-    const hasNegatives = allAmounts.some(n => n < 0);
-
     const parsed = [];
     for (const row of rows) {
       const rawAmt = (row[mapping.amount] || "").replace(/[$,\s]/g, "");
-      const creditAmt = mapping.credit ? (row[mapping.credit] || "").replace(/[$,\s]/g, "") : "";
       let amount = parseFloat(rawAmt);
       if (isNaN(amount) || amount === 0) continue;
-      // If CSV has mixed signs: negative = expense, positive = income (skip)
-      // If CSV has all positives (bank uses positive for debits): import everything
-      if (hasNegatives) {
-        if (amount > 0) continue; // skip income/credits
-        amount = Math.abs(amount);
-      } else {
-        // All positive — skip if a separate credit column has a value (it's income)
-        if (creditAmt && parseFloat(creditAmt) > 0) continue;
-        amount = Math.abs(amount);
-      }
+      const type = amount < 0 ? "expense" : "income";
+      amount = Math.abs(amount);
       const dateStr = row[mapping.date] || "";
       const month = toMonthKey(dateStr);
       if (!month) continue;
@@ -112,19 +115,19 @@ export default function CSVImport({ data, save, onClose }) {
         id:       Date.now() + Math.random(),
         desc,
         amount,
-        category: autoCategory(desc),
+        type,
+        category: autoCategory(desc, type),
         date:     formatDisplayDate(dateStr),
         month,
         _raw:     dateStr,
       });
     }
-    if (!parsed.length) { setError("No expense transactions found. Check your column mapping."); return; }
+    if (!parsed.length) { setError("No transactions found. Check your column mapping."); return; }
     setError("");
     setPreview(parsed);
     setStep("preview");
   };
 
-  // Step 3: update category in preview
   const updateCategory = (idx, cat) => {
     setPreview(p => p.map((r, i) => i === idx ? { ...r, category: cat } : r));
   };
@@ -133,19 +136,32 @@ export default function CSVImport({ data, save, onClose }) {
     setPreview(p => p.filter((_, i) => i !== idx));
   };
 
-  // Step 4: save — deduplicate by desc+amount+month
   const doImport = () => {
-    const existing = data.expenses || [];
-    const existingKeys = new Set(existing.map(e => `${e.desc}|${e.amount}|${e.month}`));
-    const fresh = preview
-      .filter(r => !existingKeys.has(`${r.desc}|${r.amount}|${r.month}`))
-      .map(({ _raw, ...r }) => ({ ...r, id: Date.now() + Math.random() }));
-    save({ ...data, expenses: [...existing, ...fresh] });
-    setImported(fresh.length);
+    const existingExpenses = data.expenses || [];
+    const existingIncome   = data.income   || [];
+    const expenseKeys = new Set(existingExpenses.map(e => `${e.desc}|${e.amount}|${e.month}`));
+    const incomeKeys  = new Set(existingIncome.map(e => `${e.desc}|${e.amount}|${e.month}`));
+
+    const newExpenses = preview
+      .filter(r => r.type === "expense" && !expenseKeys.has(`${r.desc}|${r.amount}|${r.month}`))
+      .map(({ _raw, type, ...r }) => ({ ...r, id: Date.now() + Math.random() }));
+    const newIncome = preview
+      .filter(r => r.type === "income" && !incomeKeys.has(`${r.desc}|${r.amount}|${r.month}`))
+      .map(({ _raw, type, ...r }) => ({ ...r, id: Date.now() + Math.random() }));
+
+    save({
+      ...data,
+      expenses: [...existingExpenses, ...newExpenses],
+      income:   [...existingIncome,   ...newIncome],
+    });
+    setImported({ expenses: newExpenses.length, income: newIncome.length });
     setStep("done");
   };
 
-  const totalAmount = preview.reduce((s, r) => s + r.amount, 0);
+  const expenseRows = preview.filter(r => r.type === "expense");
+  const incomeRows  = preview.filter(r => r.type === "income");
+  const totalExpense = expenseRows.reduce((s, r) => s + r.amount, 0);
+  const totalIncome  = incomeRows.reduce((s, r) => s + r.amount, 0);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000000cc", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
@@ -157,9 +173,9 @@ export default function CSVImport({ data, save, onClose }) {
             <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2, fontFamily: "monospace" }}>IMPORT CSV</div>
             <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>
               {step === "upload"  && "Upload your bank export"}
-              {step === "map"    && `${rows.length} rows detected — map columns`}
-              {step === "preview" && `${preview.length} expenses · $${totalAmount.toFixed(2)} total`}
-              {step === "done"   && "Import complete"}
+              {step === "map"     && `${rows.length} rows detected — map columns`}
+              {step === "preview" && `${preview.length} transactions · ${expenseRows.length} expenses · ${incomeRows.length} income`}
+              {step === "done"    && "Import complete"}
             </div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "1px solid #333", color: "#666", fontSize: 13, padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontFamily: "monospace" }}>✕</button>
@@ -174,7 +190,7 @@ export default function CSVImport({ data, save, onClose }) {
 
         <div style={{ padding: "0 24px 24px" }}>
 
-          {/* ── STEP 1: UPLOAD ── */}
+          {/* STEP 1: UPLOAD */}
           {step === "upload" && (
             <div>
               <div
@@ -198,7 +214,7 @@ export default function CSVImport({ data, save, onClose }) {
             </div>
           )}
 
-          {/* ── STEP 2: MAP COLUMNS ── */}
+          {/* STEP 2: MAP COLUMNS */}
           {step === "map" && (
             <div>
               <div style={{ color: "#666", fontSize: 10, fontFamily: "monospace", marginBottom: 16 }}>
@@ -206,9 +222,8 @@ export default function CSVImport({ data, save, onClose }) {
               </div>
               {[
                 { key: "date",   label: "Date column",        required: true  },
-                { key: "desc",   label: "Description column", required: true  },
-                { key: "amount", label: "Amount/Debit column", required: true  },
-                { key: "credit", label: "Credit/Deposit column (optional — rows with credits will be skipped)", required: false },
+                { key: "desc",   label: "Description column",  required: true  },
+                { key: "amount", label: "Amount column (negative = expense, positive = income)", required: true },
               ].map(({ key, label, required }) => (
                 <div key={key} style={{ marginBottom: 14 }}>
                   <label style={{ color: required ? "#e8e8e8" : "#555", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>
@@ -232,17 +247,19 @@ export default function CSVImport({ data, save, onClose }) {
             </div>
           )}
 
-          {/* ── STEP 3: PREVIEW ── */}
+          {/* STEP 3: PREVIEW */}
           {step === "preview" && (
             <div>
               <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 12 }}>
-                Review and edit categories before importing. Click ✕ to remove a row.
+                Review transactions. Green = income, Red = expense. Edit categories or ✕ to remove.
               </div>
               <div style={{ maxHeight: 360, overflow: "auto", display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
                 {preview.map((row, idx) => {
+                  const isIncome = row.type === "income";
                   const color = CAT_COLOR[row.category] || "#888";
+                  const cats = isIncome ? INCOME_CATEGORIES : CATEGORIES;
                   return (
-                    <div key={idx} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: 7, padding: "10px 12px", display: "flex", gap: 10, alignItems: "center" }}>
+                    <div key={idx} style={{ background: "#111", border: `1px solid ${isIncome ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 7, padding: "10px 12px", display: "flex", gap: 10, alignItems: "center" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ color: "#e8e8e8", fontSize: 12, fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{row.desc}</div>
                         <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{row.date} · {row.month}</div>
@@ -252,34 +269,48 @@ export default function CSVImport({ data, save, onClose }) {
                         onChange={e => updateCategory(idx, e.target.value)}
                         style={{ background: `${color}18`, border: `1px solid ${color}55`, borderRadius: 4, padding: "3px 7px", color, fontFamily: "monospace", fontSize: 9, outline: "none", cursor: "pointer" }}
                       >
-                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        {cats.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-                      <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
-                        -${row.amount.toFixed(2)}
+                      <div style={{ color: isIncome ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+                        {isIncome ? "+" : "-"}${row.amount.toFixed(2)}
                       </div>
                       <button onClick={() => removeRow(idx)} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 13, padding: "0 2px" }}>✕</button>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>{preview.length} transactions</span>
-                <span style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>-${totalAmount.toFixed(2)}</span>
+              {/* Summary */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <div style={{ flex: 1, background: "#0d0d0d", border: "1px solid #00ff8822", borderRadius: 8, padding: "10px 14px" }}>
+                  <div style={{ color: "#555", fontFamily: "monospace", fontSize: 9, marginBottom: 4 }}>INCOME ({incomeRows.length})</div>
+                  <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>+${totalIncome.toFixed(2)}</div>
+                </div>
+                <div style={{ flex: 1, background: "#0d0d0d", border: "1px solid #ff3b3b22", borderRadius: 8, padding: "10px 14px" }}>
+                  <div style={{ color: "#555", fontFamily: "monospace", fontSize: 9, marginBottom: 4 }}>EXPENSES ({expenseRows.length})</div>
+                  <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>-${totalExpense.toFixed(2)}</div>
+                </div>
+              </div>
+              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 14px", display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>NET CASH FLOW</span>
+                <span style={{ color: totalIncome - totalExpense >= 0 ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>
+                  {totalIncome - totalExpense >= 0 ? "+" : "-"}${Math.abs(totalIncome - totalExpense).toFixed(2)}
+                </span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setStep("map")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
-                <button onClick={doImport} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>IMPORT {preview.length} EXPENSES</button>
+                <button onClick={doImport} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>IMPORT {preview.length} TRANSACTIONS</button>
               </div>
             </div>
           )}
 
-          {/* ── STEP 4: DONE ── */}
+          {/* STEP 4: DONE */}
           {step === "done" && (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
-              <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{imported} EXPENSES IMPORTED</div>
-              <div style={{ color: "#555", fontFamily: "monospace", fontSize: 11, marginBottom: 24 }}>
-                {preview.length - imported > 0 ? `${preview.length - imported} duplicates skipped` : "No duplicates found"}
+              <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>IMPORT COMPLETE</div>
+              <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 16 }}>
+                <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 13 }}>{imported.expenses} expenses</div>
+                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 13 }}>{imported.income} income</div>
               </div>
               <button onClick={onClose} style={{ background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 12, padding: "12px 32px", borderRadius: 7, cursor: "pointer" }}>DONE</button>
             </div>

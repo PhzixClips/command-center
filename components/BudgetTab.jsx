@@ -39,8 +39,10 @@ export default function BudgetTab({ data, save }) {
 
   const budget   = data.budget   || {};
   const expenses = data.expenses || [];
+  const income   = data.income   || [];
 
   const monthExpenses = expenses.filter(e => e.month === viewMonth);
+  const monthIncome   = income.filter(e => e.month === viewMonth);
 
   const spentByCategory = {};
   CATEGORIES.forEach(c => { spentByCategory[c] = 0; });
@@ -48,11 +50,13 @@ export default function BudgetTab({ data, save }) {
 
   const totalBudget = Object.values(budget).reduce((a, b) => a + b, 0);
   const totalSpent  = monthExpenses.reduce((a, e) => a + e.amount, 0);
+  const totalEarned = monthIncome.reduce((a, e) => a + e.amount, 0);
   const remaining   = totalBudget - totalSpent;
+  const netCashFlow = totalEarned - totalSpent;
   const isCurrentMonth = viewMonth === currentMonthKey;
 
-  // All months that have expenses, for the picker
-  const allMonths = [...new Set(expenses.map(e => e.month))].sort();
+  // All months that have expenses or income, for the picker
+  const allMonths = [...new Set([...expenses.map(e => e.month), ...income.map(e => e.month)])].sort();
   if (!allMonths.includes(currentMonthKey)) allMonths.push(currentMonthKey);
 
   const addExpense = () => {
@@ -106,9 +110,10 @@ export default function BudgetTab({ data, save }) {
       {/* Summary cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "MONTHLY BUDGET", value: `$${totalBudget.toLocaleString()}`, color: "#34d399" },
+          { label: "INCOME",         value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
           { label: "SPENT SO FAR",   value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
-          { label: "REMAINING",      value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "left this month" },
+          { label: "NET CASH FLOW",  value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
+          { label: "BUDGET LEFT",    value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "of budget left" },
         ].map((c, i) => (
           <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${c.color}22`, borderRadius: 8, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: c.color }} />
@@ -176,6 +181,29 @@ export default function BudgetTab({ data, save }) {
             );
           })}
         </div>
+      )}
+
+      {/* Income list */}
+      {monthIncome.length > 0 && (
+        <>
+          <div style={{ marginBottom: 16, marginTop: 24, color: "#00ff88", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
+            INCOME · {monthIncome.length} IN {monthLabel(viewMonth)}
+          </div>
+          <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+            {[...monthIncome].reverse().map(e => (
+              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #00ff8822", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <span style={{ color: "#00ff88", fontSize: 9, fontFamily: "monospace", border: "1px solid #00ff8844", padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>{e.category}</span>
+                  <div>
+                    <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
+                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+                  </div>
+                </div>
+                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>+${e.amount.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Add expense modal */}
