@@ -6,11 +6,12 @@ import Btn from "./Btn.jsx";
 
 // ── Lane metadata ─────────────────────────────────────────────────────────────
 const LANE_META = {
-  FLIP:    { label: "Item Flip",   color: "#ff8c00", icon: "💰" },
-  TICKETS: { label: "Tickets",     color: "#a78bfa", icon: "🎟️" },
-  TRUCK:   { label: "Truck",       color: "#38bdf8", icon: "🚛" },
-  ARB:     { label: "Retail Arb",  color: "#ffd700", icon: "📦" },
-  SERVICE: { label: "Service",     color: "#00ff88", icon: "💡" },
+  FBMKT:   { label: "FB Marketplace", color: "#00d4aa", icon: "📱" },
+  FLIP:    { label: "Item Flip",      color: "#ff8c00", icon: "💰" },
+  TICKETS: { label: "Tickets",        color: "#a78bfa", icon: "🎟️" },
+  TRUCK:   { label: "Truck",          color: "#38bdf8", icon: "🚛" },
+  ARB:     { label: "Retail Arb",     color: "#ffd700", icon: "📦" },
+  SERVICE: { label: "Service",        color: "#00ff88", icon: "💡" },
 };
 
 const RISK_COLOR = {
@@ -252,6 +253,72 @@ const OPP_LIBRARY = [
     urgency: "evergreen", truckRequired: true,
   },
 
+  // FB MARKETPLACE ─────────────────────────────────────────────────────────────
+  {
+    id: "fb-exercise", lane: "FBMKT", icon: "💪",
+    title: "Exercise Equipment",
+    detail: "New Year guilt gear is hitting the market hard. Pelotons, treadmills, Bowflex, weight benches — people pay to clear their garage. Your truck moves what others can't.",
+    searchTerms: ["free treadmill", "peloton", "$50 exercise bike", "bowflex", "weight bench"],
+    minCapital: 0, maxCapital: 150, buyRange: [0, 150], sellRange: [200, 700], roiRange: [150, 500],
+    daysToSell: "3–7", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-power-tools", lane: "FBMKT", icon: "🔧",
+    title: "Power Tool Lots",
+    detail: "DeWalt/Milwaukee combo kits retail $500-800, sell for $250-500 used. Phoenix construction = constant tool demand. Bundle multiple tools to raise your asking price.",
+    searchTerms: ["dewalt lot", "milwaukee tools", "tool bundle", "circular saw", "drill set"],
+    minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [150, 600], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-riding-mowers", lane: "FBMKT", icon: "🌿",
+    title: "Riding Mowers",
+    detail: "Spring in AZ = peak lawn equipment season right now. Buy end-of-winter $150-400, sell $500-1,200 when everyone's prepping yards. Truck required — that's your edge.",
+    searchTerms: ["riding mower", "zero turn mower", "lawn tractor", "john deere", "husqvarna mower"],
+    minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [400, 1200], roiRange: [100, 300],
+    daysToSell: "5–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-large-tvs", lane: "FBMKT", icon: "📺",
+    title: "Large TVs (55\"+)",
+    detail: "People upgrading to OLED dump their 55-65\" TVs for $50-150. Clean it up, relist $200-350. High turnover, sells in days, no truck needed under 65\".",
+    searchTerms: ["55 inch tv", "65 inch tv", "samsung 4k tv", "smart tv lot", "lg oled"],
+    minCapital: 30, maxCapital: 150, buyRange: [30, 150], sellRange: [150, 400], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-patio", lane: "FBMKT", icon: "☀️",
+    title: "Patio / Outdoor Furniture",
+    detail: "Phoenix patio season starts NOW — March through May is peak. Outdoor sectionals, fire pits, dining sets. Buy cheap, relist clean. High ticket, moves fast in AZ.",
+    searchTerms: ["patio furniture", "outdoor sectional", "fire pit", "patio dining set", "pool furniture"],
+    minCapital: 50, maxCapital: 250, buyRange: [50, 250], sellRange: [200, 800], roiRange: [100, 400],
+    daysToSell: "4–10", risk: "LOW", truckRequired: true, urgency: "hot-now",
+  },
+  {
+    id: "fb-appliances", lane: "FBMKT", icon: "🏠",
+    title: "Washer / Dryer / Fridge",
+    detail: "Working appliances sell same day in Phoenix. W/D sets buy $75-200, sell $250-500. Your truck closes the deal — most buyers can't haul a washer and neither can most flippers.",
+    searchTerms: ["washer dryer set", "$75 refrigerator", "washer", "dryer", "appliance lot"],
+    minCapital: 50, maxCapital: 200, buyRange: [50, 200], sellRange: [200, 600], roiRange: [100, 300],
+    daysToSell: "1–4", risk: "LOW", truckRequired: true, urgency: "evergreen",
+  },
+  {
+    id: "fb-baby-gear", lane: "FBMKT", icon: "🍼",
+    title: "Premium Baby Gear",
+    detail: "UPPAbaby strollers buy $80-150, relist $250-400. Cribs, bouncers, high chairs move fast. Low weight so no truck needed. Parents buying used = reliable daily demand.",
+    searchTerms: ["uppababy stroller", "crib", "baby gear lot", "graco stroller", "nuna car seat"],
+    minCapital: 20, maxCapital: 150, buyRange: [20, 150], sellRange: [80, 400], roiRange: [100, 300],
+    daysToSell: "2–5", risk: "LOW", truckRequired: false, urgency: "evergreen",
+  },
+  {
+    id: "fb-gaming", lane: "FBMKT", icon: "🎮",
+    title: "Gaming Setups / Consoles",
+    detail: "Gaming PCs, PS5/Xbox with extra controllers and games. Bundle everything together — FB buyers pay more than eBay for local no-ship. Sell as a complete setup.",
+    searchTerms: ["gaming pc", "ps5 bundle", "xbox series x", "gaming setup", "gaming monitor lot"],
+    minCapital: 100, maxCapital: 400, buyRange: [100, 400], sellRange: [200, 700], roiRange: [75, 200],
+    daysToSell: "2–7", risk: "LOW-MED", truckRequired: false, urgency: "evergreen",
+  },
+
   // SERVICE / SKILL ────────────────────────────────────────────────────────────
   {
     id: "private-catering", lane: "SERVICE",
@@ -485,6 +552,105 @@ function OppCard({ opp, liquid, onExecute }) {
   );
 }
 
+// ── FB Marketplace Card ───────────────────────────────────────────────────────
+function FBMarketCard({ opp, liquid, onExecute }) {
+  const color = LANE_META.FBMKT.color;
+  const isHot = opp.urgency === "hot-now";
+  const gap   = opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0;
+
+  const scout = (term) =>
+    window.open(`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(term)}`, "_blank");
+
+  return (
+    <div style={{
+      background: "#0d0d0d",
+      border: `1px solid ${isHot ? color + "55" : "#1a1a1a"}`,
+      borderRadius: 10, padding: "16px 18px",
+    }}>
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
+        <span style={{ fontSize: 24, lineHeight: 1 }}>{opp.icon}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 5 }}>{opp.title}</div>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>📱 FB MARKETPLACE</span>
+            {isHot && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🔴 HOT NOW</span>}
+            {opp.truckRequired && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Detail */}
+      <div style={{ color: "#777", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{opp.detail}</div>
+
+      {/* Scout section — the main feature */}
+      <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
+        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8, fontFamily: "monospace" }}>🔍 SCOUT FB MARKETPLACE NOW</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {opp.searchTerms.map(t => (
+            <button
+              key={t} onClick={() => scout(t)}
+              style={{
+                background: `${color}12`, border: `1px solid ${color}55`, color,
+                fontFamily: "monospace", fontSize: 10, padding: "5px 11px",
+                borderRadius: 4, cursor: "pointer",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price ladder */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>BUY</div>
+          <div style={{ color: "#ff6b6b", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>$0–${opp.buyRange[1]}</div>
+        </div>
+        <div style={{ color: "#333", fontSize: 18, fontWeight: 300 }}>→</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELL</div>
+          <div style={{ color: "#00ff88", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>PROFIT</div>
+          <div style={{ color: "#ffd700", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>+{opp.roiRange[0]}–{opp.roiRange[1]}%</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
+          <div style={{ color: "#e8e8e8", fontSize: 13, fontFamily: "monospace" }}>{opp.daysToSell}d</div>
+        </div>
+        <div style={{ color: "#222", fontSize: 16 }}>·</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>RISK</div>
+          <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+        </div>
+      </div>
+
+      {/* Execute */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {gap > 0
+          ? <span style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>NEED ${gap} TO BUY</span>
+          : <span />
+        }
+        <button
+          onClick={() => onExecute(opp)}
+          style={{
+            background: `${color}18`, border: `1px solid ${color}`, color,
+            fontFamily: "monospace", fontSize: 11, letterSpacing: 1,
+            padding: "8px 18px", borderRadius: 5, cursor: "pointer",
+          }}
+        >
+          LOG FLIP →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function OpportunitiesTab({ data, save, onStartFlip }) {
   const [playbook,        setPlaybook]        = useState(data.cachedPlaybook || "");
@@ -607,7 +773,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
   const oppHistory    = data.oppHistory || [];
   const totalHustled  = oppHistory.reduce((a, o) => a + (o.earned || 0), 0);
 
-  const FILTER_TABS = ["ALL", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE"];
+  const FILTER_TABS = ["ALL", "FBMKT", "FLIP", "TICKETS", "TRUCK", "ARB", "SERVICE"];
 
   return (
     <div>
@@ -681,9 +847,10 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
 
       {/* Opportunity cards */}
       <div style={{ display: "grid", gap: 14 }}>
-        {displayed.map(opp => (
-          <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-        ))}
+        {displayed.map(opp => opp.lane === "FBMKT"
+          ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+          : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+        )}
       </div>
 
       {/* Opportunity History */}
