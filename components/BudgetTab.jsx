@@ -33,11 +33,12 @@ export default function BudgetTab({ data, save }) {
   const now = new Date();
   const currentMonthKey = toMonthKey(now);
 
-  const [viewMonth,  setViewMonth]  = useState(currentMonthKey);
-  const [modal,      setModal]      = useState(null);
-  const [form,       setForm]       = useState({});
-  const [showImport, setShowImport] = useState(false);
-  const [filterCat,  setFilterCat]  = useState(null);
+  const [viewMonth,      setViewMonth]      = useState(currentMonthKey);
+  const [modal,          setModal]          = useState(null);
+  const [form,           setForm]           = useState({});
+  const [showImport,     setShowImport]     = useState(false);
+  const [filterCat,      setFilterCat]      = useState(null);
+  const [recurringEdit,  setRecurringEdit]  = useState(null); // { descKey, desc, category }
 
   const budget    = data.budget    || {};
   const expenses  = data.expenses  || [];
@@ -132,13 +133,35 @@ export default function BudgetTab({ data, save }) {
     setModal("edit-expense");
   };
 
-  // Expenses to show in the list section
-  const filteredExpenses = filterCat
-    ? monthExpenses.filter(e => {
-        const cat = CATEGORIES.includes(e.category) ? e.category : "Other";
-        return cat === filterCat;
-      })
-    : [...monthExpenses].reverse();
+  const deleteRecurring = (descKey) => {
+    save({ ...data, expenses: expenses.filter(e => e.desc.toLowerCase().trim() !== descKey) });
+  };
+  const openEditRecurring = (r) => {
+    setRecurringEdit({ descKey: r.desc.toLowerCase().trim(), desc: r.desc, category: r.category });
+  };
+  const saveEditRecurring = () => {
+    if (!recurringEdit) return;
+    save({
+      ...data,
+      expenses: expenses.map(e =>
+        e.desc.toLowerCase().trim() === recurringEdit.descKey
+          ? { ...e, desc: recurringEdit.desc, category: recurringEdit.category }
+          : e
+      ),
+    });
+    setRecurringEdit(null);
+  };
+
+  // Expenses to show in the list section — always newest first by id
+  const filteredExpenses = (() => {
+    const base = filterCat
+      ? monthExpenses.filter(e => {
+          const cat = CATEGORIES.includes(e.category) ? e.category : "Other";
+          return cat === filterCat;
+        })
+      : [...monthExpenses];
+    return [...base].sort((a, b) => (b.id || 0) - (a.id || 0));
+  })();
 
   return (
     <div>
@@ -249,28 +272,35 @@ export default function BudgetTab({ data, save }) {
         })}
       </div>
 
-      {/* Recurring expenses */}
+      {/* Recurring expenses — card grid */}
       {recurringExpenses.length > 0 && (
-        <div style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 10, padding: 20, marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2 }}>RECURRING EXPENSES DETECTED</div>
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>RECURRING EXPENSES DETECTED</div>
             <div style={{ color: "#a78bfa", fontSize: 12, fontFamily: "monospace", fontWeight: 700 }}>
-              ${recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0).toFixed(0)}/mo committed
+              ${Math.round(recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0))}/mo committed
             </div>
           </div>
-          <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: 10 }}>
             {recurringExpenses.map((r, i) => {
-              const monthlyAvg = r.totalAmount / r.months.size;
               const color      = CAT_COLOR[r.category] || "#888";
+              const monthlyAvg = r.totalAmount / r.months.size;
               return (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "1px 6px", borderRadius: 3, whiteSpace: "nowrap" }}>{r.category}</span>
-                    <div style={{ color: "#e8e8e8", fontSize: 12 }}>{r.desc}</div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>${monthlyAvg.toFixed(2)}/mo</div>
-                    <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace" }}>{r.months.size} months · ${r.totalAmount.toFixed(0)} total</div>
+                <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${color}33`, borderRadius: 10, padding: "14px 14px 12px", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: color }} />
+                  <div style={{ marginLeft: 8 }}>
+                    <div style={{ color, fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 5 }}>{r.category.toUpperCase()}</div>
+                    <div style={{ color: "#e8e8e8", fontSize: 12, fontWeight: 600, marginBottom: 8, lineHeight: 1.3, wordBreak: "break-word" }}>{r.desc}</div>
+                    <div style={{ color, fontSize: 20, fontWeight: 700, fontFamily: "monospace", marginBottom: 2 }}>
+                      ${Math.round(monthlyAvg)}<span style={{ fontSize: 10, fontWeight: 400, color: "#555" }}>/mo</span>
+                    </div>
+                    <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", marginBottom: 12 }}>
+                      {r.months.size} months · ${Math.round(r.totalAmount)} total
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button onClick={() => openEditRecurring(r)} style={{ flex: 1, background: "none", border: `1px solid ${color}44`, color: "#888", fontSize: 9, fontFamily: "monospace", padding: "5px 0", borderRadius: 4, cursor: "pointer" }}>EDIT ALL</button>
+                      <button onClick={() => deleteRecurring(r.desc.toLowerCase().trim())} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "4px 10px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                    </div>
                   </div>
                 </div>
               );
@@ -412,6 +442,18 @@ export default function BudgetTab({ data, save }) {
             <Btn onClick={() => setModal(null)} color="#555" style={{ flex: 1 }}>CANCEL</Btn>
             <Btn onClick={clearImports} color="#ff3b3b" style={{ flex: 1 }}>CLEAR ALL</Btn>
           </div>
+        </Modal>
+      )}
+
+      {/* Recurring edit modal */}
+      {recurringEdit && (
+        <Modal title="EDIT RECURRING" onClose={() => setRecurringEdit(null)}>
+          <Input label="Description" value={recurringEdit.desc} onChange={v => setRecurringEdit({ ...recurringEdit, desc: v })} />
+          <CategorySelect value={recurringEdit.category} onChange={v => setRecurringEdit({ ...recurringEdit, category: v })} />
+          <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 12 }}>
+            Updates all {expenses.filter(e => e.desc.toLowerCase().trim() === recurringEdit.descKey).length} matching transactions.
+          </div>
+          <Btn onClick={saveEditRecurring} color="#a78bfa" style={{ width: "100%", marginTop: 8 }}>SAVE ALL INSTANCES</Btn>
         </Modal>
       )}
 
