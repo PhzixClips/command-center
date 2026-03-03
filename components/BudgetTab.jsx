@@ -76,6 +76,21 @@ export default function BudgetTab({ data, save }) {
     setModal(null);
   };
 
+  // Recurring expense detection: same description appearing in 2+ different months
+  const recurringExpenses = (() => {
+    const byDesc = {};
+    expenses.forEach(e => {
+      const key = e.desc.toLowerCase().trim();
+      if (!byDesc[key]) byDesc[key] = { desc: e.desc, months: new Set(), totalAmount: 0, count: 0, category: e.category };
+      byDesc[key].months.add(e.month);
+      byDesc[key].totalAmount += e.amount;
+      byDesc[key].count++;
+    });
+    return Object.values(byDesc)
+      .filter(r => r.months.size >= 2)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+  })();
+
   const addExpense = () => {
     const { desc, amount, category } = form;
     if (!desc || !amount || !category) return;
@@ -233,6 +248,36 @@ export default function BudgetTab({ data, save }) {
           );
         })}
       </div>
+
+      {/* Recurring expenses */}
+      {recurringExpenses.length > 0 && (
+        <div style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 10, padding: 20, marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2 }}>RECURRING EXPENSES DETECTED</div>
+            <div style={{ color: "#a78bfa", fontSize: 12, fontFamily: "monospace", fontWeight: 700 }}>
+              ${recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0).toFixed(0)}/mo committed
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {recurringExpenses.map((r, i) => {
+              const monthlyAvg = r.totalAmount / r.months.size;
+              const color      = CAT_COLOR[r.category] || "#888";
+              return (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "1px 6px", borderRadius: 3, whiteSpace: "nowrap" }}>{r.category}</span>
+                    <div style={{ color: "#e8e8e8", fontSize: 12 }}>{r.desc}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>${monthlyAvg.toFixed(2)}/mo</div>
+                    <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace" }}>{r.months.size} months · ${r.totalAmount.toFixed(0)} total</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Expense list */}
       {filterCat ? (

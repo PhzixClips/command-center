@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Papa from "papaparse";
 
-const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Other"];
+const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Business Tools", "Other"];
 const INCOME_CATEGORIES = ["Paycheck", "Zelle/Transfer", "Side Income", "Refund", "Other Income"];
 const TRANSFER_CATEGORIES = ["Transfer"];
 
@@ -11,6 +11,7 @@ const CAT_COLOR = {
   "Entertainment":     "#a78bfa",
   "Shopping":          "#ffd700",
   "Bills & Utilities": "#34d399",
+  "Business Tools":    "#f472b6",
   "Other":             "#888",
   "Paycheck":          "#00ff88",
   "Zelle/Transfer":    "#00ff88",
@@ -26,6 +27,7 @@ const KEYWORDS = {
   "Entertainment":     ["netflix", "hulu", "disney", "spotify", "apple music", "youtube", "amazon prime", "hbo", "peacock", "amc", "movie", "cinema", "theater", "ticketmaster", "steam", "playstation", "xbox", "nintendo"],
   "Shopping":          ["amazon", "ebay", "best buy", "home depot", "lowes", "ikea", "tj maxx", "marshalls", "ross", "old navy", "h&m", "zara", "shein", "wish", "etsy"],
   "Bills & Utilities": ["at&t", "verizon", "tmobile", "t-mobile", "comcast", "cox", "centurylink", "electric", "water", "insurance", "geico", "state farm", "progressive", "allstate", "rent", "mortgage", "hoa", "gym", "planet fitness"],
+  "Business Tools":    ["anthropic", "openai", "claude.ai", "chatgpt", "midjourney", "github", "notion", "figma", "canva", "adobe", "dropbox", "google workspace", "gsuite", "microsoft 365", "zoom", "slack", "airtable", "zapier", "shopify", "squarespace", "wix", "godaddy", "namecheap", "digitalocean", "aws ", "cloudflare", "cursor", "replit"],
 };
 
 const INCOME_KEYWORDS = {
