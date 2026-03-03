@@ -55,6 +55,8 @@ export default function App() {
   const [aiInsight,   setAiInsight]   = useState("");
   const [syncLoading,      setSyncLoading]      = useState(false);
   const [lastSynced,       setLastSynced]       = useState(null);
+  const [showSettings,     setShowSettings]     = useState(false);
+  const [apiKeyDraft,      setApiKeyDraft]      = useState("");
   const [filterDay,        setFilterDay]        = useState(null);
   const [priceAlerts,      setPriceAlerts]      = useState([]);
   const [showBackupPrompt, setShowBackupPrompt] = useState(false);
@@ -507,15 +509,46 @@ export default function App() {
   return (
     <div style={{ background: "#080808", minHeight: "100vh", color: "#e8e8e8", fontFamily: "'Courier New', monospace", padding: "0 0 80px" }}>
 
+      {/* Settings modal */}
+      {showSettings && (
+        <Modal title="⚙ SETTINGS" onClose={() => setShowSettings(false)}>
+          <div style={{ marginBottom: 8, color: "#555", fontSize: 11, fontFamily: "monospace", letterSpacing: 1 }}>GEMINI API KEY</div>
+          <input
+            type="password"
+            value={apiKeyDraft}
+            onChange={e => setApiKeyDraft(e.target.value)}
+            placeholder="AIza..."
+            style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "10px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+          />
+          <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginBottom: 18 }}>
+            Stored in your browser only — never sent to any server or committed to the repo.<br />
+            Get a key at <span style={{ color: "#60a5fa" }}>aistudio.google.com/apikey</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Btn onClick={() => { localStorage.setItem("cc-gemini-key", apiKeyDraft.trim()); setShowSettings(false); }}>SAVE KEY</Btn>
+            {localStorage.getItem("cc-gemini-key") && (
+              <Btn onClick={() => { localStorage.removeItem("cc-gemini-key"); setApiKeyDraft(""); setShowSettings(false); }} color="#ff3b3b">REMOVE</Btn>
+            )}
+          </div>
+        </Modal>
+      )}
+
       {/* Header */}
       <div style={{ borderBottom: "1px solid #1a1a1a", padding: "18px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0a0a0a" }}>
         <div>
           <div style={{ color: "#00ff88", fontSize: 18, fontWeight: 700, letterSpacing: 3 }}>⚡ CAPITAL COMMAND</div>
           <div style={{ color: "#333", fontSize: 10, letterSpacing: 2, marginTop: 2 }}>PERSONAL FINANCIAL INTELLIGENCE CENTER</div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ color: "#666", fontSize: 10, letterSpacing: 1 }}>NET WORTH</div>
-          <div style={{ color: "#00ff88", fontSize: 22, fontWeight: 700 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#666", fontSize: 10, letterSpacing: 1 }}>NET WORTH</div>
+            <div style={{ color: "#00ff88", fontSize: 22, fontWeight: 700 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+          </div>
+          <button
+            onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setShowSettings(true); }}
+            title="Settings"
+            style={{ background: "none", border: "1px solid #333", borderRadius: 6, color: "#555", cursor: "pointer", fontSize: 16, padding: "6px 10px", lineHeight: 1 }}
+          >⚙</button>
         </div>
       </div>
 
