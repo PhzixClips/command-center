@@ -52,11 +52,13 @@ export default function App() {
   const [loading,     setLoading]     = useState(true);
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiInsight,   setAiInsight]   = useState("");
-  const [syncLoading, setSyncLoading] = useState(false);
-  const [lastSynced,  setLastSynced]  = useState(null);
-  const [filterDay,   setFilterDay]   = useState(null);
-  const [priceAlerts, setPriceAlerts] = useState([]);
-  const importRef = useRef(null);
+  const [syncLoading,      setSyncLoading]      = useState(false);
+  const [lastSynced,       setLastSynced]       = useState(null);
+  const [filterDay,        setFilterDay]        = useState(null);
+  const [priceAlerts,      setPriceAlerts]      = useState([]);
+  const [showBackupPrompt, setShowBackupPrompt] = useState(false);
+  const importRef       = useRef(null);
+  const lastSyncedMsRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -110,6 +112,21 @@ export default function App() {
       setLoading(false);
     })();
   }, []);
+
+  // Backup prompt: show if never backed up or >7 days ago
+  useEffect(() => {
+    const last = localStorage.getItem("cc-last-backup");
+    if (!last) { setShowBackupPrompt(true); return; }
+    const daysSince = (Date.now() - new Date(last).getTime()) / 86400000;
+    if (daysSince >= 7) setShowBackupPrompt(true);
+  }, []);
+
+  // Auto-sync stocks when navigating to stocks tab if prices are stale (>1hr)
+  useEffect(() => {
+    if (tab !== "stocks" || !data || syncLoading) return;
+    const isStale = !lastSyncedMsRef.current || (Date.now() - lastSyncedMsRef.current > 3600000);
+    if (isStale) syncStockPrices();
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = useCallback(async (newData) => {
     const lbl    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -184,6 +201,7 @@ export default function App() {
       setPriceAlerts(triggered);
       await save({ ...data, stocks: updatedStocks });
     }
+    lastSyncedMsRef.current = Date.now();
     setLastSynced(new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }));
     setSyncLoading(false);
   }, [data, save]);
@@ -222,6 +240,11 @@ export default function App() {
       e.target.value = "";
     };
     reader.readAsText(file);
+  };
+
+  const dismissBackupPrompt = () => {
+    localStorage.setItem("cc-last-backup", new Date().toISOString().split("T")[0]);
+    setShowBackupPrompt(false);
   };
 
   if (loading || !data) return (
@@ -304,6 +327,28 @@ export default function App() {
     .sort((a, b) => b.avg - a.avg);
   const maxDayAvg = dayEntries.length ? dayEntries[0].avg : 1;
 
+  // ── Net worth velocity (daily gain over last 14 history points) ──────────────
+  const nwDailyGain = (() => {
+    const hist = data.netWorthHistory || [];
+    if (hist.length < 2) return 0;
+    const window = hist.slice(-14);
+    const days   = window.length - 1;
+    return days > 0 ? (window[window.length - 1].value - window[0].value) / days : 0;
+  })();
+
+  // ── Budget overspend warnings ─────────────────────────────────────────────────
+  const overspendWarnings = daysLeft > 0
+    ? Object.entries(data.budget || {}).reduce((acc, [cat, limit]) => {
+        if (!limit) return acc;
+        const spent = (data.expenses || [])
+          .filter(e => e.month === currentMonthKey && e.category === cat)
+          .reduce((a, e) => a + e.amount, 0);
+        const pct = spent / limit;
+        if (pct >= 0.8) acc.push({ cat, spent, limit, pct: (pct * 100).toFixed(0) });
+        return acc;
+      }, [])
+    : [];
+
   // ── Flip analytics ───────────────────────────────────────────────────────────
   const soldFlips  = data.flips.filter(f => f.status === "sold" && f.sold);
   const avgFlipROI = soldFlips.length
@@ -312,6 +357,29 @@ export default function App() {
   const bestFlip = soldFlips.length
     ? soldFlips.reduce((best, f) => (f.sold - f.bought) > (best.sold - best.bought) ? f : best, soldFlips[0])
     : null;
+
+  // Avg days to sell (for flips that have both listedDate and soldDate)
+  const avgDaysToSell = (() => {
+    const timed = soldFlips.filter(f => f.listedDate && f.soldDate);
+    if (!timed.length) return null;
+    const total = timed.reduce((a, f) => {
+      const d1 = new Date(`${f.listedDate} ${thisYear}`);
+      const d2 = new Date(`${f.soldDate} ${thisYear}`);
+      return a + Math.max(0, Math.round((d2 - d1) / 86400000));
+    }, 0);
+    return Math.round(total / timed.length);
+  })();
+
+  // ROI by flip category
+  const flipsByCategory = soldFlips.reduce((acc, f) => {
+    const cat = f.category || "Uncategorized";
+    if (!acc[cat]) acc[cat] = { profit: 0, count: 0, roiSum: 0 };
+    const gross = f.sold - f.bought;
+    acc[cat].profit  += gross - gross * (f.fees || 0) / 100;
+    acc[cat].count++;
+    acc[cat].roiSum  += (gross / f.bought) * 100;
+    return acc;
+  }, {});
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const toDateInput = (label) => {
@@ -327,7 +395,7 @@ export default function App() {
   };
   const deleteShift = (idx) => save({ ...data, shifts: data.shifts.filter((_, i) => i !== idx) });
   const addShift = () => {
-    const { date, hours, total, _editIdx } = form;
+    const { date, hours, total, _editIdx, _scheduleEntry } = form;
     if (!date || !hours || !total) { setForm({ ...form, _error: `Missing: ${!date ? "date" : !hours ? "hours worked" : "total made today"}` }); return; }
     const tips     = Math.max(0, +total - +hours * HOURLY_WAGE);
     const newShift = { date, hours: +hours, tips: +tips.toFixed(2), wage: HOURLY_WAGE };
@@ -340,24 +408,32 @@ export default function App() {
       const last  = newHistory[newHistory.length - 1];
       if (last) newHistory[newHistory.length - 1] = { ...last, date: today, value: last.value + +total };
     }
-    save({ ...data, shifts: newShifts, netWorthHistory: newHistory });
+    // If launched from schedule LOG button, mark that schedule entry as logged
+    const newSchedule = (_scheduleEntry && _editIdx === undefined)
+      ? data.schedule.map(s =>
+          s.date === _scheduleEntry.date && s.time === _scheduleEntry.time ? { ...s, logged: true } : s
+        )
+      : data.schedule;
+    save({ ...data, shifts: newShifts, netWorthHistory: newHistory, schedule: newSchedule });
     setModal(null); setForm({});
   };
 
   const openEditFlip = (idx) => {
     const f = data.flips[idx];
-    setForm({ item: f.item, bought: String(f.bought), sold: f.sold ? String(f.sold) : "", status: f.status, fees: f.fees ? String(f.fees) : "", _editIdx: idx });
+    setForm({ item: f.item, bought: String(f.bought), sold: f.sold ? String(f.sold) : "", status: f.status, fees: f.fees ? String(f.fees) : "", category: f.category || "", listedDate: f.listedDate || "", _editIdx: idx });
     setModal("flip");
   };
   const deleteFlip = (idx) => save({ ...data, flips: data.flips.filter((_, i) => i !== idx) });
   const saveFlip = () => {
-    const { item, bought, sold, status, fees, _editIdx } = form;
+    const { item, bought, sold, status, fees, category, _editIdx } = form;
     if (!item || !bought) return;
-    const existing = _editIdx !== undefined ? data.flips[_editIdx] : null;
-    const soldDate  = (status === "sold" && (!existing || existing.status !== "sold"))
+    const existing   = _editIdx !== undefined ? data.flips[_editIdx] : null;
+    const soldDate   = (status === "sold" && (!existing || existing.status !== "sold"))
       ? now.toLocaleDateString("en-US", { month: "short", day: "numeric" })
       : (existing?.soldDate || null);
-    const flip     = { item, bought: +bought, sold: sold ? +sold : null, status: status || "listed", fees: fees ? +fees : 0, soldDate };
+    const listedDate = existing?.listedDate
+      || now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const flip     = { item, bought: +bought, sold: sold ? +sold : null, status: status || "listed", fees: fees ? +fees : 0, soldDate, listedDate, category: category || null };
     const newFlips = _editIdx !== undefined
       ? data.flips.map((f, i) => i === _editIdx ? flip : f)
       : [...data.flips, flip];
@@ -417,6 +493,13 @@ export default function App() {
     setModal("flip");
   };
 
+  const logShiftFromSchedule = (schedShift) => {
+    const rawDate = toDateInput(schedShift.date);
+    setForm({ rawDate, date: schedShift.date, hours: "6", _scheduleEntry: { date: schedShift.date, time: schedShift.time } });
+    setTab("shifts");
+    setModal("shift");
+  };
+
   // ── Select styles helper ─────────────────────────────────────────────────────
   const selStyle = { width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" };
 
@@ -461,6 +544,32 @@ export default function App() {
               <StatCard label="Flip Income" value={`$${Math.round(flipProfit)}`} sub="Realized net of fees" accent="#ff8c00" />
               <StatCard label="Shift Income" value={`$${Math.round(totalShiftEarnings).toLocaleString()}`} sub={`Avg $${Math.round(avgPerShift)}/shift · $${Math.round(avgTips)} tips`} accent="#a78bfa" />
             </div>
+
+            {/* Backup prompt */}
+            {showBackupPrompt && (
+              <div style={{ background: "#ffd70010", border: "1px solid #ffd70044", borderRadius: 10, padding: "14px 18px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                <div>
+                  <div style={{ color: "#ffd700", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", marginBottom: 3 }}>⚠ WEEKLY BACKUP REMINDER</div>
+                  <div style={{ color: "#666", fontSize: 11, fontFamily: "monospace" }}>Export your data so you never lose it.</div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn onClick={() => { exportJSON(); dismissBackupPrompt(); }} color="#ffd700" style={{ fontSize: 10 }}>⬇ EXPORT NOW</Btn>
+                  <button onClick={dismissBackupPrompt} style={{ background: "none", border: "1px solid #333", color: "#555", fontSize: 10, fontFamily: "monospace", padding: "6px 12px", borderRadius: 4, cursor: "pointer" }}>DISMISS 7d</button>
+                </div>
+              </div>
+            )}
+
+            {/* Overspend warnings */}
+            {overspendWarnings.length > 0 && (
+              <div style={{ background: "#ff3b3b08", border: "1px solid #ff3b3b33", borderRadius: 10, padding: "14px 18px", marginBottom: 20 }}>
+                <div style={{ color: "#ff3b3b", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", marginBottom: 10 }}>⚠ BUDGET WARNINGS · {daysLeft} DAYS LEFT IN MONTH</div>
+                {overspendWarnings.map(({ cat, spent, limit, pct }) => (
+                  <div key={cat} style={{ color: +pct >= 100 ? "#ff3b3b" : "#ff8c00", fontFamily: "monospace", fontSize: 12, marginBottom: 4 }}>
+                    {cat}: ${spent.toFixed(0)} / ${limit} ({pct}%){+pct >= 100 ? " — OVER BUDGET" : " — approaching limit"}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Monthly P&L */}
             <div style={{ background: "#0d0d0d", border: "1px solid #00ff8818", borderRadius: 10, padding: "18px 20px", marginBottom: 20 }}>
@@ -528,7 +637,7 @@ export default function App() {
         )}
 
         {/* ── SCHEDULE ──────────────────────────────────────────────────────── */}
-        {tab === "schedule" && <ScheduleTab data={data} save={save} />}
+        {tab === "schedule" && <ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} />}
 
         {/* ── SHIFTS ────────────────────────────────────────────────────────── */}
         {tab === "shifts" && (
@@ -719,12 +828,12 @@ export default function App() {
                 <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>FLIP ANALYTICS · NET OF FEES</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
                   {[
-                    { label: "NET PROFIT",    value: `$${Math.round(flipProfit)}`,                       color: "#00ff88" },
-                    { label: "FLIPS SOLD",    value: soldFlips.length,                                   color: "#ff8c00" },
-                    { label: "AVG ROI",       value: avgFlipROI ? `+${avgFlipROI}%` : "—",              color: "#ffd700" },
-                    { label: "BEST FLIP",     value: bestFlip ? `+$${bestFlip.sold-bestFlip.bought}` : "—", color: "#a78bfa" },
-                    { label: "ACTIVE",        value: data.flips.filter(f=>f.status!=="sold").length,     color: "#38bdf8" },
-                    { label: "TOTAL INVESTED",value: `$${data.flips.reduce((a,f)=>a+f.bought,0).toLocaleString()}`, color: "#555" },
+                    { label: "NET PROFIT",      value: `$${Math.round(flipProfit)}`,                          color: "#00ff88" },
+                    { label: "FLIPS SOLD",      value: soldFlips.length,                                      color: "#ff8c00" },
+                    { label: "AVG ROI",         value: avgFlipROI ? `+${avgFlipROI}%` : "—",                 color: "#ffd700" },
+                    { label: "BEST FLIP",       value: bestFlip ? `+$${bestFlip.sold-bestFlip.bought}` : "—", color: "#a78bfa" },
+                    { label: "AVG DAYS TO SELL",value: avgDaysToSell !== null ? `${avgDaysToSell}d` : "—",    color: "#38bdf8" },
+                    { label: "ACTIVE",          value: data.flips.filter(f=>f.status!=="sold").length,        color: "#60a5fa" },
                   ].map((s, i) => (
                     <div key={i}>
                       <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>{s.label}</div>
@@ -737,19 +846,42 @@ export default function App() {
                     🏆 Best: <span style={{ color: "#a78bfa" }}>{bestFlip.item}</span> — ${bestFlip.bought} → ${bestFlip.sold} (+{((bestFlip.sold-bestFlip.bought)/bestFlip.bought*100).toFixed(0)}% ROI{bestFlip.fees ? `, ${bestFlip.fees}% fee` : ""})
                   </div>
                 )}
+                {Object.keys(flipsByCategory).length > 0 && (
+                  <div style={{ marginTop: 14, borderTop: "1px solid #1a1a1a", paddingTop: 12 }}>
+                    <div style={{ color: "#333", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 8 }}>ROI BY CATEGORY</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {Object.entries(flipsByCategory).map(([cat, v]) => (
+                        <div key={cat} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: 5, padding: "6px 10px" }}>
+                          <div style={{ color: "#ff8c00", fontSize: 9, fontFamily: "monospace" }}>{cat}</div>
+                          <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(v.profit)}</div>
+                          <div style={{ color: "#555", fontSize: 9, fontFamily: "monospace" }}>+{(v.roiSum/v.count).toFixed(0)}% avg · {v.count} sold</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             <div style={{ display: "grid", gap: 10 }}>
               {data.flips.map((f, i) => {
-                const gross  = f.sold ? f.sold - f.bought : null;
-                const net    = gross !== null ? gross - gross * (f.fees || 0) / 100 : null;
-                const roi    = gross !== null ? ((gross / f.bought) * 100).toFixed(0) : null;
-                const hasFee = f.fees && f.fees > 0;
+                const gross      = f.sold ? f.sold - f.bought : null;
+                const net        = gross !== null ? gross - gross * (f.fees || 0) / 100 : null;
+                const roi        = gross !== null ? ((gross / f.bought) * 100).toFixed(0) : null;
+                const hasFee     = f.fees && f.fees > 0;
+                const daysListed = (f.listedDate && f.status !== "sold") ? (() => {
+                  const d = new Date(`${f.listedDate} ${thisYear}`);
+                  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+                })() : null;
+                const isStale = daysListed !== null && daysListed > 30;
                 return (
-                  <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${f.status==="sold" ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${isStale ? "#ff3b3b44" : f.status==="sold" ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ color: "#e8e8e8", fontWeight: 600 }}>{f.item}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <div style={{ color: "#e8e8e8", fontWeight: 600 }}>{f.item}</div>
+                        {f.category && <span style={{ color: "#38bdf8", fontSize: 9, fontFamily: "monospace", border: "1px solid #38bdf844", padding: "1px 6px", borderRadius: 3 }}>{f.category}</span>}
+                        {daysListed !== null && <span style={{ color: isStale ? "#ff3b3b" : "#444", fontSize: 9, fontFamily: "monospace", border: `1px solid ${isStale ? "#ff3b3b44" : "#33333344"}`, padding: "1px 6px", borderRadius: 3 }}>{daysListed}d{isStale ? " STALE" : ""}</span>}
+                      </div>
                       <div style={{ color: "#555", fontSize: 11, marginTop: 3 }}>
                         Bought ${f.bought.toLocaleString()} {f.sold ? `→ Sold $${f.sold.toLocaleString()}` : "· Listed"}
                         {hasFee && <span style={{ color: "#444" }}> · {f.fees}% fee</span>}
@@ -884,7 +1016,18 @@ export default function App() {
                     <div style={{ background: "#1a1a1a", borderRadius: 4, height: 8, overflow: "hidden" }}>
                       <div style={{ background: pct >= 100 ? "#00ff88" : "#e879f9", width: `${pct}%`, height: "100%", borderRadius: 4, transition: "width 0.5s" }} />
                     </div>
-                    <div style={{ color: "#555", fontSize: 10, marginTop: 6 }}>{pct.toFixed(0)}% complete · ${Math.max(0, g.target - current).toLocaleString(undefined,{maximumFractionDigits:0})} to go</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+                      <div style={{ color: "#555", fontSize: 10 }}>{pct.toFixed(0)}% complete · ${Math.max(0, g.target - current).toLocaleString(undefined,{maximumFractionDigits:0})} to go</div>
+                      {(() => {
+                        const remaining = Math.max(0, g.target - current);
+                        if (pct >= 100) return <span style={{ color: "#00ff88", fontSize: 10, fontFamily: "monospace" }}>✓ REACHED</span>;
+                        if (nwDailyGain <= 0 || remaining === 0) return null;
+                        const days = remaining / nwDailyGain;
+                        if (days > 365 * 3) return null;
+                        const label = days < 7 ? `< 1 week` : days < 60 ? `~${Math.round(days / 7)}wk` : `~${Math.round(days / 30)}mo`;
+                        return <span style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace" }}>ETA {label}</span>;
+                      })()}
+                    </div>
                   </div>
                 );
               })}
@@ -960,6 +1103,13 @@ export default function App() {
               </div>
             </div>
           )}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
+            <select value={form.category || ""} onChange={e => setForm({ ...form, category: e.target.value })} style={selStyle}>
+              <option value="">— Select Category —</option>
+              {["Shoes", "Electronics", "Clothing", "Collectibles", "Tickets", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
           <div style={{ marginBottom: 14 }}>
             <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Status</label>
             <select value={form.status || "listed"} onChange={e => setForm({ ...form, status: e.target.value })} style={selStyle}>
