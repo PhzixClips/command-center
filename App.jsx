@@ -13,9 +13,10 @@ import DailyCard       from "./components/DailyCard.jsx";
 import DollarDeployer  from "./components/DollarDeployer.jsx";
 import AlertsFeed      from "./components/AlertsFeed.jsx";
 import ChartPanel      from "./components/ChartPanel.jsx";
-import ScheduleTab     from "./components/ScheduleTab.jsx";
-import BudgetTab       from "./components/BudgetTab.jsx";
-import FAB             from "./components/FAB.jsx";
+import ScheduleTab      from "./components/ScheduleTab.jsx";
+import BudgetTab        from "./components/BudgetTab.jsx";
+import OpportunitiesTab from "./components/OpportunitiesTab.jsx";
+import FAB              from "./components/FAB.jsx";
 
 const fetchYahooPrice = async (ticker) => {
   try {
@@ -977,15 +978,7 @@ export default function App() {
 
         {/* ── OPPORTUNITIES ─────────────────────────────────────────────────── */}
         {tab === "opportunities" && (
-          <div>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2, marginBottom: 6 }}>OPPORTUNITY ENGINE</div>
-              <div style={{ color: "#555", fontSize: 12 }}>Based on ${data.liquidCash} liquid · Aggressive risk profile · Click any card for full plan</div>
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              {opportunities.map((o, i) => <OpportunityCard key={i} opp={o} onStartFlip={startFlipFromOpp} />)}
-            </div>
-          </div>
+          <OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} />
         )}
 
         {/* ── GOALS ─────────────────────────────────────────────────────────── */}
