@@ -32,10 +32,11 @@ export default function BudgetTab({ data, save }) {
   const now = new Date();
   const currentMonthKey = toMonthKey(now);
 
-  const [viewMonth, setViewMonth] = useState(currentMonthKey);
-  const [modal, setModal] = useState(null);
-  const [form, setForm]   = useState({});
+  const [viewMonth,  setViewMonth]  = useState(currentMonthKey);
+  const [modal,      setModal]      = useState(null);
+  const [form,       setForm]       = useState({});
   const [showImport, setShowImport] = useState(false);
+  const [filterCat,  setFilterCat]  = useState(null);
 
   const budget    = data.budget    || {};
   const expenses  = data.expenses  || [];
@@ -48,7 +49,10 @@ export default function BudgetTab({ data, save }) {
 
   const spentByCategory = {};
   CATEGORIES.forEach(c => { spentByCategory[c] = 0; });
-  monthExpenses.forEach(e => { spentByCategory[e.category] = (spentByCategory[e.category] || 0) + e.amount; });
+  monthExpenses.forEach(e => {
+    const cat = CATEGORIES.includes(e.category) ? e.category : "Other";
+    spentByCategory[cat] = (spentByCategory[cat] || 0) + e.amount;
+  });
 
   const totalBudget = Object.values(budget).reduce((a, b) => a + b, 0);
   const totalSpent  = monthExpenses.reduce((a, e) => a + e.amount, 0);
@@ -56,10 +60,13 @@ export default function BudgetTab({ data, save }) {
   const remaining   = totalBudget - totalSpent;
   const netCashFlow = totalEarned - totalSpent;
   const isCurrentMonth = viewMonth === currentMonthKey;
-
   const totalTransferred = monthTransfers.reduce((a, e) => a + e.amount, 0);
 
-  // All months that have expenses, income, or transfers
+  // Uncategorized = expenses in "Other" or with no recognized category
+  const uncategorizedCount = monthExpenses.filter(e => !CATEGORIES.includes(e.category) || e.category === "Other").length;
+
+  const maxSpent = Math.max(...CATEGORIES.map(c => spentByCategory[c] || 0), 1);
+
   const allMonths = [...new Set([...expenses.map(e => e.month), ...income.map(e => e.month), ...transfers.map(e => e.month)])].sort();
   if (!allMonths.includes(currentMonthKey)) allMonths.push(currentMonthKey);
 
@@ -83,6 +90,16 @@ export default function BudgetTab({ data, save }) {
     setModal(null); setForm({});
   };
 
+  const saveEditExpense = () => {
+    const { id, desc, amount, category } = form;
+    if (!desc || !amount || !category) return;
+    save({
+      ...data,
+      expenses: expenses.map(e => e.id === id ? { ...e, desc, amount: +amount, category } : e),
+    });
+    setModal(null); setForm({});
+  };
+
   const deleteExpense = (id) => {
     save({ ...data, expenses: expenses.filter(e => e.id !== id) });
   };
@@ -94,13 +111,25 @@ export default function BudgetTab({ data, save }) {
     setModal(null); setForm({});
   };
 
+  const openEdit = (e) => {
+    setForm({ id: e.id, desc: e.desc, amount: String(e.amount), category: e.category });
+    setModal("edit-expense");
+  };
+
+  // Expenses to show in the list section
+  const filteredExpenses = filterCat
+    ? monthExpenses.filter(e => {
+        const cat = CATEGORIES.includes(e.category) ? e.category : "Other";
+        return cat === filterCat;
+      })
+    : [...monthExpenses].reverse();
+
   return (
     <div>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
         <div>
           <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2 }}>BUDGET TRACKER</div>
-          {/* Month picker */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <button onClick={() => setViewMonth(offsetMonth(viewMonth, -1))}
               style={{ background: "none", border: "1px solid #1a1a1a", color: "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: "pointer" }}>‹</button>
@@ -122,10 +151,10 @@ export default function BudgetTab({ data, save }) {
       {/* Summary cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "INCOME",         value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
-          { label: "SPENT SO FAR",   value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
-          { label: "NET CASH FLOW",  value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
-          { label: "BUDGET LEFT",    value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "of budget left" },
+          { label: "INCOME",        value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
+          { label: "SPENT SO FAR",  value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
+          { label: "NET CASH FLOW", value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
+          { label: "BUDGET LEFT",   value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "of budget left" },
         ].map((c, i) => (
           <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${c.color}22`, borderRadius: 8, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: c.color }} />
@@ -136,19 +165,56 @@ export default function BudgetTab({ data, save }) {
         ))}
       </div>
 
-      {/* Category breakdown */}
+      {/* Category breakdown — clickable */}
       <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: 20, marginBottom: 20 }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 16 }}>CATEGORY BREAKDOWN</div>
+        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 16 }}>
+          CATEGORY BREAKDOWN · {filterCat ? <span style={{ color: CAT_COLOR[filterCat] }}>tap again to clear</span> : "tap a category to filter"}
+        </div>
         {CATEGORIES.map(cat => {
-          const spent = spentByCategory[cat] || 0;
-          const limit = budget[cat] || 0;
-          const pct   = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
-          const over  = spent > limit && limit > 0;
-          const color = CAT_COLOR[cat];
+          const spent  = spentByCategory[cat] || 0;
+          const limit  = budget[cat] || 0;
+          const pct    = limit > 0 ? Math.min(100, (spent / limit) * 100) : Math.min(100, (spent / maxSpent) * 80);
+          const over   = spent > limit && limit > 0;
+          const color  = CAT_COLOR[cat];
+          const active = filterCat === cat;
+          const dimmed = filterCat && !active;
+          const expCount = monthExpenses.filter(e => {
+            const c = CATEGORIES.includes(e.category) ? e.category : "Other";
+            return c === cat;
+          }).length;
+
           return (
-            <div key={cat} style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <div style={{ color: color, fontSize: 11, fontFamily: "monospace" }}>{cat}</div>
+            <div key={cat}
+              onClick={() => setFilterCat(active ? null : cat)}
+              style={{ marginBottom: 16, cursor: "pointer", opacity: dimmed ? 0.3 : 1, transition: "opacity 0.2s" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ color: active ? "#fff" : color, fontSize: 11, fontFamily: "monospace", fontWeight: active ? 700 : 400 }}>
+                    {active ? "▶ " : ""}{cat}
+                  </span>
+                  {/* Apple-style badge for Other/uncategorized */}
+                  {cat === "Other" && uncategorizedCount > 0 && (
+                    <span style={{
+                      background: "#ff3b3b",
+                      color: "#fff",
+                      borderRadius: 10,
+                      minWidth: 18,
+                      height: 18,
+                      fontSize: 10,
+                      fontWeight: 800,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 5px",
+                      fontFamily: "monospace",
+                      letterSpacing: 0,
+                      lineHeight: 1,
+                    }}>{uncategorizedCount}</span>
+                  )}
+                  {expCount > 0 && (
+                    <span style={{ color: "#333", fontSize: 9, fontFamily: "monospace" }}>({expCount})</span>
+                  )}
+                </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   {over && <span style={{ color: "#ff3b3b", fontSize: 9, fontFamily: "monospace", border: "1px solid #ff3b3b44", padding: "1px 6px", borderRadius: 3 }}>OVER</span>}
                   <span style={{ color: over ? "#ff3b3b" : "#e8e8e8", fontFamily: "monospace", fontSize: 12 }}>
@@ -156,8 +222,11 @@ export default function BudgetTab({ data, save }) {
                   </span>
                 </div>
               </div>
-              <div style={{ background: "#1a1a1a", borderRadius: 4, height: 8, overflow: "hidden" }}>
-                <div style={{ background: over ? "#ff3b3b" : color, width: `${Math.min(pct, 100)}%`, height: "100%", borderRadius: 4, transition: "width 0.4s" }} />
+              <div style={{ background: "#1a1a1a", borderRadius: 4, height: active ? 10 : 7, overflow: "hidden", transition: "height 0.2s" }}>
+                <div style={{
+                  background: over ? "#ff3b3b" : active ? `linear-gradient(90deg, #fff4, ${color})` : color,
+                  width: `${Math.min(pct, 100)}%`, height: "100%", borderRadius: 4, transition: "width 0.4s",
+                }} />
               </div>
             </div>
           );
@@ -165,34 +234,39 @@ export default function BudgetTab({ data, save }) {
       </div>
 
       {/* Expense list */}
-      <div style={{ marginBottom: 16, color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
-        EXPENSES · {monthExpenses.length} IN {monthLabel(viewMonth)}
-      </div>
-      {monthExpenses.length === 0 ? (
-        <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>
-          No expenses logged for {monthLabel(viewMonth)}.
+      {filterCat ? (
+        /* — Filtered view — */
+        <div>
+          <div style={{ textAlign: "center", padding: "16px 0 20px", borderBottom: "1px solid #1a1a1a", marginBottom: 16 }}>
+            <div style={{ color: CAT_COLOR[filterCat], fontSize: 28, fontWeight: 900, fontFamily: "monospace", letterSpacing: 3 }}>{filterCat.toUpperCase()}</div>
+            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>
+              {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? "s" : ""} · ${filteredExpenses.reduce((a, e) => a + e.amount, 0).toFixed(2)} total
+            </div>
+          </div>
+          {filteredExpenses.length === 0 ? (
+            <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "24px 0" }}>No expenses in this category.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+              {filteredExpenses.map(e => <ExpenseRow key={e.id} e={e} onEdit={() => openEdit(e)} onDelete={() => deleteExpense(e.id)} />)}
+            </div>
+          )}
         </div>
       ) : (
-        <div style={{ display: "grid", gap: 8 }}>
-          {[...monthExpenses].reverse().map(e => {
-            const color = CAT_COLOR[e.category] || "#888";
-            return (
-              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>{e.category}</span>
-                  <div>
-                    <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
-                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>-${e.amount.toFixed(2)}</div>
-                  <button onClick={() => deleteExpense(e.id)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        /* — Default full list — */
+        <>
+          <div style={{ marginBottom: 16, color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
+            EXPENSES · {monthExpenses.length} IN {monthLabel(viewMonth)}
+          </div>
+          {monthExpenses.length === 0 ? (
+            <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>
+              No expenses logged for {monthLabel(viewMonth)}.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {filteredExpenses.map(e => <ExpenseRow key={e.id} e={e} onEdit={() => openEdit(e)} onDelete={() => deleteExpense(e.id)} />)}
+            </div>
+          )}
+        </>
       )}
 
       {/* Income list */}
@@ -246,14 +320,18 @@ export default function BudgetTab({ data, save }) {
         <Modal title="ADD EXPENSE" onClose={() => setModal(null)}>
           <Input label="Description" value={form.desc || ""} onChange={v => setForm({ ...form, desc: v })} placeholder="Groceries at Fry's" />
           <Input label="Amount ($)" type="number" value={form.amount || ""} onChange={v => setForm({ ...form, amount: v })} placeholder="47.50" />
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
-            <select value={form.category || "Food & Dining"} onChange={e => setForm({ ...form, category: e.target.value })}
-              style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" }}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
+          <CategorySelect value={form.category || "Food & Dining"} onChange={v => setForm({ ...form, category: v })} />
           <Btn onClick={addExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>ADD EXPENSE</Btn>
+        </Modal>
+      )}
+
+      {/* Edit expense modal */}
+      {modal === "edit-expense" && (
+        <Modal title="EDIT EXPENSE" onClose={() => { setModal(null); setForm({}); }}>
+          <Input label="Description" value={form.desc || ""} onChange={v => setForm({ ...form, desc: v })} />
+          <Input label="Amount ($)" type="number" value={form.amount || ""} onChange={v => setForm({ ...form, amount: v })} />
+          <CategorySelect value={form.category || "Other"} onChange={v => setForm({ ...form, category: v })} />
+          <Btn onClick={saveEditExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE CHANGES</Btn>
         </Modal>
       )}
 
@@ -291,10 +369,41 @@ export default function BudgetTab({ data, save }) {
         </Modal>
       )}
 
-      {/* CSV Import modal */}
-      {showImport && (
-        <CSVImport data={data} save={save} onClose={() => setShowImport(false)} />
-      )}
+      {showImport && <CSVImport data={data} save={save} onClose={() => setShowImport(false)} />}
+    </div>
+  );
+}
+
+// ── Shared sub-components ────────────────────────────────────────────────────
+
+function ExpenseRow({ e, onEdit, onDelete }) {
+  const color = CAT_COLOR[e.category] || "#888";
+  return (
+    <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
+        <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap", flexShrink: 0 }}>{e.category}</span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.desc}</div>
+          <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginLeft: 10 }}>
+        <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 15, fontWeight: 700 }}>-${e.amount.toFixed(2)}</div>
+        <button onClick={onEdit} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
+        <button onClick={onDelete} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+function CategorySelect({ value, onChange }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" }}>
+        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
     </div>
   );
 }
