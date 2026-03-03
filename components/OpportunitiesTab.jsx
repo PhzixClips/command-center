@@ -840,7 +840,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. CRITICAL RULE: Before including ANY opportunity, use search to verify it is real and current RIGHT NOW. Do NOT suggest flipping a sports team's tickets unless you confirm they are actually in playoff position today. Do NOT cite artist tour dates unless you verify the tour exists. Do NOT cite GPU resale margins without checking current eBay sold listings. Only include opportunities you can verify are real this week.",
+        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. Give specific, actionable advice based on the situation. For ticket flips, only suggest evergreen opportunities (UFC, concerts) — never assume a specific team is in playoffs without confirmed data. For GPU/electronics, always say 'check eBay sold listings first' before citing margins. Be specific with dollar amounts, platforms, and exact steps.",
         `MY SITUATION:
 • Liquid cash (checking only, NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
@@ -851,12 +851,7 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
 • Top scored opportunities for my capital: ${top3}
 
-BEFORE writing each move, search to verify:
-1. For any ticket flip — search "[team] NBA standings 2026" and confirm they have a playoff spot. Do NOT recommend Suns tickets unless standings confirm they made the playoffs.
-2. For any GPU/console flip — search "rtx [model] ebay sold 2026" to confirm actual current resale margin before citing numbers.
-3. For any concert — search "[artist] tour 2026 Phoenix" to confirm the show actually exists.
-
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Only verified, real opportunities. Format:
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Pick moves that fit my capital and situation. Format:
 
 MOVE 1: [TITLE IN CAPS]
 DO TODAY: [exact action — platform, what to search/click]
@@ -871,8 +866,7 @@ MOVE 2: (same format)
 MOVE 3: (same format)
 
 FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]`,
-        1800,
-        true  // Google Search — must verify facts before including
+        1800
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
