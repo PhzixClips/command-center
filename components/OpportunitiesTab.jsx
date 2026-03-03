@@ -540,255 +540,201 @@ function PlaybookText({ text }) {
   );
 }
 
-// ── Opportunity Card ──────────────────────────────────────────────────────────
+// ── Unified Opportunity Card (collapsible) ────────────────────────────────────
 function OppCard({ opp, liquid, onExecute, rank }) {
+  const [open, setOpen] = useState(false);
   const laneColor = LANE_META[opp.lane]?.color || "#555";
-  const gap       = (!opp.isService && opp.minCapital > 0) ? Math.max(0, opp.minCapital - liquid) : 0;
-  const isHot     = opp.score >= 80;
+  const isFB  = opp.lane === "FBMKT";
+  const gap   = isFB
+    ? (opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0)
+    : (!opp.isService && opp.minCapital > 0 ? Math.max(0, opp.minCapital - liquid) : 0);
+  const locked = gap > 0;
 
-  return (
-    <div style={{
-      background: "#0d0d0d",
-      border: `1px solid ${rank <= 3 ? laneColor + "88" : isHot ? laneColor + "55" : "#1a1a1a"}`,
-      borderRadius: 10,
-      padding: "16px 18px",
-      opacity: gap > 500 ? 0.6 : 1,
-    }}>
-      {/* Badges */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", justifyContent: "space-between" }}>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        <span style={{ color: laneColor, fontSize: 9, border: `1px solid ${laneColor}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>
-          {LANE_META[opp.lane]?.icon} {LANE_META[opp.lane]?.label?.toUpperCase()}
-        </span>
-        {opp.urgency === "hot-now" && (
-          <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>🔴 HOT NOW</span>
-        )}
-        {opp.urgency === "seasonal" && (
-          <span style={{ color: "#ffd700", fontSize: 9, border: "1px solid #ffd70044", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>⏳ SEASONAL</span>
-        )}
-        {opp.truckRequired && (
-          <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>
-        )}
-      </div>
-        {rank && rank <= 3 && (
-          <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700 }}>#{rank}</span>
-        )}
-      </div>
+  const roiLabel = opp.isService
+    ? `$${opp.hourlyRate[0]}–${opp.hourlyRate[1]}/hr`
+    : `+${opp.roiRange[0]}–${opp.roiRange[1]}%`;
 
-      {/* Title */}
-      <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 7 }}>{opp.title}</div>
-
-      {/* Detail */}
-      <div style={{ color: "#777", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{opp.detail}</div>
-
-      {/* Action box */}
-      <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${laneColor}44` }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 5, fontFamily: "monospace" }}>ACTION</div>
-        <div style={{ color: "#aaa", fontSize: 11, lineHeight: 1.7 }}>{opp.action}</div>
-      </div>
-
-      {/* Stats row */}
-      <div style={{ display: "flex", gap: 20, marginBottom: 12, flexWrap: "wrap" }}>
-        {opp.isService ? (
-          <div>
-            <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>EARNINGS</div>
-            <div style={{ color: "#00ff88", fontSize: 15, fontWeight: 700, fontFamily: "monospace" }}>
-              ${opp.hourlyRate[0]}–${opp.hourlyRate[1]}/hr
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>EXPECTED ROI</div>
-            <div style={{ color: "#00ff88", fontSize: 15, fontWeight: 700, fontFamily: "monospace" }}>
-              +{opp.roiRange[0]}–{opp.roiRange[1]}%
-            </div>
-          </div>
-        )}
-        {opp.minCapital > 0 && (
-          <div>
-            <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>CAPITAL</div>
-            <div style={{ color: gap > 0 ? "#ff3b3b" : "#e8e8e8", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>
-              ${opp.minCapital.toLocaleString()}{opp.maxCapital > opp.minCapital ? `–$${opp.maxCapital.toLocaleString()}` : ""}
-            </div>
-          </div>
-        )}
-        <div>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>TIME</div>
-          <div style={{ color: "#e8e8e8", fontSize: 13, fontFamily: "monospace" }}>{opp.timeframe}</div>
-        </div>
-        <div>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
-          <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
-        </div>
-      </div>
-
-      {/* Direct action links */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
-        {(opp.links || []).map(l => (
-          <a
-            key={l.url} href={l.url} target="_blank" rel="noopener noreferrer"
-            style={{
-              color: laneColor, fontSize: 10, fontFamily: "monospace",
-              border: `1px solid ${laneColor}44`, padding: "3px 9px", borderRadius: 4,
-              textDecoration: "none", background: `${laneColor}08`,
-            }}
-          >
-            🔗 {l.label}
-          </a>
-        ))}
-      </div>
-
-      {/* Execute / locked */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {gap > 0 ? (
-          <span style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>NEED ${gap.toLocaleString()} MORE</span>
-        ) : (
-          <span />
-        )}
-        <button
-          onClick={() => onExecute(opp)}
-          disabled={gap > 0}
-          style={{
-            background: gap > 0 ? "#0d0d0d" : `${laneColor}18`,
-            border: `1px solid ${gap > 0 ? "#222" : laneColor}`,
-            color: gap > 0 ? "#333" : laneColor,
-            fontFamily: "monospace", fontSize: 11, letterSpacing: 1,
-            padding: "8px 18px", borderRadius: 5,
-            cursor: gap > 0 ? "default" : "pointer",
-          }}
-        >
-          {gap > 0 ? "LOCKED" : "EXECUTE →"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── FB Marketplace Card ───────────────────────────────────────────────────────
-function FBMarketCard({ opp, liquid, onExecute, rank }) {
-  const color = LANE_META.FBMKT.color;
-  const isHot = opp.urgency === "hot-now";
-  const gap   = opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0;
+  const capitalLabel = isFB
+    ? `$${opp.buyRange[0]}–$${opp.buyRange[1]}`
+    : (opp.minCapital > 0 ? `$${opp.minCapital.toLocaleString()}${opp.maxCapital > opp.minCapital ? `–$${opp.maxCapital.toLocaleString()}` : ""}` : null);
 
   const scout = (term) =>
     window.open(`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(term)}`, "_blank");
 
   return (
     <div style={{
-      background: "#0d0d0d",
-      border: `1px solid ${rank <= 3 ? color + "88" : isHot ? color + "55" : "#1a1a1a"}`,
-      borderRadius: 10, padding: "16px 18px",
+      background: "#0a0a0a",
+      border: `1px solid ${open ? laneColor + "66" : rank && rank <= 3 ? laneColor + "44" : "#1a1a1a"}`,
+      borderRadius: 8,
+      opacity: gap > 500 ? 0.55 : 1,
+      overflow: "hidden",
     }}>
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10, justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-          <span style={{ fontSize: 24, lineHeight: 1 }}>{opp.icon}</span>
-          <div>
-            <div style={{ color: "#e8e8e8", fontWeight: 700, fontSize: 15, marginBottom: 5 }}>{opp.title}</div>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-              <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 7px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>📱 FB MARKETPLACE</span>
-              {isHot && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b55", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🔴 HOT NOW</span>}
-              {opp.truckRequired && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "1px 7px", borderRadius: 3, fontFamily: "monospace" }}>🚛 TRUCK</span>}
-            </div>
+      {/* ── Compact header row (always visible) ── */}
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", cursor: "pointer", borderLeft: `3px solid ${laneColor}` }}
+      >
+        {rank && rank <= 3 && (
+          <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700, minWidth: 18, flexShrink: 0 }}>#{rank}</span>
+        )}
+
+        {/* Icon + title + badges */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 3 }}>
+            <span style={{ fontSize: 13 }}>{opp.icon || LANE_META[opp.lane]?.icon}</span>
+            <span style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 13, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{opp.title}</span>
+          </div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>
+              {LANE_META[opp.lane]?.label?.toUpperCase()}
+            </span>
+            {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>HOT</span>}
+            {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>SEASONAL</span>}
+            {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>TRUCK</span>}
           </div>
         </div>
-        {rank && rank <= 3 && <span style={{ color, fontSize: 10, fontFamily: "monospace", fontWeight: 700 }}>#{rank}</span>}
-      </div>
 
-      {/* Detail */}
-      <div style={{ color: "#777", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{opp.detail}</div>
+        {/* Stats cluster */}
+        <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
+            <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
+          </div>
+          {capitalLabel && (
+            <div style={{ textAlign: "right" }}>
+              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
+              <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
+            </div>
+          )}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
+            <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+          </div>
+        </div>
 
-      {/* Hot Items table */}
-      {opp.hotItems && opp.hotItems.length > 0 && (
-        <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
-          <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8, fontFamily: "monospace" }}>🔥 HOT ITEMS TO WATCH</div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "monospace", fontSize: 11 }}>
-            <thead>
-              <tr>
-                <th style={{ color: "#555", textAlign: "left", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>MODEL</th>
-                <th style={{ color: "#ff6b6b", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>BUY</th>
-                <th style={{ color: "#00ff88", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>SELL</th>
-                <th style={{ color: "#ffd700", textAlign: "right", paddingBottom: 6, fontSize: 9, letterSpacing: 1, fontWeight: 500 }}>ROI</th>
-              </tr>
-            </thead>
-            <tbody>
-              {opp.hotItems.map((item, idx) => (
-                <tr key={idx} style={{ borderTop: "1px solid #1a1a1a" }}>
-                  <td style={{ color: "#bbb", paddingTop: 5, paddingBottom: 5, paddingRight: 8 }}>{item.model}</td>
-                  <td style={{ color: "#ff6b6b", textAlign: "right", paddingTop: 5 }}>{item.buy}</td>
-                  <td style={{ color: "#00ff88", textAlign: "right", paddingTop: 5 }}>{item.sell}</td>
-                  <td style={{ color: "#ffd700", textAlign: "right", paddingTop: 5 }}>{item.roi}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Scout section — the main feature */}
-      <div style={{ background: "#111", borderRadius: 6, padding: "10px 13px", marginBottom: 14, borderLeft: `3px solid ${color}55` }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8, fontFamily: "monospace" }}>🔍 SCOUT FB MARKETPLACE NOW</div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {opp.searchTerms.map(t => (
-            <button
-              key={t} onClick={() => scout(t)}
-              style={{
-                background: `${color}12`, border: `1px solid ${color}55`, color,
-                fontFamily: "monospace", fontSize: 10, padding: "5px 11px",
-                borderRadius: 4, cursor: "pointer",
-              }}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Price ladder */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>BUY</div>
-          <div style={{ color: "#ff6b6b", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>$0–${opp.buyRange[1]}</div>
-        </div>
-        <div style={{ color: "#333", fontSize: 18, fontWeight: 300 }}>→</div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELL</div>
-          <div style={{ color: "#00ff88", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
-        </div>
-        <div style={{ color: "#222", fontSize: 16 }}>·</div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>PROFIT</div>
-          <div style={{ color: "#ffd700", fontSize: 14, fontWeight: 700, fontFamily: "monospace" }}>+{opp.roiRange[0]}–{opp.roiRange[1]}%</div>
-        </div>
-        <div style={{ color: "#222", fontSize: 16 }}>·</div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
-          <div style={{ color: "#e8e8e8", fontSize: 13, fontFamily: "monospace" }}>{opp.daysToSell}d</div>
-        </div>
-        <div style={{ color: "#222", fontSize: 16 }}>·</div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>RISK</div>
-          <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
-        </div>
-      </div>
-
-      {/* Execute */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {gap > 0
-          ? <span style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>NEED ${gap} TO BUY</span>
-          : <span />
-        }
+        {/* Execute button */}
         <button
-          onClick={() => onExecute(opp)}
+          onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
           style={{
-            background: `${color}18`, border: `1px solid ${color}`, color,
-            fontFamily: "monospace", fontSize: 11, letterSpacing: 1,
-            padding: "8px 18px", borderRadius: 5, cursor: "pointer",
+            background: locked ? "transparent" : `${laneColor}18`,
+            border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
+            color: locked ? "#2a2a2a" : laneColor,
+            fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
+            padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
           }}
         >
-          LOG FLIP →
+          {locked ? `+$${gap}` : "GO →"}
         </button>
+
+        <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0, display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>▼</span>
       </div>
+
+      {/* ── Expanded detail ── */}
+      {open && (
+        <div style={{ padding: "12px 14px 14px", borderTop: "1px solid #111" }}>
+          <p style={{ color: "#666", fontSize: 12, lineHeight: 1.65, margin: "0 0 12px" }}>{opp.detail}</p>
+
+          {/* Action plan */}
+          {opp.action && (
+            <div style={{ background: "#111", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
+              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 4, fontFamily: "monospace" }}>▶ ACTION</div>
+              <div style={{ color: "#aaa", fontSize: 11, lineHeight: 1.7 }}>{opp.action}</div>
+            </div>
+          )}
+
+          {/* Hot items table (FBMKT) */}
+          {opp.hotItems?.length > 0 && (
+            <div style={{ background: "#111", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
+              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 7, fontFamily: "monospace" }}>🔥 HOT ITEMS TO WATCH</div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "monospace", fontSize: 11 }}>
+                <thead>
+                  <tr>
+                    <th style={{ color: "#444", textAlign: "left", paddingBottom: 5, fontSize: 8, letterSpacing: 1, fontWeight: 500 }}>MODEL</th>
+                    <th style={{ color: "#ff6b6b", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>BUY</th>
+                    <th style={{ color: "#00ff88", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>SELL</th>
+                    <th style={{ color: "#ffd700", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>ROI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {opp.hotItems.map((item, idx) => (
+                    <tr key={idx} style={{ borderTop: "1px solid #1a1a1a" }}>
+                      <td style={{ color: "#bbb", paddingTop: 5, paddingBottom: 5, paddingRight: 8 }}>{item.model}</td>
+                      <td style={{ color: "#ff6b6b", textAlign: "right", paddingTop: 5 }}>{item.buy}</td>
+                      <td style={{ color: "#00ff88", textAlign: "right", paddingTop: 5 }}>{item.sell}</td>
+                      <td style={{ color: "#ffd700", textAlign: "right", paddingTop: 5 }}>{item.roi}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Scout terms (FBMKT) */}
+          {opp.searchTerms?.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 6, fontFamily: "monospace" }}>🔍 SCOUT FB MARKETPLACE</div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {opp.searchTerms.map(t => (
+                  <button
+                    key={t} onClick={() => scout(t)}
+                    style={{
+                      background: `${laneColor}10`, border: `1px solid ${laneColor}44`, color: laneColor,
+                      fontFamily: "monospace", fontSize: 9, padding: "4px 9px", borderRadius: 3, cursor: "pointer",
+                    }}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Price ladder (FBMKT) */}
+          {opp.buyRange && (
+            <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div>
+                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>BUY RANGE</div>
+                <div style={{ color: "#ff6b6b", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>${opp.buyRange[0]}–${opp.buyRange[1]}</div>
+              </div>
+              <div style={{ color: "#222", fontSize: 14, marginBottom: 2 }}>→</div>
+              <div>
+                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELL RANGE</div>
+                <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
+              </div>
+              <div>
+                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
+                <div style={{ color: "#aaa", fontSize: 12, fontFamily: "monospace" }}>{opp.daysToSell}d</div>
+              </div>
+            </div>
+          )}
+
+          {/* Timeframe (non-FBMKT) */}
+          {opp.timeframe && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>TIMEFRAME</div>
+              <div style={{ color: "#888", fontSize: 11, fontFamily: "monospace" }}>{opp.timeframe}</div>
+            </div>
+          )}
+
+          {/* Links */}
+          {(opp.links || []).length > 0 && (
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+              {opp.links.map(l => (
+                <a
+                  key={l.url} href={l.url} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    color: laneColor, fontSize: 9, fontFamily: "monospace",
+                    border: `1px solid ${laneColor}44`, padding: "3px 8px", borderRadius: 3,
+                    textDecoration: "none", background: `${laneColor}08`,
+                  }}
+                >
+                  ↗ {l.label}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -992,10 +938,9 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
             ⭐ TOP 3 PICKS — RANKED FOR YOUR SITUATION
           </div>
           <div style={{ display: "grid", gap: 14, marginBottom: displayed.length > 3 ? 28 : 0 }}>
-            {displayed.slice(0, 3).map((opp, i) => opp.lane === "FBMKT"
-              ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
-              : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
-            )}
+            {displayed.slice(0, 3).map((opp, i) => (
+              <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} rank={i + 1} />
+            ))}
           </div>
           {/* Rest */}
           {displayed.length > 3 && (
@@ -1004,20 +949,18 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
                 MORE OPPORTUNITIES — SORTED BY SCORE
               </div>
               <div style={{ display: "grid", gap: 14 }}>
-                {displayed.slice(3).map(opp => opp.lane === "FBMKT"
-                  ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-                  : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-                )}
+                {displayed.slice(3).map(opp => (
+                  <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+                ))}
               </div>
             </>
           )}
         </>
       ) : (
         <div style={{ display: "grid", gap: 14 }}>
-          {displayed.map(opp => opp.lane === "FBMKT"
-            ? <FBMarketCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-            : <OppCard      key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
-          )}
+          {displayed.map(opp => (
+            <OppCard key={opp.id} opp={opp} liquid={liquid} onExecute={executeOpp} />
+          ))}
         </div>
       )}
 
