@@ -4,13 +4,14 @@ import Input from "./Input.jsx";
 import Btn from "./Btn.jsx";
 import CSVImport from "./CSVImport.jsx";
 
-const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Other"];
+const CATEGORIES = ["Food & Dining", "Transportation", "Entertainment", "Shopping", "Bills & Utilities", "Business Tools", "Other"];
 const CAT_COLOR  = {
   "Food & Dining":    "#ff8c00",
   "Transportation":   "#60a5fa",
   "Entertainment":    "#a78bfa",
   "Shopping":         "#ffd700",
   "Bills & Utilities":"#34d399",
+  "Business Tools":   "#f472b6",
   "Other":            "#888",
 };
 
