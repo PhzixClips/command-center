@@ -569,7 +569,7 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
       opacity: gap > 500 ? 0.55 : 1,
       overflow: "hidden",
     }}>
-      {/* ── Compact header (2-row layout) ── */}
+      {/* ── Card header — 3 stacked rows, nothing competes for width ── */}
       <div
         onClick={() => setOpen(o => !o)}
         style={{ padding: "11px 14px", cursor: "pointer", borderLeft: `3px solid ${laneColor}` }}
@@ -594,47 +594,44 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
           <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0, display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>▼</span>
         </div>
 
-        {/* Row 2: badges (left) · stats + GO button (right) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          {/* Badges */}
-          <div style={{ display: "flex", gap: 4, flex: 1, minWidth: 0, flexWrap: "wrap" }}>
-            <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
-              {LANE_META[opp.lane]?.label?.toUpperCase()}
-            </span>
-            {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>HOT</span>}
-            {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>SEASONAL</span>}
-            {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>TRUCK</span>}
-          </div>
+        {/* Row 2: lane / urgency / truck badges — own full row, wraps freely */}
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
+          <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
+            {LANE_META[opp.lane]?.label?.toUpperCase()}
+          </span>
+          {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>HOT</span>}
+          {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>SEASONAL</span>}
+          {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>TRUCK</span>}
+        </div>
 
-          {/* Stats + execute button */}
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
-              <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
-            </div>
-            {capitalLabel && (
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
-                <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
-              </div>
-            )}
-            <div style={{ textAlign: "right" }}>
-              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
-              <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
-            </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
-              style={{
-                background: locked ? "transparent" : `${laneColor}18`,
-                border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
-                color: locked ? "#2a2a2a" : laneColor,
-                fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
-                padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
-              }}
-            >
-              {locked ? `+$${gap}` : "GO →"}
-            </button>
+        {/* Row 3: stats + GO button — right-aligned, never competes with title or badges */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 14 }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
+            <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
           </div>
+          {capitalLabel && (
+            <div style={{ textAlign: "right" }}>
+              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
+              <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
+            </div>
+          )}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
+            <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
+            style={{
+              background: locked ? "transparent" : `${laneColor}18`,
+              border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
+              color: locked ? "#2a2a2a" : laneColor,
+              fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
+              padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
+            }}
+          >
+            {locked ? `+$${gap}` : "GO →"}
+          </button>
         </div>
       </div>
 
