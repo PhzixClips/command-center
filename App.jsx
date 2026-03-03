@@ -526,7 +526,7 @@ export default function App() {
             type="text"
             value={modelDraft}
             onChange={e => setModelDraft(e.target.value)}
-            placeholder="gemini-2.5-flash-preview-04-17"
+            placeholder="gemini-3-flash"
             style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "10px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }}
           />
           <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginBottom: 18 }}>
@@ -554,7 +554,7 @@ export default function App() {
             <div style={{ color: "#00ff88", fontSize: 22, fontWeight: 700 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
           </div>
           <button
-            onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-2.5-flash-preview-04-17"); setShowSettings(true); }}
+            onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-3-flash"); setShowSettings(true); }}
             title="Settings"
             style={{ background: "none", border: "1px solid #333", borderRadius: 6, color: "#555", cursor: "pointer", fontSize: 16, padding: "6px 10px", lineHeight: 1 }}
           >⚙</button>
