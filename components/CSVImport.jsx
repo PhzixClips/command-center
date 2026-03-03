@@ -85,16 +85,25 @@ export default function CSVImport({ data, save, onClose }) {
       setError("Please map Date, Description, and Amount columns.");
       return;
     }
+    const allAmounts = rows.map(r => parseFloat((r[mapping.amount] || "").replace(/[$,\s]/g, ""))).filter(n => !isNaN(n));
+    const hasNegatives = allAmounts.some(n => n < 0);
+
     const parsed = [];
     for (const row of rows) {
-      const rawAmt  = (row[mapping.amount] || "").replace(/[$,\s]/g, "");
+      const rawAmt = (row[mapping.amount] || "").replace(/[$,\s]/g, "");
       const creditAmt = mapping.credit ? (row[mapping.credit] || "").replace(/[$,\s]/g, "") : "";
       let amount = parseFloat(rawAmt);
-      // If amount is negative it's a debit — use absolute value
-      // If there's a separate credit column and this row has a credit, skip (it's income, not an expense)
-      if (creditAmt && parseFloat(creditAmt) > 0) continue;
       if (isNaN(amount) || amount === 0) continue;
-      amount = Math.abs(amount);
+      // If CSV has mixed signs: negative = expense, positive = income (skip)
+      // If CSV has all positives (bank uses positive for debits): import everything
+      if (hasNegatives) {
+        if (amount > 0) continue; // skip income/credits
+        amount = Math.abs(amount);
+      } else {
+        // All positive — skip if a separate credit column has a value (it's income)
+        if (creditAmt && parseFloat(creditAmt) > 0) continue;
+        amount = Math.abs(amount);
+      }
       const dateStr = row[mapping.date] || "";
       const month = toMonthKey(dateStr);
       if (!month) continue;
