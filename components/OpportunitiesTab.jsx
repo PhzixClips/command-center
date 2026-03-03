@@ -569,74 +569,73 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
       opacity: gap > 500 ? 0.55 : 1,
       overflow: "hidden",
     }}>
-      {/* ── Compact header row (always visible) ── */}
+      {/* ── Compact header (2-row layout) ── */}
       <div
         onClick={() => setOpen(o => !o)}
-        style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", cursor: "pointer", borderLeft: `3px solid ${laneColor}` }}
+        style={{ padding: "11px 14px", cursor: "pointer", borderLeft: `3px solid ${laneColor}` }}
       >
-        {rank && rank <= 3 && (
-          <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700, minWidth: 18, flexShrink: 0 }}>#{rank}</span>
-        )}
+        {/* Row 1: rank · icon · title · AI badge · dismiss · chevron */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+          {rank && rank <= 3 && (
+            <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700, flexShrink: 0 }}>#{rank}</span>
+          )}
+          <span style={{ fontSize: 13, flexShrink: 0 }}>{opp.icon || LANE_META[opp.lane]?.icon}</span>
+          <span style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 13, lineHeight: 1.2, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opp.title}</span>
+          {opp.ai && (
+            <span style={{ color: "#a78bfa", fontSize: 7, fontFamily: "monospace", border: "1px solid #a78bfa44", padding: "1px 4px", borderRadius: 3, flexShrink: 0 }}>AI</span>
+          )}
+          {onDismiss && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDismiss(opp.id); }}
+              style={{ background: "none", border: "1px solid #1a1a1a", color: "#333", fontSize: 10, width: 22, height: 22, borderRadius: 3, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+              title="Dismiss — swap for new"
+            >✕</button>
+          )}
+          <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0, display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>▼</span>
+        </div>
 
-        {/* Icon + title + badges */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 3 }}>
-            <span style={{ fontSize: 13 }}>{opp.icon || LANE_META[opp.lane]?.icon}</span>
-            <span style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 13, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{opp.title}</span>
-          </div>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-            <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1 }}>
+        {/* Row 2: badges (left) · stats + GO button (right) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {/* Badges */}
+          <div style={{ display: "flex", gap: 4, flex: 1, minWidth: 0, flexWrap: "wrap" }}>
+            <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
               {LANE_META[opp.lane]?.label?.toUpperCase()}
             </span>
-            {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>HOT</span>}
-            {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>SEASONAL</span>}
-            {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>TRUCK</span>}
+            {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>HOT</span>}
+            {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>SEASONAL</span>}
+            {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>TRUCK</span>}
           </div>
-        </div>
 
-        {/* Stats cluster */}
-        <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
-            <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
-          </div>
-          {capitalLabel && (
+          {/* Stats + execute button */}
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
-              <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
+              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
+              <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
             </div>
-          )}
-          <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
-            <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+            {capitalLabel && (
+              <div style={{ textAlign: "right" }}>
+                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
+                <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
+              </div>
+            )}
+            <div style={{ textAlign: "right" }}>
+              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
+              <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
+              style={{
+                background: locked ? "transparent" : `${laneColor}18`,
+                border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
+                color: locked ? "#2a2a2a" : laneColor,
+                fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
+                padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
+              }}
+            >
+              {locked ? `+$${gap}` : "GO →"}
+            </button>
           </div>
         </div>
-
-        {/* Execute button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
-          style={{
-            background: locked ? "transparent" : `${laneColor}18`,
-            border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
-            color: locked ? "#2a2a2a" : laneColor,
-            fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
-            padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
-          }}
-        >
-          {locked ? `+$${gap}` : "GO →"}
-        </button>
-
-        {opp.ai && (
-          <span style={{ color: "#a78bfa", fontSize: 7, fontFamily: "monospace", border: "1px solid #a78bfa44", padding: "1px 4px", borderRadius: 3, flexShrink: 0 }}>AI</span>
-        )}
-        {onDismiss && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onDismiss(opp.id); }}
-            style={{ background: "none", border: "1px solid #1a1a1a", color: "#333", fontSize: 10, width: 22, height: 22, borderRadius: 3, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
-            title="Dismiss — swap for new"
-          >✕</button>
-        )}
-        <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0, display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>▼</span>
       </div>
 
       {/* ── Expanded detail ── */}
