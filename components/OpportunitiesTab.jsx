@@ -41,17 +41,17 @@ const OPP_LIBRARY = [
   },
   {
     id: "gpu-flip", lane: "FLIP",
-    title: "RTX 5080 GPU Flip",
-    detail: "MSRP $999, still selling $1,400–1,650 on eBay. Newegg/Best Buy restock multiple times weekly. 40-65% ROI in under 48 hours if you're fast.",
-    action: "Set NowInStock.net + Camel3x alerts for RTX 5080. Buy immediately on restock. List on eBay within 1 hour with 'fast shipping' in title. Sells same day.",
-    minCapital: 900, maxCapital: 1700,
-    roiRange: [40, 65], risk: "MED", timeframe: "1–3 days", effort: 2,
+    title: "GPU / Console Resell Flip",
+    detail: "High-demand GPUs and consoles frequently sell above MSRP when supply is tight. Check eBay sold listings BEFORE buying to confirm current margin — don't assume.",
+    action: "Step 1: Hit the eBay sold listings link to see real current resale prices today. Step 2: Set NowInStock alerts for any GPU/console with confirmed margin >20%. Step 3: Buy on restock, list within 1 hour.",
+    minCapital: 300, maxCapital: 1700,
+    roiRange: [20, 60], risk: "MED", timeframe: "1–5 days", effort: 2,
     links: [
-      { label: "NowInStock — RTX 5080 Alerts", url: "https://www.nowinstock.net/computers/videocards/nvidia/rtx5080/" },
-      { label: "Best Buy — RTX 5080", url: "https://www.bestbuy.com/site/searchpage.jsp?st=rtx+5080" },
-      { label: "eBay — RTX 5080 Sold Listings", url: "https://www.ebay.com/sch/i.html?_nkw=rtx+5080&_sop=10&LH_Complete=1&LH_Sold=1" },
+      { label: "eBay — GPU Sold Prices (check first)", url: "https://www.ebay.com/sch/i.html?_nkw=nvidia+rtx+gpu&LH_Complete=1&LH_Sold=1&_sop=16" },
+      { label: "NowInStock — GPU Alerts", url: "https://www.nowinstock.net/computers/videocards/" },
+      { label: "Best Buy — GPUs", url: "https://www.bestbuy.com/site/searchpage.jsp?st=rtx+gpu" },
     ],
-    urgency: "hot-now", truckRequired: false,
+    urgency: "seasonal", truckRequired: false,
   },
   {
     id: "lego-arb", lane: "FLIP",
@@ -85,14 +85,15 @@ const OPP_LIBRARY = [
   {
     id: "nba-playoffs", lane: "TICKETS",
     title: "NBA Playoffs Ticket Flip",
-    detail: "Playoffs start ~Apr 19. Phoenix Suns home games: face $120-300 → resale $350-800 once matchups confirmed. Buy NOW — price spikes 2-3x when bracket drops.",
-    action: "Buy 2 Suns playoff tickets on Ticketmaster today. Hold. The moment bracket is announced, list on StubHub with auto-price at 2x face. Sell within 48hr.",
+    detail: "Playoffs start ~Apr 19. Strategy: only buy for teams confirmed in playoff position — check standings first. Face $120-300 → resale $350-800 once bracket is set.",
+    action: "Step 1: Check NBA standings RIGHT NOW (link below) — only buy for a team with a clinched or near-certain playoff spot. Step 2: Buy 2 floor/lower bowl tickets. Step 3: List at 2x face the moment their first-round matchup is announced.",
     minCapital: 250, maxCapital: 1200,
     roiRange: [80, 200], risk: "MED", timeframe: "4–8 weeks", effort: 1,
     links: [
-      { label: "Ticketmaster — Suns Tickets", url: "https://www.ticketmaster.com/phoenix-suns-tickets/artist/805979" },
+      { label: "NBA Standings — Check Now", url: "https://www.nba.com/standings" },
+      { label: "Ticketmaster — NBA Tickets", url: "https://www.ticketmaster.com/search?q=nba+playoffs" },
       { label: "StubHub — Sell Tickets", url: "https://www.stubhub.com/sell" },
-      { label: "SeatGeek — Suns", url: "https://seatgeek.com/phoenix-suns-tickets" },
+      { label: "SeatGeek — NBA", url: "https://seatgeek.com/nba-tickets" },
     ],
     urgency: "hot-now", truckRequired: false,
   },
@@ -112,13 +113,13 @@ const OPP_LIBRARY = [
   },
   {
     id: "concert-flip", lane: "TICKETS",
-    title: "Major Concert Ticket Flip",
-    detail: "2026 touring cycle is massive — Beyoncé, Post Malone, Peso Pluma, Zach Bryan. 1.5-3x face on GA/floor. Presales are your edge.",
-    action: "Sign up for Ticketmaster artist alerts. Use Citi/Chase card for presale access. Buy 4 tickets. List 2 at 1.8x immediately, hold 2 for night-of surge pricing.",
-    minCapital: 400, maxCapital: 1200,
-    roiRange: [70, 150], risk: "MED", timeframe: "1–6 weeks", effort: 2,
+    title: "Concert Presale Ticket Flip",
+    detail: "Major touring acts consistently resell 1.5-3x face. The edge is presale access — you buy before the public, at face, and list immediately. Check what's actually on sale right now.",
+    action: "Step 1: Check Ticketmaster presales happening today (link below). Step 2: Use Citi/Chase card for presale code access. Step 3: Buy 4 GA/floor. List 2 at 1.8x on StubHub immediately, hold 2 to sell week-of show.",
+    minCapital: 300, maxCapital: 1200,
+    roiRange: [50, 150], risk: "MED", timeframe: "1–6 weeks", effort: 2,
     links: [
-      { label: "Ticketmaster — Browse Concerts", url: "https://www.ticketmaster.com/discover/concerts" },
+      { label: "Ticketmaster — Active Presales", url: "https://www.ticketmaster.com/discover/concerts" },
       { label: "StubHub — Sell", url: "https://www.stubhub.com/sell" },
       { label: "Vivid Seats — Sell", url: "https://www.vividseats.com/sell-tickets" },
     ],
@@ -531,38 +532,39 @@ export default function OpportunitiesTab({ data, save, onStartFlip }) {
 
     try {
       const text = await gemini(
-        "You are a street-smart, aggressive financial advisor for a Phoenix AZ server/flipper who has a pickup truck. Use your search ability to find ACTUAL current event dates, current resale prices, and upcoming drops. Give ULTRA-SPECIFIC advice with real platform names, real prices from RIGHT NOW, exact dates, and direct URLs where possible. Zero generic advice. Numbers only. Direct and punchy.",
-        `MY SITUATION RIGHT NOW:
-• Checking / liquid cash (NOT selling stocks): $${liquid}
+        "You are a street-smart financial advisor for a Phoenix AZ server/flipper with a pickup truck. CRITICAL RULE: Before including ANY opportunity, use search to verify it is real and current RIGHT NOW. Do NOT suggest flipping a sports team's tickets unless you confirm they are actually in playoff position today. Do NOT cite artist tour dates unless you verify the tour exists. Do NOT cite GPU resale margins without checking current eBay sold listings. Only include opportunities you can verify are real this week.",
+        `MY SITUATION:
+• Liquid cash (checking only, NOT selling stocks): $${liquid}
 • Savings: $${data.savings || 0}
 • Net worth trend: ${netWorthTrend}
 • Flip history: ${flipSummary}
 • Pickup truck: YES — Phoenix AZ, west valley
-• Upcoming server shifts this week: ${Math.min(freeThisWeek, 4)}
+• Free days this week: ${Math.max(0, 7 - Math.min(freeThisWeek, 4))} days off
 • Today: ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-• Season: Tax refund season (March), spring cleaning starting, NBA playoffs approaching
 • Top scored opportunities for my capital: ${top3}
 
-Use search to look up: actual NBA playoff start date and Suns schedule, next UFC PPV event date and location, any SNKRS drops this week.
+BEFORE writing each move, search to verify:
+1. For any ticket flip — search "[team] NBA standings 2026" and confirm they have a playoff spot. Do NOT recommend Suns tickets unless standings confirm they made the playoffs.
+2. For any GPU/console flip — search "rtx [model] ebay sold 2026" to confirm actual current resale margin before citing numbers.
+3. For any concert — search "[artist] tour 2026 Phoenix" to confirm the show actually exists.
 
-Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Each move EXACT format:
+Give me a NUMBERED 3-MOVE ACTION PLAN for THIS WEEK. Only verified, real opportunities. Format:
 
 MOVE 1: [TITLE IN CAPS]
-DO TODAY: [exact specific action — platform, search term, button to click]
-BUY: [exact item + exact platform + exact dollar amount]
-SELL: [exact platform + exact listing price]
+DO TODAY: [exact action — platform, what to search/click]
+BUY: [exact item + platform + price]
+SELL: [platform + price]
 NET PROFIT: $[X]–$[Y]
-TIME: [hours of work]
-DATES: [actual relevant dates if time-sensitive, e.g. "Suns Game 1: Apr 19 vs Warriors"]
-LINK: [single most important URL to click right now]
+TIME: [hours]
+DATES: [real dates from search, e.g. "Game 1: Apr 19"]
+LINK: [most direct URL]
 
 MOVE 2: (same format)
-
 MOVE 3: (same format)
 
-FIRST MOVE: [one sentence — which to start today and the exact dollar reason why]`,
+FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]`,
         1800,
-        true  // Google Search enabled — look up actual current dates and prices
+        true  // Google Search — must verify facts before including
       );
       const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       setPlaybook(text || "Unable to generate playbook.");
