@@ -1,5 +1,5 @@
-const GEMINI_KEY = "AIzaSyB7mdxQr4Ha_JSRiZNUNstt9qXsqeXqAWc";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+const getKey = () => localStorage.getItem("cc-gemini-key") || "";
+const getUrl = () => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${getKey()}`;
 
 export const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
   const body = {
@@ -19,7 +19,10 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
     body.tools = [{ google_search: {} }];
   }
 
-  const res = await fetch(GEMINI_URL, {
+  const key = getKey();
+  if (!key) throw new Error("No Gemini API key set. Tap ⚙ in the header to add your key.");
+
+  const res = await fetch(getUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
