@@ -54,6 +54,7 @@ export default function App() {
   const [aiInsight,   setAiInsight]   = useState("");
   const [syncLoading, setSyncLoading] = useState(false);
   const [lastSynced,  setLastSynced]  = useState(null);
+  const [filterDay,   setFilterDay]   = useState(null);
   const [priceAlerts, setPriceAlerts] = useState([]);
   const importRef = useRef(null);
 
@@ -497,21 +498,28 @@ export default function App() {
               <Btn onClick={() => { setModal("shift"); setForm({}); }} color="#a78bfa">+ LOG SHIFT</Btn>
             </div>
 
-            {/* Shift pattern insights */}
+            {/* Shift pattern insights — days are clickable to filter */}
             {dayEntries.length > 0 && (
               <div style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 10, padding: "16px 20px", marginBottom: 20 }}>
-                <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>EARNINGS BY DAY · avg per shift</div>
+                <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>
+                  EARNINGS BY DAY · avg per shift · {filterDay ? <span style={{ color: "#a78bfa" }}>tap again to clear</span> : "tap a day to filter"}
+                </div>
                 <div style={{ display: "grid", gap: 10 }}>
                   {dayEntries.map(({ day, avg, count }) => {
-                    const pct = (avg / maxDayAvg) * 100;
+                    const pct      = (avg / maxDayAvg) * 100;
+                    const active   = filterDay === day;
+                    const dimmed   = filterDay && !active;
                     return (
-                      <div key={day}>
+                      <div key={day} onClick={() => setFilterDay(active ? null : day)}
+                        style={{ cursor: "pointer", opacity: dimmed ? 0.35 : 1, transition: "opacity 0.2s" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                          <div style={{ color: "#a78bfa", fontSize: 11, fontFamily: "monospace" }}>{day}</div>
+                          <div style={{ color: active ? "#fff" : "#a78bfa", fontSize: 11, fontFamily: "monospace", fontWeight: active ? 700 : 400 }}>
+                            {active ? "▶ " : ""}{day}
+                          </div>
                           <div style={{ color: "#e8e8e8", fontSize: 11, fontFamily: "monospace" }}>${Math.round(avg)} avg · {count} shift{count !== 1 ? "s" : ""}</div>
                         </div>
-                        <div style={{ background: "#1a1a1a", borderRadius: 3, height: 6 }}>
-                          <div style={{ background: "linear-gradient(90deg, #a78bfa, #7c3aed)", width: `${pct}%`, height: "100%", borderRadius: 3 }} />
+                        <div style={{ background: "#1a1a1a", borderRadius: 3, height: active ? 8 : 6, transition: "height 0.2s" }}>
+                          <div style={{ background: active ? "linear-gradient(90deg, #fff, #a78bfa)" : "linear-gradient(90deg, #a78bfa, #7c3aed)", width: `${pct}%`, height: "100%", borderRadius: 3 }} />
                         </div>
                       </div>
                     );
@@ -535,28 +543,111 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ display: "grid", gap: 8 }}>
-              {[...data.shifts].map((s, origIdx) => ({ s, origIdx })).reverse().map(({ s, origIdx }) => {
-                const total  = s.tips + s.hours * s.wage;
-                const hourly = total / s.hours;
+            {/* Shift log — sorted chronologically, grouped by day-of-week */}
+            {(() => {
+              // Sort by date, newest first
+              const sorted = [...data.shifts]
+                .map((s, origIdx) => ({ s, origIdx }))
+                .sort((a, b) => {
+                  const da = parseDateLabel(a.s.date, thisYear) || new Date(0);
+                  const db = parseDateLabel(b.s.date, thisYear) || new Date(0);
+                  return db - da;
+                });
+
+              const getDOW = (dateStr) => {
+                const d = parseDateLabel(dateStr, thisYear);
+                return d ? d.toLocaleDateString("en-US", { weekday: "long" }) : null;
+              };
+
+              if (filterDay) {
+                // Filter mode: show only shifts matching the selected day, grouped under a big header
+                const fullDay = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
+                const fullName = fullDay[filterDay] || filterDay;
+                const filtered = sorted.filter(({ s }) => getDOW(s.date) === fullName);
                 return (
-                  <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
-                        <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
-                        <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
-                      </div>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
-                        <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                        <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
-                      </div>
+                  <div>
+                    <div style={{ textAlign: "center", padding: "16px 0 20px", borderBottom: "1px solid #1a1a1a", marginBottom: 16 }}>
+                      <div style={{ color: "#a78bfa", fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 4 }}>{fullName.toUpperCase()}</div>
+                      <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>{filtered.length} shift{filtered.length !== 1 ? "s" : ""} logged</div>
+                    </div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {filtered.map(({ s, origIdx }) => {
+                        const total     = s.tips + s.hours * s.wage;
+                        const hourly    = total / s.hours;
+                        const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
+                        return (
+                          <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 8, padding: "12px 16px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div>
+                                <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
+                                <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
+                                <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                                {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                              </div>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
+                                <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
+                                <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              // Default mode: chronological with day-of-week dividers
+              const items = [];
+              let lastDOW = null;
+              sorted.forEach(({ s, origIdx }) => {
+                const dow = getDOW(s.date);
+                if (dow && dow !== lastDOW) {
+                  items.push({ type: "divider", dow });
+                  lastDOW = dow;
+                }
+                items.push({ type: "shift", s, origIdx });
+              });
+
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {items.map((item, i) => {
+                    if (item.type === "divider") {
+                      return (
+                        <div key={`div-${i}`} style={{ textAlign: "center", padding: "12px 0 4px" }}>
+                          <div style={{ color: "#a78bfa", fontSize: 22, fontWeight: 900, fontFamily: "monospace", letterSpacing: 3, opacity: 0.7 }}>
+                            {item.dow.toUpperCase()}
+                          </div>
+                          <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #a78bfa44, transparent)", marginTop: 6 }} />
+                        </div>
+                      );
+                    }
+                    const { s, origIdx } = item;
+                    const total     = s.tips + s.hours * s.wage;
+                    const hourly    = total / s.hours;
+                    const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
+                    return (
+                      <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div>
+                            <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
+                            <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
+                            <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                            {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                          </div>
+                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
+                            <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
+                            <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10 }}>
               {[
