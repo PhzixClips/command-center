@@ -13,24 +13,28 @@ const URG_COLOR  = { HOT: "#ff3b3b", WARM: "#ffd700", WATCH: "#555" };
 
 export default function AlertsFeed({ liquid, onStartFlip }) {
   const [alerts,  setAlerts]  = useState(null);
+  const [error,   setError]   = useState(null);
   const [loading, setLoading] = useState(false);
   const [open,    setOpen]    = useState(false);
 
   const fetchAlerts = async () => {
     setLoading(true);
+    setError(null);
     setOpen(true);
     try {
       const text = await gemini(
         'You are a real-time opportunity scout. Return ONLY a JSON array of 4 objects: [{"type":"SNEAKER or TICKET or FLIP or INVEST","title":"specific name","action":"exact step in 10 words","window":"time window","est_roi":"+XX%","capital":number,"urgency":"HOT or WARM or WATCH"}]. Return ONLY the JSON array, no markdown.',
-        `Top 4 money opportunities RIGHT NOW March 2026. I have $${Math.round(liquid)} liquid. I flip sneakers, event tickets, electronics on eBay/StubHub. Find real current drops and events this week.`,
+        `Top 4 money opportunities RIGHT NOW ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}. I have $${Math.round(liquid)} liquid. I flip sneakers, event tickets, electronics on eBay/StubHub. Find real current drops and events this week.`,
         900,
         true
       );
       const match  = text.match(/\[[\s\S]*?\]/);
       const parsed = match ? JSON.parse(match[0]) : [];
-      setAlerts(parsed.length ? parsed.slice(0, 4) : FALLBACK_ALERTS);
-    } catch {
-      setAlerts(FALLBACK_ALERTS);
+      setAlerts(parsed.length ? parsed.slice(0, 4) : null);
+      if (!parsed.length) setError("No results parsed — try again.");
+    } catch (err) {
+      setError(err.message || "API error — check key or billing.");
+      setAlerts(null);
     }
     setLoading(false);
   };
@@ -46,6 +50,11 @@ export default function AlertsFeed({ liquid, onStartFlip }) {
           {loading ? "SCANNING WEB..." : "SCAN NOW"}
         </button>
       </div>
+      {open && error && (
+        <div style={{ padding: "0 20px 20px", color: "#ff3b3b", fontFamily: "monospace", fontSize: 11 }}>
+          ⚠ {error}
+        </div>
+      )}
       {open && alerts && (
         <div style={{ padding: "0 20px 20px", display: "grid", gap: 10 }}>
           {alerts.map((a, i) => {

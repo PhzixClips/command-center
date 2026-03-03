@@ -19,27 +19,21 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
     body.tools = [{ google_search: {} }];
   }
 
-  try {
-    const res = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+  const res = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 
-    const json = await res.json();
+  const json = await res.json();
 
-    if (json.error) {
-      const msg = json.error.message || JSON.stringify(json.error);
-      console.error("Gemini API error:", msg);
-      throw new Error(msg);
-    }
-
-    // Search-grounded responses may interleave tool-use parts with text parts.
-    // Use find() rather than [0] so we always get the actual text part.
-    const parts = json.candidates?.[0]?.content?.parts || [];
-    return parts.find(p => typeof p.text === "string")?.text || "";
-  } catch (err) {
-    console.error("Gemini fetch failed:", err);
-    return "";
+  if (json.error) {
+    const msg = json.error.message || JSON.stringify(json.error);
+    throw new Error(msg);
   }
+
+  // Search-grounded responses may interleave tool-use parts with text parts.
+  // Use find() rather than [0] so we always get the actual text part.
+  const parts = json.candidates?.[0]?.content?.parts || [];
+  return parts.find(p => typeof p.text === "string")?.text || "";
 };
