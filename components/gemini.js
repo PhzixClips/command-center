@@ -1,5 +1,5 @@
 const getKey   = () => localStorage.getItem("cc-gemini-key") || "";
-const getModel = () => (localStorage.getItem("cc-gemini-model") || "gemini-2.5-flash").replace(/^models\//, "");
+const getModel = () => (localStorage.getItem("cc-gemini-model") || "gemini-3-flash").replace(/^models\//, "");
 const getUrl   = () => `https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:generateContent?key=${getKey()}`;
 
 export const gemini = async (system, userContent, maxTokens = 400, useSearch = false) => {
