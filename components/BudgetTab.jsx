@@ -37,10 +37,14 @@ export default function BudgetTab({ data, save }) {
   const [form, setForm]   = useState({});
   const [showImport, setShowImport] = useState(false);
 
-  const budget   = data.budget   || {};
-  const expenses = data.expenses || [];
+  const budget    = data.budget    || {};
+  const expenses  = data.expenses  || [];
+  const income    = data.income    || [];
+  const transfers = data.transfers || [];
 
-  const monthExpenses = expenses.filter(e => e.month === viewMonth);
+  const monthExpenses  = expenses.filter(e => e.month === viewMonth);
+  const monthIncome    = income.filter(e => e.month === viewMonth);
+  const monthTransfers = transfers.filter(e => e.month === viewMonth);
 
   const spentByCategory = {};
   CATEGORIES.forEach(c => { spentByCategory[c] = 0; });
@@ -48,12 +52,21 @@ export default function BudgetTab({ data, save }) {
 
   const totalBudget = Object.values(budget).reduce((a, b) => a + b, 0);
   const totalSpent  = monthExpenses.reduce((a, e) => a + e.amount, 0);
+  const totalEarned = monthIncome.reduce((a, e) => a + e.amount, 0);
   const remaining   = totalBudget - totalSpent;
+  const netCashFlow = totalEarned - totalSpent;
   const isCurrentMonth = viewMonth === currentMonthKey;
 
-  // All months that have expenses, for the picker
-  const allMonths = [...new Set(expenses.map(e => e.month))].sort();
+  const totalTransferred = monthTransfers.reduce((a, e) => a + e.amount, 0);
+
+  // All months that have expenses, income, or transfers
+  const allMonths = [...new Set([...expenses.map(e => e.month), ...income.map(e => e.month), ...transfers.map(e => e.month)])].sort();
   if (!allMonths.includes(currentMonthKey)) allMonths.push(currentMonthKey);
+
+  const clearImports = () => {
+    save({ ...data, expenses: [], income: [], transfers: [] });
+    setModal(null);
+  };
 
   const addExpense = () => {
     const { desc, amount, category } = form;
@@ -100,15 +113,19 @@ export default function BudgetTab({ data, save }) {
           <Btn onClick={() => { setForm({}); setModal("edit-budget"); }} color="#34d399" style={{ fontSize: 10 }}>EDIT BUDGET</Btn>
           <Btn onClick={() => setShowImport(true)} color="#60a5fa" style={{ fontSize: 10 }}>↑ IMPORT CSV</Btn>
           <Btn onClick={() => { setForm({ category: "Food & Dining" }); setModal("add-expense"); }} color="#34d399">+ ADD EXPENSE</Btn>
+          {(expenses.length > 0 || income.length > 0) && (
+            <Btn onClick={() => setModal("clear-imports")} color="#ff3b3b" style={{ fontSize: 10 }}>CLEAR ALL</Btn>
+          )}
         </div>
       </div>
 
       {/* Summary cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "MONTHLY BUDGET", value: `$${totalBudget.toLocaleString()}`, color: "#34d399" },
+          { label: "INCOME",         value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
           { label: "SPENT SO FAR",   value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
-          { label: "REMAINING",      value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "left this month" },
+          { label: "NET CASH FLOW",  value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
+          { label: "BUDGET LEFT",    value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "of budget left" },
         ].map((c, i) => (
           <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${c.color}22`, borderRadius: 8, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: c.color }} />
@@ -178,6 +195,52 @@ export default function BudgetTab({ data, save }) {
         </div>
       )}
 
+      {/* Income list */}
+      {monthIncome.length > 0 && (
+        <>
+          <div style={{ marginBottom: 16, marginTop: 24, color: "#00ff88", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
+            INCOME · {monthIncome.length} IN {monthLabel(viewMonth)}
+          </div>
+          <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+            {[...monthIncome].reverse().map(e => (
+              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #00ff8822", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <span style={{ color: "#00ff88", fontSize: 9, fontFamily: "monospace", border: "1px solid #00ff8844", padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>{e.category}</span>
+                  <div>
+                    <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
+                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+                  </div>
+                </div>
+                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>+${e.amount.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Transfers list */}
+      {monthTransfers.length > 0 && (
+        <>
+          <div style={{ marginBottom: 16, marginTop: 24, color: "#ffd70088", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
+            TRANSFERS · {monthTransfers.length} IN {monthLabel(viewMonth)} · ${totalTransferred.toFixed(2)} TOTAL
+          </div>
+          <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+            {[...monthTransfers].reverse().map(e => (
+              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #ffd70022", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <span style={{ color: "#ffd70088", fontSize: 9, fontFamily: "monospace", border: "1px solid #ffd70044", padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>Transfer</span>
+                  <div>
+                    <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
+                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+                  </div>
+                </div>
+                <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>↔${e.amount.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* Add expense modal */}
       {modal === "add-expense" && (
         <Modal title="ADD EXPENSE" onClose={() => setModal(null)}>
@@ -204,6 +267,27 @@ export default function BudgetTab({ data, save }) {
               placeholder={String(budget[cat] || 0)} />
           ))}
           <Btn onClick={saveBudget} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE BUDGET</Btn>
+        </Modal>
+      )}
+
+      {/* Clear imports confirmation */}
+      {modal === "clear-imports" && (
+        <Modal title="CLEAR ALL IMPORTED DATA" onClose={() => setModal(null)}>
+          <div style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, marginBottom: 8 }}>
+            This will remove all imported data:
+          </div>
+          <div style={{ color: "#555", fontFamily: "monospace", fontSize: 11, marginBottom: 16, lineHeight: 1.8 }}>
+            • {expenses.length} expenses<br />
+            • {income.length} income entries<br />
+            • {transfers.length} transfers
+          </div>
+          <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 10, marginBottom: 16 }}>
+            Budget limits will be kept. You can re-import your CSV after clearing.
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Btn onClick={() => setModal(null)} color="#555" style={{ flex: 1 }}>CANCEL</Btn>
+            <Btn onClick={clearImports} color="#ff3b3b" style={{ flex: 1 }}>CLEAR ALL</Btn>
+          </div>
         </Modal>
       )}
 
