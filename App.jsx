@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
+import { lazy, Suspense, useCallback, useRef, useState } from "react";
 
 import useAppState       from "./components/hooks/useAppState.js";
 import useNotifications  from "./components/hooks/useNotifications.js";
@@ -30,47 +30,43 @@ export default function App() {
   const state = useAppState();
   const { requestPermission, notifyPriceAlert } = useNotifications();
 
-  // ── Swipe navigation + directional animations ─────────────────────────────
-  const slideDir   = useRef("none"); // "left" | "right" | "none"
-  const contentRef = useRef(null);
-  const prevTabIdx = useRef(0);
+  // ── Swipe navigation + directional slide animations ─────────────────────
+  const [clickAnim, setClickAnim] = useState(null); // "left" | "right" | null
 
   const navigateTab = useCallback((direction) => {
     const idx = TABS.indexOf(state.tab);
     const next = direction === "left" ? idx + 1 : idx - 1;
     if (next < 0 || next >= TABS.length) return;
-    slideDir.current = direction === "left" ? "left" : "right";
     state.setTab(TABS[next]);
   }, [state.tab, state.setTab]);
 
-  const swipeHandlers = useSwipe(
+  const { onTouchStart, onTouchMove, onTouchEnd, swipeStyle, transitioning } = useSwipe(
     () => navigateTab("left"),   // swipe left → next tab
     () => navigateTab("right"),  // swipe right → prev tab
   );
 
-  // Track direction for tab-bar clicks too
+  // Tab-bar click: quick directional slide (no drag, just animate in)
   const handleTabClick = useCallback((t) => {
     const fromIdx = TABS.indexOf(state.tab);
     const toIdx   = TABS.indexOf(t);
     if (fromIdx === toIdx) return;
-    slideDir.current = toIdx > fromIdx ? "left" : "right";
+    const dir = toIdx > fromIdx ? "left" : "right";
+    setClickAnim(dir);
     state.setTab(t);
+    // Clear after animation completes
+    setTimeout(() => setClickAnim(null), 280);
   }, [state.tab, state.setTab]);
 
-  // Trigger animation on tab change
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el || slideDir.current === "none") return;
-    const cls = slideDir.current === "left" ? "slide-in-left" : "slide-in-right";
-    el.classList.remove("slide-in-left", "slide-in-right");
-    // Force reflow so re-adding the class triggers the animation
-    void el.offsetWidth;
-    el.classList.add(cls);
-    const onEnd = () => el.classList.remove(cls);
-    el.addEventListener("animationend", onEnd, { once: true });
-    slideDir.current = "none";
-    return () => el.removeEventListener("animationend", onEnd);
-  }, [state.tab]);
+  // Build the inline style: swipe drag takes priority, otherwise click animation
+  const getContentStyle = () => {
+    if (transitioning || swipeStyle.transform !== "translateX(0px)") {
+      return swipeStyle;
+    }
+    if (clickAnim) {
+      return {}; // CSS class handles it
+    }
+    return {};
+  };
 
   const {
     data, tab, setTab, modal, setModal, form, setForm, loading,
@@ -199,11 +195,13 @@ export default function App() {
       </nav>
 
       <main
-        ref={contentRef}
-        style={{ padding: "24px", overflow: "hidden" }}
+        className={clickAnim === "left" ? "slide-in-left" : clickAnim === "right" ? "slide-in-right" : ""}
+        style={{ padding: "24px", overflow: "hidden", ...getContentStyle() }}
         role="tabpanel"
         id={`panel-${tab}`}
-        {...swipeHandlers}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <Suspense fallback={<TabFallback />}>
 
