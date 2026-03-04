@@ -62,6 +62,10 @@ export default function ShiftsTab({
         </div>
       )}
 
+      {data.shifts.length === 0 && (
+        <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 12, textAlign: "center", padding: "32px 0" }}>No shifts yet. Log your first one above.</div>
+      )}
+
       {/* Shift log */}
       {(() => {
         const sorted = [...data.shifts]

@@ -12,6 +12,9 @@ export default function GoalsTab({
         <div style={{ color: "#e879f9", fontSize: 14, fontWeight: 600 }}>Financial Goals</div>
         <Btn onClick={() => { setForm({ autoKey: "none" }); setModal("goal"); }} color="#e879f9">+ Add Goal</Btn>
       </div>
+      {data.goals.length === 0 && (
+        <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 12, textAlign: "center", padding: "32px 0" }}>No goals yet. Add your first one above.</div>
+      )}
       <div style={{ display: "grid", gap: 14 }}>
         {data.goals.map((g, i) => {
           const current = resolveGoalCurrent(g, data.bankBalance, stockValue, flipProfit);

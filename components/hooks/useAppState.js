@@ -199,7 +199,10 @@ export default function useAppState() {
           200, true
         );
         const match = text.match(/\{[\s\S]*?\}/);
-        if (match) Object.assign(prices, JSON.parse(match[0]));
+        if (match) {
+          try { Object.assign(prices, JSON.parse(match[0])); }
+          catch { /* Gemini returned malformed JSON — skip */ }
+        }
       } catch {}
     }
     if (Object.keys(prices).length) {
@@ -211,7 +214,8 @@ export default function useAppState() {
       await save({ ...data, stocks: updatedStocks });
     }
     lastSyncedMsRef.current = Date.now();
-    setLastSynced(new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }));
+    const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    setLastSynced(Object.keys(prices).length ? timeStr : `${timeStr} (no prices found)`);
     setSyncLoading(false);
   }, [data, save]);
 
