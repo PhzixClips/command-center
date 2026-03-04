@@ -151,7 +151,7 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 150,
     roiRange: [150, 500], risk: "LOW", timeframe: "1–7 days", effort: 3,
     links: [
-      { label: "FB Marketplace — Free Stuff", url: "https://www.facebook.com/marketplace/category/free-stuff" },
+      { label: "FB Marketplace — Free Stuff", url: "https://www.facebook.com/marketplace/search/?query=free%20stuff&exact=false" },
       { label: "OfferUp", url: "https://offerup.com" },
       { label: "Craigslist — Free Phoenix", url: "https://phoenix.craigslist.org/search/zip" },
     ],
@@ -167,7 +167,7 @@ const OPP_LIBRARY = [
     risk: "LOW", timeframe: "Same day", effort: 3,
     links: [
       { label: "Post on Nextdoor", url: "https://nextdoor.com" },
-      { label: "FB Marketplace — Services", url: "https://www.facebook.com/marketplace/category/home-sales" },
+      { label: "FB Marketplace — Services", url: "https://www.facebook.com/marketplace/search/?query=junk%20removal%20service" },
     ],
     urgency: "hot-now", truckRequired: true,
   },
@@ -181,7 +181,7 @@ const OPP_LIBRARY = [
     links: [
       { label: "B-Stock — Amazon Returns", url: "https://bstock.com/amazon/" },
       { label: "eBay — Sell", url: "https://www.ebay.com/sl/sell" },
-      { label: "FB Marketplace", url: "https://www.facebook.com/marketplace/" },
+      { label: "FB Marketplace — Pallets", url: "https://www.facebook.com/marketplace/search/?query=amazon%20return%20pallet" },
     ],
     urgency: "evergreen", truckRequired: true,
   },
@@ -193,7 +193,7 @@ const OPP_LIBRARY = [
     minCapital: 0, maxCapital: 30,
     roiRange: [500, 2000], risk: "LOW", timeframe: "Half day", effort: 3,
     links: [
-      { label: "FB Marketplace — Free Stuff", url: "https://www.facebook.com/marketplace/category/free-stuff" },
+      { label: "FB Marketplace — Free Metal", url: "https://www.facebook.com/marketplace/search/?query=free%20metal%20scrap" },
       { label: "Craigslist Free — Phoenix", url: "https://phoenix.craigslist.org/search/zip" },
     ],
     urgency: "evergreen", truckRequired: true,
@@ -963,7 +963,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       )}
 
       {/* Lane filter tabs */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", paddingBottom: 4 }}>
+      <div style={{ display: "flex", gap: 5, marginBottom: 20, overflowX: "auto", paddingBottom: 6, WebkitOverflowScrolling: "touch" }}>
         {FILTER_TABS.map(f => {
           const color  = f === "ALL" ? "#ffd700" : (LANE_META[f]?.color || "#555");
           const active = activeFilter === f;
@@ -976,8 +976,8 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
                 background: active ? `${color}18` : "none",
                 border: `1px solid ${active ? color : "#1a1a1a"}`,
                 color: active ? color : "#444",
-                fontFamily: "monospace", fontSize: 10, letterSpacing: 1,
-                padding: "5px 12px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap",
+                fontFamily: "monospace", fontSize: 9, letterSpacing: 0.5,
+                padding: "5px 9px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
               }}
             >
               {f === "ALL" ? "ALL" : `${LANE_META[f]?.icon} ${f}`} ({count})
@@ -1040,9 +1040,9 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
             {[...oppHistory].reverse().map(o => {
               const color = LANE_META[o.lane]?.color || "#555";
               return (
-                <div key={o.id} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>
+                <div key={o.id} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 12px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "4px 10px" }}>
+                  <div style={{ flex: "1 1 0", minWidth: 140 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
                       <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "1px 6px", borderRadius: 3 }}>{o.lane}</span>
                       <div style={{ color: "#e8e8e8", fontSize: 13 }}>{o.title}</div>
                     </div>
@@ -1051,7 +1051,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
                       {o.hours ? <span style={{ color: "#555" }}> · ${(o.earned / o.hours).toFixed(0)}/hr eff.</span> : ""}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
                     <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>+${o.earned}</div>
                     <button onClick={() => deleteHistory(o.id)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 7px", borderRadius: 4, cursor: "pointer" }}>✕</button>
                   </div>
