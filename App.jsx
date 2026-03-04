@@ -57,16 +57,8 @@ export default function App() {
     setTimeout(() => setClickAnim(null), 280);
   }, [state.tab, state.setTab]);
 
-  // Build the inline style: swipe drag takes priority, otherwise click animation
-  const getContentStyle = () => {
-    if (transitioning || swipeStyle.transform !== "translateX(0px)") {
-      return swipeStyle;
-    }
-    if (clickAnim) {
-      return {}; // CSS class handles it
-    }
-    return {};
-  };
+  // Swipe inline styles take priority; click anim uses CSS classes
+  const contentStyle = transitioning || swipeStyle.transform ? swipeStyle : {};
 
   const {
     data, tab, setTab, modal, setModal, form, setForm, loading,
@@ -196,7 +188,7 @@ export default function App() {
 
       <main
         className={clickAnim === "left" ? "slide-in-left" : clickAnim === "right" ? "slide-in-right" : ""}
-        style={{ padding: "24px", overflow: "hidden", ...getContentStyle() }}
+        style={{ padding: "24px", overflow: "hidden", minHeight: "calc(100vh - 140px)", ...contentStyle }}
         role="tabpanel"
         id={`panel-${tab}`}
         onTouchStart={onTouchStart}
