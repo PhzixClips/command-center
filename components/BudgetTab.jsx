@@ -39,6 +39,7 @@ export default function BudgetTab({ data, save }) {
   const [showImport,     setShowImport]     = useState(false);
   const [filterCat,      setFilterCat]      = useState(null);
   const [recurringEdit,  setRecurringEdit]  = useState(null); // { descKey, desc, category }
+  const [showRecurring,  setShowRecurring]  = useState(false);
 
   const budget    = data.budget    || {};
   const expenses  = data.expenses  || [];
@@ -271,43 +272,6 @@ export default function BudgetTab({ data, save }) {
         })}
       </div>
 
-      {/* Recurring expenses — card grid */}
-      {recurringExpenses.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500 }}>Recurring Expenses Detected</div>
-            <div style={{ color: "#a78bfa", fontSize: 12, fontWeight: 700 }}>
-              ${Math.round(recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0))}/mo committed
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: 10 }}>
-            {recurringExpenses.map((r, i) => {
-              const color      = CAT_COLOR[r.category] || "#888";
-              const monthlyAvg = r.totalAmount / r.months.size;
-              return (
-                <div key={i} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: `1px solid ${color}33`, borderRadius: 16, padding: "14px 14px 12px", position: "relative", overflow: "hidden" }}>
-                  <div style={{ position: "absolute", top: 0, left: 0, height: 1, width: "100%", background: `linear-gradient(90deg, transparent, ${color}66, transparent)` }} />
-                  <div>
-                    <div style={{ color, fontSize: 8, letterSpacing: 1, marginBottom: 5 }}>{r.category.toUpperCase()}</div>
-                    <div style={{ color: "#e8e8e8", fontSize: 12, fontWeight: 600, marginBottom: 8, lineHeight: 1.3, wordBreak: "break-word" }}>{r.desc}</div>
-                    <div style={{ color, fontSize: 20, fontWeight: 700, marginBottom: 2 }}>
-                      ${Math.round(monthlyAvg)}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.35)" }}>/mo</span>
-                    </div>
-                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, marginBottom: 12 }}>
-                      {r.months.size} months · ${Math.round(r.totalAmount)} total
-                    </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => openEditRecurring(r)} style={{ flex: 1, background: `${color}12`, border: `1px solid ${color}44`, color: "rgba(255,255,255,0.5)", fontSize: 9, padding: "5px 0", borderRadius: 12, cursor: "pointer" }}>Edit All</button>
-                      <button onClick={() => deleteRecurring(r.desc.toLowerCase().trim())} style={{ background: "#ff3b3b12", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "4px 10px", borderRadius: 12, cursor: "pointer" }}>✕</button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Expense list */}
       {filterCat ? (
         /* — Filtered view — */
@@ -388,6 +352,55 @@ export default function BudgetTab({ data, save }) {
             ))}
           </div>
         </>
+      )}
+
+      {/* Recurring expenses — collapsible, at bottom */}
+      {recurringExpenses.length > 0 && (
+        <div style={{ marginTop: 24, marginBottom: 20 }}>
+          <button onClick={() => setShowRecurring(!showRecurring)} style={{
+            width: "100%", background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)",
+            border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "14px 18px", cursor: "pointer",
+            display: "flex", justifyContent: "space-between", alignItems: "center"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ color: "#a78bfa", fontSize: 12, fontWeight: 600 }}>Recurring Expenses</span>
+              <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 10 }}>{recurringExpenses.length} detected</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ color: "#a78bfa", fontSize: 12, fontWeight: 700 }}>
+                ${Math.round(recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0))}/mo
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 14 }}>{showRecurring ? "▲" : "▼"}</span>
+            </div>
+          </button>
+          {showRecurring && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: 10, marginTop: 12 }}>
+              {recurringExpenses.map((r, i) => {
+                const color      = CAT_COLOR[r.category] || "#888";
+                const monthlyAvg = r.totalAmount / r.months.size;
+                return (
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: `1px solid ${color}33`, borderRadius: 16, padding: "14px 14px 12px", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, height: 1, width: "100%", background: `linear-gradient(90deg, transparent, ${color}66, transparent)` }} />
+                    <div>
+                      <div style={{ color, fontSize: 8, letterSpacing: 1, marginBottom: 5 }}>{r.category.toUpperCase()}</div>
+                      <div style={{ color: "#e8e8e8", fontSize: 12, fontWeight: 600, marginBottom: 8, lineHeight: 1.3, wordBreak: "break-word" }}>{r.desc}</div>
+                      <div style={{ color, fontSize: 20, fontWeight: 700, marginBottom: 2 }}>
+                        ${Math.round(monthlyAvg)}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.35)" }}>/mo</span>
+                      </div>
+                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, marginBottom: 12 }}>
+                        {r.months.size} months · ${Math.round(r.totalAmount)} total
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button onClick={() => openEditRecurring(r)} style={{ flex: 1, background: `${color}12`, border: `1px solid ${color}44`, color: "rgba(255,255,255,0.5)", fontSize: 9, padding: "5px 0", borderRadius: 12, cursor: "pointer" }}>Edit All</button>
+                        <button onClick={() => deleteRecurring(r.desc.toLowerCase().trim())} style={{ background: "#ff3b3b12", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "4px 10px", borderRadius: 12, cursor: "pointer" }}>✕</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Add expense modal */}
