@@ -82,53 +82,53 @@ export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWo
   };
 
   return (
-    <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: "20px", marginBottom: 24 }}>
+    <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "20px", marginBottom: 24 }}>
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
         {CHART_VIEWS.map(v => (
           <button key={v.key} onClick={() => setView(v.key)} style={{
-            background: view === v.key ? `${v.color}18` : "none",
-            border: `1px solid ${view === v.key ? v.color : "#222"}`,
-            color: view === v.key ? v.color : "#444",
-            fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
-            padding: "5px 10px", borderRadius: 4, cursor: "pointer", transition: "all 0.15s"
+            background: view === v.key ? "rgba(255,255,255,0.06)" : "transparent",
+            border: "none",
+            color: view === v.key ? v.color : "rgba(255,255,255,0.3)",
+            fontSize: 9, letterSpacing: 1, fontWeight: view === v.key ? 500 : 400,
+            padding: "5px 10px", borderRadius: 8, cursor: "pointer", transition: "all 0.15s"
           }}>{v.label}</button>
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
         <div>
-          <div style={{ color: "#444", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>{labels[view].title}</div>
-          <div style={{ color: current.color, fontSize: 22, fontWeight: 700, fontFamily: "monospace" }}>
+          <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 9, letterSpacing: 2, marginBottom: 4 }}>{labels[view].title}</div>
+          <div style={{ color: current.color, fontSize: 22, fontWeight: 700 }}>
             ${(view === "shifts" ? windowShiftTotal : last).toLocaleString()}{labels[view].suffix}
           </div>
           {view === "shifts" && (
-            <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>30-day total</div>
+            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, marginTop: 2 }}>30-day total</div>
           )}
         </div>
         {view === "shifts" ? (
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>
+            <div style={{ color: "#a78bfa", fontSize: 16, fontWeight: 700 }}>
               ${weeklyShift.toLocaleString()}
             </div>
-            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>last 7 days</div>
+            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10 }}>last 7 days</div>
           </div>
         ) : (
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: delta >= 0 ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>
+            <div style={{ color: delta >= 0 ? "#00ff88" : "#ff3b3b", fontSize: 13, fontWeight: 700 }}>
               {delta >= 0 ? "▲" : "▼"} ${Math.abs(Math.round(delta)).toLocaleString()}
             </div>
-            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>{delta >= 0 ? "+" : ""}{deltaPct}% · 30d</div>
+            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10 }}>{delta >= 0 ? "+" : ""}{deltaPct}% · 30d</div>
           </div>
         )}
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-          <XAxis dataKey="date" tick={{ fill: "#333", fontSize: 9, fontFamily: "monospace" }} tickLine={false} axisLine={false} interval={6} />
-          <YAxis tick={{ fill: "#333", fontSize: 9, fontFamily: "monospace" }} tickLine={false} axisLine={false} tickFormatter={v => `$${v >= 1000 ? (v/1000).toFixed(1)+"k" : v}`} width={44} />
+          <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 9 }} tickLine={false} axisLine={false} interval={6} />
+          <YAxis tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 9 }} tickLine={false} axisLine={false} tickFormatter={v => `$${v >= 1000 ? (v/1000).toFixed(1)+"k" : v}`} width={44} />
           <Tooltip content={({ active, payload, label }) => {
             if (!active || !payload?.length) return null;
             return (
-              <div style={{ background: "#111", border: `1px solid ${current.color}44`, padding: "8px 14px", fontFamily: "monospace", fontSize: 11, borderRadius: 6 }}>
-                <div style={{ color: "#555", marginBottom: 2 }}>{label}</div>
+              <div style={{ background: "rgba(20,20,30,0.9)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.08)", padding: "8px 14px", fontSize: 11, borderRadius: 12 }}>
+                <div style={{ color: "rgba(255,255,255,0.3)", marginBottom: 2 }}>{label}</div>
                 <div style={{ color: current.color, fontWeight: 700 }}>${payload[0].value.toLocaleString()}</div>
               </div>
             );

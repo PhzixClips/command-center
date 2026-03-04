@@ -10,18 +10,31 @@ export default function FAB({ onAction }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+    <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 12 }}>
       {open && ACTIONS.map((a) => (
         <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 10 }}
           onClick={() => { onAction(a.key); setOpen(false); }}>
-          <span style={{ background: "#111", border: `1px solid ${a.color}44`, color: a.color, fontFamily: "monospace", fontSize: 10, padding: "4px 10px", borderRadius: 4, whiteSpace: "nowrap", cursor: "pointer", letterSpacing: 1 }}>
+          <span style={{
+            background: "rgba(20,20,30,0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: `1px solid ${a.color}33`,
+            color: a.color,
+            fontSize: 11,
+            fontWeight: 500,
+            padding: "6px 14px",
+            borderRadius: 10,
+            whiteSpace: "nowrap",
+            cursor: "pointer",
+          }}>
             {a.label}
           </span>
           <div style={{
-            width: 40, height: 40, borderRadius: "50%", background: "#111",
-            border: `1px solid ${a.color}`, color: a.color, fontSize: 16,
+            width: 42, height: 42, borderRadius: 14,
+            background: `${a.color}18`,
+            border: `1px solid ${a.color}44`,
+            color: a.color, fontSize: 16,
             display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-            boxShadow: `0 0 12px ${a.color}33`
           }}>
             {a.icon}
           </div>
@@ -30,14 +43,14 @@ export default function FAB({ onAction }) {
       <div
         onClick={() => setOpen(!open)}
         style={{
-          width: 52, height: 52, borderRadius: "50%",
-          background: open ? "#111" : "#00ff88",
-          border: `2px solid ${open ? "#00ff88" : "transparent"}`,
-          color: open ? "#00ff88" : "#000",
+          width: 56, height: 56, borderRadius: 18,
+          background: open ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00e676, #00b0ff)",
+          border: open ? "1px solid rgba(255,255,255,0.1)" : "none",
+          color: open ? "#00e676" : "#000",
           fontSize: 24, display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", fontWeight: 700,
-          boxShadow: "0 4px 20px #00ff8844",
-          transition: "all 0.2s",
+          boxShadow: open ? "none" : "0 8px 32px rgba(0,230,118,0.3)",
+          transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
           transform: open ? "rotate(45deg)" : "rotate(0deg)",
         }}>
         +

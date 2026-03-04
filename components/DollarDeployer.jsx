@@ -52,47 +52,47 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
   ].filter(a => a.value > 0.5) : [];
 
   return (
-    <div style={{ background: "#0d0d0d", border: "1px solid #ffd70022", borderRadius: 10, marginBottom: 20, overflow: "hidden" }}>
+    <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, marginBottom: 20, overflow: "hidden" }}>
       <div onClick={() => setOpen(!open)} style={{ padding: "16px 20px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2, fontFamily: "monospace" }}>💰 DOLLAR DEPLOYMENT SYSTEM</div>
-          <div style={{ color: "#555", fontSize: 11, marginTop: 4 }}>Every dollar gets a job — tap to deploy</div>
+          <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2, fontWeight: 500 }}>💰 DOLLAR DEPLOYMENT SYSTEM</div>
+          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginTop: 4, fontWeight: 500 }}>Every dollar gets a job — tap to deploy</div>
         </div>
         <div style={{ color: "#ffd700", fontSize: 16 }}>{open ? "▲" : "▼"}</div>
       </div>
       {open && (
         <div style={{ padding: "0 20px 20px" }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-            <button onClick={() => { setAmount(String(Math.round(liquid))); quickDeploy(liquid); }} style={{ background: "#111", border: "1px solid #ffd70044", color: "#ffd700", fontFamily: "monospace", fontSize: 11, padding: "7px 14px", borderRadius: 5, cursor: "pointer" }}>
+            <button onClick={() => { setAmount(String(Math.round(liquid))); quickDeploy(liquid); }} style={{ background: "#ffd70012", border: "1px solid #ffd70044", color: "#ffd700", fontSize: 11, padding: "7px 14px", borderRadius: 12, cursor: "pointer" }}>
               Current Liquid ${Math.round(liquid).toLocaleString()}
             </button>
-            <button onClick={() => { setAmount(String(Math.round(avgTips))); quickDeploy(avgTips); }} style={{ background: "#111", border: "1px solid #a78bfa44", color: "#a78bfa", fontFamily: "monospace", fontSize: 11, padding: "7px 14px", borderRadius: 5, cursor: "pointer" }}>
+            <button onClick={() => { setAmount(String(Math.round(avgTips))); quickDeploy(avgTips); }} style={{ background: "#a78bfa12", border: "1px solid #a78bfa44", color: "#a78bfa", fontSize: 11, padding: "7px 14px", borderRadius: 12, cursor: "pointer" }}>
               Avg Shift ${Math.round(avgTips)}
             </button>
           </div>
           <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
             <input type="number" placeholder="Custom amount..." value={amount} onChange={e => setAmount(e.target.value)}
-              style={{ flex: 1, background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" }} />
-            <button onClick={fetchAIPlan} disabled={loading} style={{ background: "none", border: "1px solid #ffd700", color: "#ffd700", fontFamily: "monospace", fontSize: 11, padding: "9px 16px", borderRadius: 6, cursor: "pointer" }}>
+              style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "9px 12px", color: "#e8e8e8", fontSize: 13, outline: "none" }} />
+            <button onClick={fetchAIPlan} disabled={loading} style={{ background: "#ffd70012", border: "1px solid #ffd70044", color: "#ffd700", fontSize: 11, padding: "9px 16px", borderRadius: 12, cursor: "pointer" }}>
               {loading ? "..." : "AI SPLIT"}
             </button>
           </div>
           {error && (
-            <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginBottom: 10 }}>⚠ {error}</div>
+            <div style={{ color: "#ff3b3b", fontSize: 11, marginBottom: 10 }}>⚠ {error}</div>
           )}
           {plan && (
             <div>
-              {plan.reasoning && <div style={{ color: "#555", fontSize: 11, fontFamily: "monospace", marginBottom: 14, fontStyle: "italic" }}>{plan.reasoning}</div>}
+              {plan.reasoning && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginBottom: 14, fontStyle: "italic", fontWeight: 500 }}>{plan.reasoning}</div>}
               {ALLOC.map((a, i) => {
                 const pct = (a.value / plan.total) * 100;
                 return (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <div style={{ color: "#666", fontSize: 10, fontFamily: "monospace" }}>{a.icon} {a.label}</div>
-                      <div style={{ color: a.color, fontSize: 12, fontFamily: "monospace", fontWeight: 700 }}>${Math.round(a.value).toLocaleString()} <span style={{ color: "#444", fontWeight: 400 }}>({pct.toFixed(0)}%)</span></div>
+                      <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500 }}>{a.icon} {a.label}</div>
+                      <div style={{ color: a.color, fontSize: 12, fontWeight: 700 }}>${Math.round(a.value).toLocaleString()} <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>({pct.toFixed(0)}%)</span></div>
                     </div>
-                    <div style={{ background: "#1a1a1a", borderRadius: 4, height: 8 }}>
-                      <div style={{ background: a.color, width: pct + "%", height: "100%", borderRadius: 4, transition: "width 0.5s" }} />
+                    <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: 8 }}>
+                      <div style={{ background: a.color, width: pct + "%", height: "100%", borderRadius: 6, transition: "width 0.5s" }} />
                     </div>
                   </div>
                 );

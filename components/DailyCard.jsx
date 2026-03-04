@@ -42,32 +42,32 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
   const color = card ? (CAT_COLOR[card.category] || "#00ff88") : "#00ff88";
 
   return (
-    <div style={{ background: "#0a0a0a", border: `1px solid ${color}44`, borderRadius: 12, padding: "20px 22px", marginBottom: 20, position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}, transparent)` }} />
+    <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "20px 22px", marginBottom: 20, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}66, transparent 70%)` }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
-          ⚡ TODAY'S MOVE · {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase()}
+        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2, fontWeight: 500 }}>
+          TODAY'S MOVE · {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase()}
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {card && <span style={{ color: URG_COLOR[card.urgency] || "#ffd700", fontSize: 9, fontFamily: "monospace", border: `1px solid ${URG_COLOR[card.urgency] || "#ffd700"}44`, padding: "2px 8px", borderRadius: 3 }}>{card.urgency}</span>}
-          {card && <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "2px 8px", borderRadius: 3 }}>{card.category}</span>}
+          {card && <span style={{ color: URG_COLOR[card.urgency] || "#ffd700", fontSize: 9, background: `${(URG_COLOR[card.urgency] || "#ffd700")}15`, border: `1px solid ${(URG_COLOR[card.urgency] || "#ffd700")}33`, padding: "2px 8px", borderRadius: 8 }}>{card.urgency}</span>}
+          {card && <span style={{ color, fontSize: 9, background: `${color}15`, border: `1px solid ${color}33`, padding: "2px 8px", borderRadius: 8 }}>{card.category}</span>}
         </div>
       </div>
       {loading ? (
-        <div style={{ color: "#333", fontFamily: "monospace", fontSize: 13, letterSpacing: 2 }}>CALCULATING YOUR EDGE...</div>
+        <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 13, letterSpacing: 2 }}>CALCULATING YOUR EDGE...</div>
       ) : error ? (
-        <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11 }}>⚠ {error}</div>
+        <div style={{ color: "#ff3b3b", fontSize: 11 }}>⚠ {error}</div>
       ) : card ? (
         <>
-          <div style={{ color: color, fontSize: 20, fontWeight: 700, fontFamily: "monospace", lineHeight: 1.3, marginBottom: 10 }}>{card.priority}</div>
-          <div style={{ color: "#aaa", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{card.reason}</div>
-          <div style={{ background: "#111", borderRadius: 6, padding: "10px 14px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ color: color, fontSize: 20, fontWeight: 700, lineHeight: 1.3, marginBottom: 10 }}>{card.priority}</div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{card.reason}</div>
+          <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "10px 14px", display: "flex", gap: 10, alignItems: "flex-start", border: "1px solid rgba(255,255,255,0.06)" }}>
             <span style={{ color: "#ffd700", fontSize: 11 }}>💡</span>
-            <span style={{ color: "#777", fontSize: 11, fontFamily: "monospace" }}>{card.bonus}</span>
+            <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{card.bonus}</span>
           </div>
         </>
       ) : null}
-      <button onClick={fetchCard} style={{ position: "absolute", bottom: 14, right: 18, background: "none", border: "none", color: "#333", fontSize: 10, fontFamily: "monospace", cursor: "pointer", letterSpacing: 1 }}>REFRESH ↻</button>
+      <button onClick={fetchCard} style={{ position: "absolute", bottom: 14, right: 18, background: "none", border: "none", color: "rgba(255,255,255,0.15)", fontSize: 10, cursor: "pointer", letterSpacing: 1, transition: "color 0.2s" }} onMouseEnter={e => e.target.style.color = "rgba(255,255,255,0.4)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.15)"}>REFRESH ↻</button>
     </div>
   );
 }

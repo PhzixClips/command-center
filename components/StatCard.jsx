@@ -1,10 +1,22 @@
 export default function StatCard({ label, value, sub, accent = "#00ff88" }) {
   return (
-    <div style={{ background: "#0d0d0d", border: `1px solid ${accent}22`, borderRadius: 8, padding: "18px 22px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: accent }} />
-      <div style={{ color: "#666", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginBottom: 6, fontFamily: "monospace" }}>{label}</div>
-      <div style={{ color: accent, fontSize: 26, fontWeight: 700, fontFamily: "'Courier New', monospace", letterSpacing: -1 }}>{value}</div>
-      {sub && <div style={{ color: "#555", fontSize: 11, marginTop: 4, fontFamily: "monospace" }}>{sub}</div>}
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      backdropFilter: "blur(40px)",
+      WebkitBackdropFilter: "blur(40px)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: 16,
+      padding: "20px 22px",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 1,
+        background: `linear-gradient(90deg, ${accent}44, transparent 70%)`,
+      }} />
+      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      <div style={{ color: accent, fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>{value}</div>
+      {sub && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 6, fontWeight: 400 }}>{sub}</div>}
     </div>
   );
 }

@@ -20,7 +20,7 @@ const toMonthKey = (date) =>
 
 const monthLabel = (key) => {
   const [y, m] = key.split("-");
-  return new Date(+y, +m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+  return new Date(+y, +m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 };
 
 const offsetMonth = (key, delta) => {
@@ -168,21 +168,21 @@ export default function BudgetTab({ data, save }) {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
         <div>
-          <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2 }}>BUDGET TRACKER</div>
+          <div style={{ color: "#34d399", fontSize: 14, fontWeight: 600 }}>Budget Tracker</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             <button onClick={() => setViewMonth(offsetMonth(viewMonth, -1))}
-              style={{ background: "none", border: "1px solid #1a1a1a", color: "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: "pointer" }}>‹</button>
-            <span style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, minWidth: 140, textAlign: "center" }}>{monthLabel(viewMonth)}</span>
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", fontSize: 12, padding: "3px 10px", borderRadius: 8, cursor: "pointer" }}>‹</button>
+            <span style={{ color: "#e8e8e8", fontSize: 12, minWidth: 140, textAlign: "center" }}>{monthLabel(viewMonth)}</span>
             <button onClick={() => setViewMonth(offsetMonth(viewMonth, 1))} disabled={isCurrentMonth}
-              style={{ background: "none", border: "1px solid #1a1a1a", color: isCurrentMonth ? "#222" : "#555", fontFamily: "monospace", fontSize: 12, padding: "3px 10px", borderRadius: 4, cursor: isCurrentMonth ? "default" : "pointer" }}>›</button>
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: isCurrentMonth ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.35)", fontSize: 12, padding: "3px 10px", borderRadius: 8, cursor: isCurrentMonth ? "default" : "pointer" }}>›</button>
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Btn onClick={() => { setForm({}); setModal("edit-budget"); }} color="#34d399" style={{ fontSize: 10 }}>EDIT BUDGET</Btn>
-          <Btn onClick={() => setShowImport(true)} color="#60a5fa" style={{ fontSize: 10 }}>↑ IMPORT CSV</Btn>
-          <Btn onClick={() => { setForm({ category: "Food & Dining" }); setModal("add-expense"); }} color="#34d399">+ ADD EXPENSE</Btn>
+          <Btn onClick={() => { setForm({}); setModal("edit-budget"); }} color="#34d399" style={{ fontSize: 10 }}>Edit Budget</Btn>
+          <Btn onClick={() => setShowImport(true)} color="#60a5fa" style={{ fontSize: 10 }}>Import CSV</Btn>
+          <Btn onClick={() => { setForm({ category: "Food & Dining" }); setModal("add-expense"); }} color="#34d399">+ Add Expense</Btn>
           {(expenses.length > 0 || income.length > 0) && (
-            <Btn onClick={() => setModal("clear-imports")} color="#ff3b3b" style={{ fontSize: 10 }}>CLEAR ALL</Btn>
+            <Btn onClick={() => setModal("clear-imports")} color="#ff3b3b" style={{ fontSize: 10 }}>Clear All</Btn>
           )}
         </div>
       </div>
@@ -190,24 +190,24 @@ export default function BudgetTab({ data, save }) {
       {/* Summary cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "INCOME",        value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
-          { label: "SPENT SO FAR",  value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
-          { label: "NET CASH FLOW", value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
-          { label: "BUDGET LEFT",   value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "OVER BUDGET" : "of budget left" },
+          { label: "Income",        value: `$${totalEarned.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: "#00ff88", sub: `${monthIncome.length} deposits` },
+          { label: "Spent So Far",  value: `$${totalSpent.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: totalSpent > totalBudget ? "#ff3b3b" : "#ffd700" },
+          { label: "Net Cash Flow", value: `${netCashFlow >= 0 ? "+" : "-"}$${Math.abs(netCashFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: netCashFlow >= 0 ? "#00ff88" : "#ff3b3b", sub: netCashFlow >= 0 ? "in the green" : "in the red" },
+          { label: "Budget Left",   value: `$${Math.abs(remaining).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, color: remaining >= 0 ? "#00ff88" : "#ff3b3b", sub: remaining < 0 ? "Over Budget" : "of budget left" },
         ].map((c, i) => (
-          <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${c.color}22`, borderRadius: 8, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: c.color }} />
-            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 6, fontFamily: "monospace" }}>{c.label}</div>
-            <div style={{ color: c.color, fontSize: 22, fontWeight: 700, fontFamily: "monospace" }}>{c.value}</div>
-            {c.sub && <div style={{ color: "#555", fontSize: 10, marginTop: 4, fontFamily: "monospace" }}>{c.sub}</div>}
+          <div key={i} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: `1px solid ${c.color}22`, borderRadius: 20, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, height: 1, width: "100%", background: `linear-gradient(90deg, transparent, ${c.color}66, transparent)` }} />
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 6 }}>{c.label}</div>
+            <div style={{ color: c.color, fontSize: 22, fontWeight: 700 }}>{c.value}</div>
+            {c.sub && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginTop: 4 }}>{c.sub}</div>}
           </div>
         ))}
       </div>
 
       {/* Category breakdown — clickable */}
-      <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: 20, marginBottom: 20 }}>
-        <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 16 }}>
-          CATEGORY BREAKDOWN · {filterCat ? <span style={{ color: CAT_COLOR[filterCat] }}>tap again to clear</span> : "tap a category to filter"}
+      <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: 20, marginBottom: 20 }}>
+        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 16 }}>
+          Category Breakdown · {filterCat ? <span style={{ color: CAT_COLOR[filterCat] }}>tap again to clear</span> : "tap a category to filter"}
         </div>
         {CATEGORIES.map(cat => {
           const spent  = spentByCategory[cat] || 0;
@@ -228,7 +228,7 @@ export default function BudgetTab({ data, save }) {
               style={{ marginBottom: 16, cursor: "pointer", opacity: dimmed ? 0.3 : 1, transition: "opacity 0.2s" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: active ? "#fff" : color, fontSize: 11, fontFamily: "monospace", fontWeight: active ? 700 : 400 }}>
+                  <span style={{ color: active ? "#fff" : color, fontSize: 11, fontWeight: active ? 700 : 400 }}>
                     {active ? "▶ " : ""}{cat}
                   </span>
                   {/* Apple-style badge for Other/uncategorized */}
@@ -245,26 +245,25 @@ export default function BudgetTab({ data, save }) {
                       alignItems: "center",
                       justifyContent: "center",
                       padding: "0 5px",
-                      fontFamily: "monospace",
                       letterSpacing: 0,
                       lineHeight: 1,
                     }}>{uncategorizedCount}</span>
                   )}
                   {expCount > 0 && (
-                    <span style={{ color: "#333", fontSize: 9, fontFamily: "monospace" }}>({expCount})</span>
+                    <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 9 }}>({expCount})</span>
                   )}
                 </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  {over && <span style={{ color: "#ff3b3b", fontSize: 9, fontFamily: "monospace", border: "1px solid #ff3b3b44", padding: "1px 6px", borderRadius: 3 }}>OVER</span>}
-                  <span style={{ color: over ? "#ff3b3b" : "#e8e8e8", fontFamily: "monospace", fontSize: 12 }}>
-                    ${spent.toFixed(2)} <span style={{ color: "#444" }}>/ ${limit}</span>
+                  {over && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b44", padding: "1px 6px", borderRadius: 3 }}>OVER</span>}
+                  <span style={{ color: over ? "#ff3b3b" : "#e8e8e8", fontSize: 12 }}>
+                    ${spent.toFixed(2)} <span style={{ color: "rgba(255,255,255,0.25)" }}>/ ${limit}</span>
                   </span>
                 </div>
               </div>
-              <div style={{ background: "#1a1a1a", borderRadius: 4, height: active ? 10 : 7, overflow: "hidden", transition: "height 0.2s" }}>
+              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: active ? 10 : 7, overflow: "hidden", transition: "height 0.2s" }}>
                 <div style={{
                   background: over ? "#ff3b3b" : active ? `linear-gradient(90deg, #fff4, ${color})` : color,
-                  width: `${Math.min(pct, 100)}%`, height: "100%", borderRadius: 4, transition: "width 0.4s",
+                  width: `${Math.min(pct, 100)}%`, height: "100%", borderRadius: 6, transition: "width 0.4s",
                 }} />
               </div>
             </div>
@@ -276,8 +275,8 @@ export default function BudgetTab({ data, save }) {
       {recurringExpenses.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>RECURRING EXPENSES DETECTED</div>
-            <div style={{ color: "#a78bfa", fontSize: 12, fontFamily: "monospace", fontWeight: 700 }}>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500 }}>Recurring Expenses Detected</div>
+            <div style={{ color: "#a78bfa", fontSize: 12, fontWeight: 700 }}>
               ${Math.round(recurringExpenses.reduce((a, r) => a + r.totalAmount / r.months.size, 0))}/mo committed
             </div>
           </div>
@@ -286,20 +285,20 @@ export default function BudgetTab({ data, save }) {
               const color      = CAT_COLOR[r.category] || "#888";
               const monthlyAvg = r.totalAmount / r.months.size;
               return (
-                <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${color}33`, borderRadius: 10, padding: "14px 14px 12px", position: "relative", overflow: "hidden" }}>
-                  <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: color }} />
-                  <div style={{ marginLeft: 8 }}>
-                    <div style={{ color, fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 5 }}>{r.category.toUpperCase()}</div>
+                <div key={i} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: `1px solid ${color}33`, borderRadius: 16, padding: "14px 14px 12px", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, height: 1, width: "100%", background: `linear-gradient(90deg, transparent, ${color}66, transparent)` }} />
+                  <div>
+                    <div style={{ color, fontSize: 8, letterSpacing: 1, marginBottom: 5 }}>{r.category.toUpperCase()}</div>
                     <div style={{ color: "#e8e8e8", fontSize: 12, fontWeight: 600, marginBottom: 8, lineHeight: 1.3, wordBreak: "break-word" }}>{r.desc}</div>
-                    <div style={{ color, fontSize: 20, fontWeight: 700, fontFamily: "monospace", marginBottom: 2 }}>
-                      ${Math.round(monthlyAvg)}<span style={{ fontSize: 10, fontWeight: 400, color: "#555" }}>/mo</span>
+                    <div style={{ color, fontSize: 20, fontWeight: 700, marginBottom: 2 }}>
+                      ${Math.round(monthlyAvg)}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.35)" }}>/mo</span>
                     </div>
-                    <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", marginBottom: 12 }}>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, marginBottom: 12 }}>
                       {r.months.size} months · ${Math.round(r.totalAmount)} total
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => openEditRecurring(r)} style={{ flex: 1, background: "none", border: `1px solid ${color}44`, color: "#888", fontSize: 9, fontFamily: "monospace", padding: "5px 0", borderRadius: 4, cursor: "pointer" }}>EDIT ALL</button>
-                      <button onClick={() => deleteRecurring(r.desc.toLowerCase().trim())} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "4px 10px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                      <button onClick={() => openEditRecurring(r)} style={{ flex: 1, background: `${color}12`, border: `1px solid ${color}44`, color: "rgba(255,255,255,0.5)", fontSize: 9, padding: "5px 0", borderRadius: 12, cursor: "pointer" }}>Edit All</button>
+                      <button onClick={() => deleteRecurring(r.desc.toLowerCase().trim())} style={{ background: "#ff3b3b12", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "4px 10px", borderRadius: 12, cursor: "pointer" }}>✕</button>
                     </div>
                   </div>
                 </div>
@@ -313,14 +312,14 @@ export default function BudgetTab({ data, save }) {
       {filterCat ? (
         /* — Filtered view — */
         <div>
-          <div style={{ textAlign: "center", padding: "16px 0 20px", borderBottom: "1px solid #1a1a1a", marginBottom: 16 }}>
-            <div style={{ color: CAT_COLOR[filterCat], fontSize: 28, fontWeight: 900, fontFamily: "monospace", letterSpacing: 3 }}>{filterCat.toUpperCase()}</div>
-            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>
+          <div style={{ textAlign: "center", padding: "16px 0 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 16 }}>
+            <div style={{ color: CAT_COLOR[filterCat], fontSize: 28, fontWeight: 900, letterSpacing: 3 }}>{filterCat.toUpperCase()}</div>
+            <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 4 }}>
               {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? "s" : ""} · ${filteredExpenses.reduce((a, e) => a + e.amount, 0).toFixed(2)} total
             </div>
           </div>
           {filteredExpenses.length === 0 ? (
-            <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "24px 0" }}>No expenses in this category.</div>
+            <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 12, textAlign: "center", padding: "24px 0" }}>No expenses in this category.</div>
           ) : (
             <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
               {filteredExpenses.map(e => <ExpenseRow key={e.id} e={e} onEdit={() => openEdit(e)} onDelete={() => deleteExpense(e.id)} />)}
@@ -330,11 +329,11 @@ export default function BudgetTab({ data, save }) {
       ) : (
         /* — Default full list — */
         <>
-          <div style={{ marginBottom: 16, color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
-            EXPENSES · {monthExpenses.length} IN {monthLabel(viewMonth)}
+          <div style={{ marginBottom: 16, color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500 }}>
+            Expenses · {monthExpenses.length} in {monthLabel(viewMonth)}
           </div>
           {monthExpenses.length === 0 ? (
-            <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>
+            <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 12, textAlign: "center", padding: "32px 0" }}>
               No expenses logged for {monthLabel(viewMonth)}.
             </div>
           ) : (
@@ -348,20 +347,20 @@ export default function BudgetTab({ data, save }) {
       {/* Income list */}
       {monthIncome.length > 0 && (
         <>
-          <div style={{ marginBottom: 16, marginTop: 24, color: "#00ff88", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
-            INCOME · {monthIncome.length} IN {monthLabel(viewMonth)}
+          <div style={{ marginBottom: 16, marginTop: 24, color: "#00ff88", fontSize: 14, fontWeight: 600 }}>
+            Income · {monthIncome.length} in {monthLabel(viewMonth)}
           </div>
           <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
             {[...monthIncome].reverse().map(e => (
-              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #00ff8822", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={e.id} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid #00ff8822", borderRadius: 16, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <span style={{ color: "#00ff88", fontSize: 9, fontFamily: "monospace", border: "1px solid #00ff8844", padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>{e.category}</span>
+                  <span style={{ color: "#00ff88", fontSize: 9, background: "#00ff8815", border: "1px solid #00ff8833", padding: "2px 7px", borderRadius: 8, whiteSpace: "nowrap" }}>{e.category}</span>
                   <div>
                     <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
-                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 2 }}>{e.date}</div>
                   </div>
                 </div>
-                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>+${e.amount.toFixed(2)}</div>
+                <div style={{ color: "#00ff88", fontSize: 16, fontWeight: 700 }}>+${e.amount.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -371,20 +370,20 @@ export default function BudgetTab({ data, save }) {
       {/* Transfers list */}
       {monthTransfers.length > 0 && (
         <>
-          <div style={{ marginBottom: 16, marginTop: 24, color: "#ffd70088", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>
-            TRANSFERS · {monthTransfers.length} IN {monthLabel(viewMonth)} · ${totalTransferred.toFixed(2)} TOTAL
+          <div style={{ marginBottom: 16, marginTop: 24, color: "#ffd70088", fontSize: 14, fontWeight: 600 }}>
+            Transfers · {monthTransfers.length} in {monthLabel(viewMonth)} · ${totalTransferred.toFixed(2)} Total
           </div>
           <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
             {[...monthTransfers].reverse().map(e => (
-              <div key={e.id} style={{ background: "#0d0d0d", border: "1px solid #ffd70022", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={e.id} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid #ffd70022", borderRadius: 16, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <span style={{ color: "#ffd70088", fontSize: 9, fontFamily: "monospace", border: "1px solid #ffd70044", padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap" }}>Transfer</span>
+                  <span style={{ color: "#ffd70088", fontSize: 9, background: "#ffd70015", border: "1px solid #ffd70033", padding: "2px 7px", borderRadius: 8, whiteSpace: "nowrap" }}>Transfer</span>
                   <div>
                     <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600 }}>{e.desc}</div>
-                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 2 }}>{e.date}</div>
                   </div>
                 </div>
-                <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>↔${e.amount.toFixed(2)}</div>
+                <div style={{ color: "#ffd70088", fontSize: 16, fontWeight: 700 }}>↔${e.amount.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -393,67 +392,67 @@ export default function BudgetTab({ data, save }) {
 
       {/* Add expense modal */}
       {modal === "add-expense" && (
-        <Modal title="ADD EXPENSE" onClose={() => setModal(null)}>
+        <Modal title="Add Expense" onClose={() => setModal(null)}>
           <Input label="Description" value={form.desc || ""} onChange={v => setForm({ ...form, desc: v })} placeholder="Groceries at Fry's" />
           <Input label="Amount ($)" type="number" value={form.amount || ""} onChange={v => setForm({ ...form, amount: v })} placeholder="47.50" />
           <CategorySelect value={form.category || "Food & Dining"} onChange={v => setForm({ ...form, category: v })} />
-          <Btn onClick={addExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>ADD EXPENSE</Btn>
+          <Btn onClick={addExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>Add Expense</Btn>
         </Modal>
       )}
 
       {/* Edit expense modal */}
       {modal === "edit-expense" && (
-        <Modal title="EDIT EXPENSE" onClose={() => { setModal(null); setForm({}); }}>
+        <Modal title="Edit Expense" onClose={() => { setModal(null); setForm({}); }}>
           <Input label="Description" value={form.desc || ""} onChange={v => setForm({ ...form, desc: v })} />
           <Input label="Amount ($)" type="number" value={form.amount || ""} onChange={v => setForm({ ...form, amount: v })} />
           <CategorySelect value={form.category || "Other"} onChange={v => setForm({ ...form, category: v })} />
-          <Btn onClick={saveEditExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE CHANGES</Btn>
+          <Btn onClick={saveEditExpense} color="#34d399" style={{ width: "100%", marginTop: 8 }}>Save Changes</Btn>
         </Modal>
       )}
 
       {/* Edit budget modal */}
       {modal === "edit-budget" && (
-        <Modal title="MONTHLY BUDGET LIMITS" onClose={() => setModal(null)}>
+        <Modal title="Monthly Budget Limits" onClose={() => setModal(null)}>
           {CATEGORIES.map(cat => (
             <Input key={cat} label={cat} type="number"
               value={form[cat] !== undefined ? form[cat] : (budget[cat] || "")}
               onChange={v => setForm({ ...form, [cat]: v })}
               placeholder={String(budget[cat] || 0)} />
           ))}
-          <Btn onClick={saveBudget} color="#34d399" style={{ width: "100%", marginTop: 8 }}>SAVE BUDGET</Btn>
+          <Btn onClick={saveBudget} color="#34d399" style={{ width: "100%", marginTop: 8 }}>Save Budget</Btn>
         </Modal>
       )}
 
       {/* Clear imports confirmation */}
       {modal === "clear-imports" && (
-        <Modal title="CLEAR ALL IMPORTED DATA" onClose={() => setModal(null)}>
-          <div style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, marginBottom: 8 }}>
+        <Modal title="Clear All Imported Data" onClose={() => setModal(null)}>
+          <div style={{ color: "#e8e8e8", fontSize: 12, marginBottom: 8 }}>
             This will remove all imported data:
           </div>
-          <div style={{ color: "#555", fontFamily: "monospace", fontSize: 11, marginBottom: 16, lineHeight: 1.8 }}>
+          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginBottom: 16, lineHeight: 1.8 }}>
             • {expenses.length} expenses<br />
             • {income.length} income entries<br />
             • {transfers.length} transfers
           </div>
-          <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 10, marginBottom: 16 }}>
+          <div style={{ color: "#ff3b3b", fontSize: 10, marginBottom: 16 }}>
             Budget limits will be kept. You can re-import your CSV after clearing.
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Btn onClick={() => setModal(null)} color="#555" style={{ flex: 1 }}>CANCEL</Btn>
-            <Btn onClick={clearImports} color="#ff3b3b" style={{ flex: 1 }}>CLEAR ALL</Btn>
+            <Btn onClick={() => setModal(null)} color="#555" style={{ flex: 1 }}>Cancel</Btn>
+            <Btn onClick={clearImports} color="#ff3b3b" style={{ flex: 1 }}>Clear All</Btn>
           </div>
         </Modal>
       )}
 
       {/* Recurring edit modal */}
       {recurringEdit && (
-        <Modal title="EDIT RECURRING" onClose={() => setRecurringEdit(null)}>
+        <Modal title="Edit Recurring" onClose={() => setRecurringEdit(null)}>
           <Input label="Description" value={recurringEdit.desc} onChange={v => setRecurringEdit({ ...recurringEdit, desc: v })} />
           <CategorySelect value={recurringEdit.category} onChange={v => setRecurringEdit({ ...recurringEdit, category: v })} />
-          <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 12 }}>
+          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginBottom: 12 }}>
             Updates all {expenses.filter(e => e.desc.toLowerCase().trim() === recurringEdit.descKey).length} matching transactions.
           </div>
-          <Btn onClick={saveEditRecurring} color="#a78bfa" style={{ width: "100%", marginTop: 8 }}>SAVE ALL INSTANCES</Btn>
+          <Btn onClick={saveEditRecurring} color="#a78bfa" style={{ width: "100%", marginTop: 8 }}>Save All Instances</Btn>
         </Modal>
       )}
 
@@ -467,18 +466,18 @@ export default function BudgetTab({ data, save }) {
 function ExpenseRow({ e, onEdit, onDelete }) {
   const color = CAT_COLOR[e.category] || "#888";
   return (
-    <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
-        <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "2px 7px", borderRadius: 3, whiteSpace: "nowrap", flexShrink: 0 }}>{e.category}</span>
+        <span style={{ color, fontSize: 9, background: `${color}15`, border: `1px solid ${color}33`, padding: "2px 7px", borderRadius: 8, whiteSpace: "nowrap", flexShrink: 0 }}>{e.category}</span>
         <div style={{ minWidth: 0 }}>
           <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.desc}</div>
-          <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{e.date}</div>
+          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 2 }}>{e.date}</div>
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginLeft: 10 }}>
-        <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 15, fontWeight: 700 }}>-${e.amount.toFixed(2)}</div>
-        <button onClick={onEdit} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-        <button onClick={onDelete} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+        <div style={{ color: "#ff3b3b", fontSize: 15, fontWeight: 700 }}>-${e.amount.toFixed(2)}</div>
+        <button onClick={onEdit} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontSize: 9, padding: "4px 8px", borderRadius: 12, cursor: "pointer" }}>Edit</button>
+        <button onClick={onDelete} style={{ background: "#ff3b3b12", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 8px", borderRadius: 12, cursor: "pointer" }}>✕</button>
       </div>
     </div>
   );
@@ -487,9 +486,9 @@ function ExpenseRow({ e, onEdit, onDelete }) {
 function CategorySelect({ value, onChange }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
+      <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, display: "block", marginBottom: 5 }}>Category</label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" }}>
+        style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "9px 12px", color: "#e8e8e8", fontSize: 13, outline: "none" }}>
         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
     </div>
