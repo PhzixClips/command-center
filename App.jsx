@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import useAppState       from "./components/hooks/useAppState.js";
 import useNotifications  from "./components/hooks/useNotifications.js";
@@ -30,35 +30,60 @@ export default function App() {
   const state = useAppState();
   const { requestPermission, notifyPriceAlert } = useNotifications();
 
-  // ── Swipe navigation + directional slide animations ─────────────────────
-  const [clickAnim, setClickAnim] = useState(null); // "left" | "right" | null
+  // ── Swipe navigation (iOS-style dual-panel) ────────────────────────────
+  const tabIdx = TABS.indexOf(state.tab);
+  const {
+    dragX, swipeDirection, phase, committed, settle, transitionMs,
+    handlers: { onTouchStart, onTouchMove, onTouchEnd },
+  } = useSwipe(tabIdx, TABS.length);
 
-  const navigateTab = useCallback((direction) => {
-    const idx = TABS.indexOf(state.tab);
-    const next = direction === "left" ? idx + 1 : idx - 1;
-    if (next < 0 || next >= TABS.length) return;
-    state.setTab(TABS[next]);
-  }, [state.tab, state.setTab]);
+  // When swipe commits and settle animation finishes, switch the actual tab
+  useEffect(() => {
+    if (phase === "settling" && committed) {
+      const timer = setTimeout(() => {
+        const nextIdx = committed === "left" ? tabIdx + 1 : tabIdx - 1;
+        if (nextIdx >= 0 && nextIdx < TABS.length) {
+          state.setTab(TABS[nextIdx]);
+        }
+        settle();
+      }, transitionMs);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, committed, tabIdx, state.setTab, settle, transitionMs]);
 
-  const { onTouchStart, onTouchMove, onTouchEnd, swipeStyle, transitioning } = useSwipe(
-    () => navigateTab("left"),   // swipe left → next tab
-    () => navigateTab("right"),  // swipe right → prev tab
-  );
-
-  // Tab-bar click: quick directional slide (no drag, just animate in)
+  // Tab-bar click: CSS animation (no swipe involved)
+  const [clickAnim, setClickAnim] = useState(null);
   const handleTabClick = useCallback((t) => {
     const fromIdx = TABS.indexOf(state.tab);
     const toIdx   = TABS.indexOf(t);
     if (fromIdx === toIdx) return;
-    const dir = toIdx > fromIdx ? "left" : "right";
-    setClickAnim(dir);
+    setClickAnim(toIdx > fromIdx ? "left" : "right");
     state.setTab(t);
-    // Clear after animation completes
     setTimeout(() => setClickAnim(null), 280);
   }, [state.tab, state.setTab]);
 
-  // Swipe inline styles take priority; click anim uses CSS classes
-  const contentStyle = transitioning || swipeStyle.transform ? swipeStyle : {};
+  // Determine which adjacent tab to show during swipe
+  const adjacentTab = (swipeDirection === "right" && tabIdx > 0)
+    ? TABS[tabIdx - 1]
+    : (swipeDirection === "left" && tabIdx < TABS.length - 1)
+      ? TABS[tabIdx + 1]
+      : null;
+  const showDual = (phase === "dragging" || phase === "settling") && adjacentTab;
+
+  // Swipe styles for current and adjacent panels
+  const isAnimating  = phase === "settling";
+  const transition   = isAnimating ? `transform ${transitionMs}ms cubic-bezier(0.2, 0.9, 0.3, 1)` : "none";
+  const currentStyle = {
+    transform: `translate3d(${dragX}px, 0, 0)`,
+    transition,
+  };
+  const adjacentStyle = {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    transform: swipeDirection === "left"
+      ? `translate3d(calc(100% + ${dragX}px), 0, 0)`
+      : `translate3d(calc(-100% + ${dragX}px), 0, 0)`,
+    transition,
+  };
 
   const {
     data, tab, setTab, modal, setModal, form, setForm, loading,
@@ -82,6 +107,68 @@ export default function App() {
     openEditGoal, deleteGoal, saveGoal,
     updateBalance, handleFAB, startFlipFromOpp, logShiftFromSchedule,
   } = state;
+
+  // ── Tab renderer ──────────────────────────────────────────────────────
+  const renderTab = useCallback((t) => {
+    switch (t) {
+      case "overview": return (
+        <OverviewTab
+          data={data} netWorth={netWorth} avgTips={avgTips} stockValue={stockValue}
+          totalShiftEarnings={totalShiftEarnings} flipProfit={flipProfit}
+          showBackupPrompt={showBackupPrompt} overspendWarnings={overspendWarnings}
+          daysLeft={daysLeft} monthShiftIncome={monthShiftIncome}
+          monthFlipIncome={monthFlipIncome} monthExpensesTotal={monthExpensesTotal}
+          monthNetPL={monthNetPL} projectedEODBalance={projectedEODBalance}
+          projectedShiftIncome={projectedShiftIncome}
+          projectedRemainingExpenses={projectedRemainingExpenses}
+          remainingMonthShifts={remainingMonthShifts} avgPerShift={avgPerShift} now={now}
+          aiLoading={aiLoading} aiInsight={aiInsight} aiCooldown={aiCooldown}
+          fetchAIInsight={fetchAIInsight} exportJSON={exportJSON} exportCSV={exportCSV}
+          importJSON={importJSON} importRef={importRef} dismissBackupPrompt={dismissBackupPrompt}
+          setModal={setModal} setForm={setForm} startFlipFromOpp={startFlipFromOpp}
+        />
+      );
+      case "schedule": return <ErrorBoundary><ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} /></ErrorBoundary>;
+      case "shifts": return (
+        <ShiftsTab
+          data={data} thisYear={thisYear} now={now}
+          totalShiftEarnings={totalShiftEarnings} avgPerShift={avgPerShift} avgTips={avgTips}
+          dayEntries={dayEntries} maxDayAvg={maxDayAvg}
+          filterDay={filterDay} setFilterDay={setFilterDay}
+          openWeeks={openWeeks} setOpenWeeks={setOpenWeeks}
+          openEditShift={openEditShift} deleteShift={deleteShift}
+          setModal={setModal} setForm={setForm}
+        />
+      );
+      case "flips": return (
+        <FlipsTab
+          data={data} thisYear={thisYear} setTab={setTab}
+          flipProfit={flipProfit} soldFlips={soldFlips} avgFlipROI={avgFlipROI}
+          bestFlip={bestFlip} avgDaysToSell={avgDaysToSell} flipsByCategory={flipsByCategory}
+          openEditFlip={openEditFlip} deleteFlip={deleteFlip}
+          setModal={setModal} setForm={setForm}
+        />
+      );
+      case "stocks": return (
+        <StocksTab
+          data={data} stockValue={stockValue} stockCost={stockCost}
+          priceAlerts={priceAlerts} syncLoading={syncLoading} lastSynced={lastSynced}
+          syncStockPrices={syncStockPrices} openEditStock={openEditStock}
+          deleteStock={deleteStock} setModal={setModal} setForm={setForm}
+        />
+      );
+      case "opportunities": return <ErrorBoundary><OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} /></ErrorBoundary>;
+      case "goals": return (
+        <GoalsTab
+          data={data} stockValue={stockValue} flipProfit={flipProfit}
+          nwDailyGain={nwDailyGain} openEditGoal={openEditGoal}
+          deleteGoal={deleteGoal} setModal={setModal} setForm={setForm}
+        />
+      );
+      case "budget": return <ErrorBoundary><BudgetTab data={data} save={save} /></ErrorBoundary>;
+      default: return null;
+    }
+  });
 
   // Fire browser notifications when price alerts trigger
   if (priceAlerts.length > 0) {
@@ -186,88 +273,37 @@ export default function App() {
         ))}
       </nav>
 
-      <main
-        className={clickAnim === "left" ? "slide-in-left" : clickAnim === "right" ? "slide-in-right" : ""}
-        style={{ padding: "24px", overflow: "hidden", minHeight: "calc(100vh - 140px)", ...contentStyle }}
-        role="tabpanel"
-        id={`panel-${tab}`}
+      {/* ── Swipe viewport ──────────────────────────────────────────────── */}
+      <div
+        style={{ position: "relative", overflow: "hidden", minHeight: "calc(100vh - 140px)" }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <Suspense fallback={<TabFallback />}>
+        {/* Current tab */}
+        <main
+          className={!showDual && clickAnim === "left" ? "slide-in-left" : !showDual && clickAnim === "right" ? "slide-in-right" : ""}
+          style={{ padding: "24px", minHeight: "calc(100vh - 140px)", willChange: showDual ? "transform" : "auto", ...(showDual ? currentStyle : {}) }}
+          role="tabpanel"
+          id={`panel-${tab}`}
+        >
+          <Suspense fallback={<TabFallback />}>
+            {renderTab(tab)}
+          </Suspense>
+        </main>
 
-          {tab === "overview" && (
-            <OverviewTab
-              data={data} netWorth={netWorth} avgTips={avgTips} stockValue={stockValue}
-              totalShiftEarnings={totalShiftEarnings} flipProfit={flipProfit}
-              showBackupPrompt={showBackupPrompt} overspendWarnings={overspendWarnings}
-              daysLeft={daysLeft} monthShiftIncome={monthShiftIncome}
-              monthFlipIncome={monthFlipIncome} monthExpensesTotal={monthExpensesTotal}
-              monthNetPL={monthNetPL} projectedEODBalance={projectedEODBalance}
-              projectedShiftIncome={projectedShiftIncome}
-              projectedRemainingExpenses={projectedRemainingExpenses}
-              remainingMonthShifts={remainingMonthShifts} avgPerShift={avgPerShift} now={now}
-              aiLoading={aiLoading} aiInsight={aiInsight} aiCooldown={aiCooldown}
-              fetchAIInsight={fetchAIInsight} exportJSON={exportJSON} exportCSV={exportCSV}
-              importJSON={importJSON} importRef={importRef} dismissBackupPrompt={dismissBackupPrompt}
-              setModal={setModal} setForm={setForm} startFlipFromOpp={startFlipFromOpp}
-            />
-          )}
-
-          {tab === "schedule" && (
-            <ErrorBoundary><ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} /></ErrorBoundary>
-          )}
-
-          {tab === "shifts" && (
-            <ShiftsTab
-              data={data} thisYear={thisYear} now={now}
-              totalShiftEarnings={totalShiftEarnings} avgPerShift={avgPerShift} avgTips={avgTips}
-              dayEntries={dayEntries} maxDayAvg={maxDayAvg}
-              filterDay={filterDay} setFilterDay={setFilterDay}
-              openWeeks={openWeeks} setOpenWeeks={setOpenWeeks}
-              openEditShift={openEditShift} deleteShift={deleteShift}
-              setModal={setModal} setForm={setForm}
-            />
-          )}
-
-          {tab === "flips" && (
-            <FlipsTab
-              data={data} thisYear={thisYear} setTab={setTab}
-              flipProfit={flipProfit} soldFlips={soldFlips} avgFlipROI={avgFlipROI}
-              bestFlip={bestFlip} avgDaysToSell={avgDaysToSell} flipsByCategory={flipsByCategory}
-              openEditFlip={openEditFlip} deleteFlip={deleteFlip}
-              setModal={setModal} setForm={setForm}
-            />
-          )}
-
-          {tab === "stocks" && (
-            <StocksTab
-              data={data} stockValue={stockValue} stockCost={stockCost}
-              priceAlerts={priceAlerts} syncLoading={syncLoading} lastSynced={lastSynced}
-              syncStockPrices={syncStockPrices} openEditStock={openEditStock}
-              deleteStock={deleteStock} setModal={setModal} setForm={setForm}
-            />
-          )}
-
-          {tab === "opportunities" && (
-            <ErrorBoundary><OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} /></ErrorBoundary>
-          )}
-
-          {tab === "goals" && (
-            <GoalsTab
-              data={data} stockValue={stockValue} flipProfit={flipProfit}
-              nwDailyGain={nwDailyGain} openEditGoal={openEditGoal}
-              deleteGoal={deleteGoal} setModal={setModal} setForm={setForm}
-            />
-          )}
-
-          {tab === "budget" && (
-            <ErrorBoundary><BudgetTab data={data} save={save} /></ErrorBoundary>
-          )}
-
-        </Suspense>
-      </main>
+        {/* Adjacent tab (only rendered during swipe) */}
+        {showDual && (
+          <div
+            style={{ ...adjacentStyle, padding: "24px", minHeight: "calc(100vh - 140px)", willChange: "transform" }}
+            aria-hidden
+          >
+            <Suspense fallback={<TabFallback />}>
+              {renderTab(adjacentTab)}
+            </Suspense>
+          </div>
+        )}
+      </div>
 
       <FAB onAction={handleFAB} />
 
