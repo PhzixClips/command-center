@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback, useRef, useEffect } from "react";
 
 import useAppState       from "./components/hooks/useAppState.js";
 import useNotifications  from "./components/hooks/useNotifications.js";
+import useSwipe          from "./components/hooks/useSwipe.js";
 import ErrorBoundary     from "./components/ErrorBoundary.jsx";
 import Modal             from "./components/Modal.jsx";
 import Btn               from "./components/Btn.jsx";
@@ -28,6 +29,48 @@ const TabFallback = () => (
 export default function App() {
   const state = useAppState();
   const { requestPermission, notifyPriceAlert } = useNotifications();
+
+  // ── Swipe navigation + directional animations ─────────────────────────────
+  const slideDir   = useRef("none"); // "left" | "right" | "none"
+  const contentRef = useRef(null);
+  const prevTabIdx = useRef(0);
+
+  const navigateTab = useCallback((direction) => {
+    const idx = TABS.indexOf(state.tab);
+    const next = direction === "left" ? idx + 1 : idx - 1;
+    if (next < 0 || next >= TABS.length) return;
+    slideDir.current = direction === "left" ? "left" : "right";
+    state.setTab(TABS[next]);
+  }, [state.tab, state.setTab]);
+
+  const swipeHandlers = useSwipe(
+    () => navigateTab("left"),   // swipe left → next tab
+    () => navigateTab("right"),  // swipe right → prev tab
+  );
+
+  // Track direction for tab-bar clicks too
+  const handleTabClick = useCallback((t) => {
+    const fromIdx = TABS.indexOf(state.tab);
+    const toIdx   = TABS.indexOf(t);
+    if (fromIdx === toIdx) return;
+    slideDir.current = toIdx > fromIdx ? "left" : "right";
+    state.setTab(t);
+  }, [state.tab, state.setTab]);
+
+  // Trigger animation on tab change
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el || slideDir.current === "none") return;
+    const cls = slideDir.current === "left" ? "slide-in-left" : "slide-in-right";
+    el.classList.remove("slide-in-left", "slide-in-right");
+    // Force reflow so re-adding the class triggers the animation
+    void el.offsetWidth;
+    el.classList.add(cls);
+    const onEnd = () => el.classList.remove(cls);
+    el.addEventListener("animationend", onEnd, { once: true });
+    slideDir.current = "none";
+    return () => el.removeEventListener("animationend", onEnd);
+  }, [state.tab]);
 
   const {
     data, tab, setTab, modal, setModal, form, setForm, loading,
@@ -144,7 +187,7 @@ export default function App() {
       {/* Tabs */}
       <nav aria-label="Main navigation" style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", overflowX: "auto", WebkitOverflowScrolling: "touch" }} role="tablist">
         {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} style={{
+          <button key={t} onClick={() => handleTabClick(t)} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} style={{
             background: tab === t ? "rgba(255,255,255,0.08)" : "transparent",
             border: "none",
             color: tab === t ? "#fff" : "rgba(255,255,255,0.3)",
@@ -155,7 +198,13 @@ export default function App() {
         ))}
       </nav>
 
-      <main style={{ padding: "24px" }} role="tabpanel" id={`panel-${tab}`}>
+      <main
+        ref={contentRef}
+        style={{ padding: "24px", overflow: "hidden" }}
+        role="tabpanel"
+        id={`panel-${tab}`}
+        {...swipeHandlers}
+      >
         <Suspense fallback={<TabFallback />}>
 
           {tab === "overview" && (
