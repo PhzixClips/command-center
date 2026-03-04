@@ -109,7 +109,7 @@ export default function App() {
   } = state;
 
   // ── Tab renderer ──────────────────────────────────────────────────────
-  const renderTab = useCallback((t) => {
+  const renderTab = (t) => {
     switch (t) {
       case "overview": return (
         <OverviewTab
@@ -168,12 +168,16 @@ export default function App() {
       case "budget": return <ErrorBoundary><BudgetTab data={data} save={save} /></ErrorBoundary>;
       default: return null;
     }
-  });
+  };
 
-  // Fire browser notifications when price alerts trigger
-  if (priceAlerts.length > 0) {
-    notifyPriceAlert(priceAlerts);
-  }
+  // Fire browser notifications only when price alerts actually change
+  const prevAlertsRef = useRef([]);
+  useEffect(() => {
+    if (priceAlerts.length > 0 && priceAlerts !== prevAlertsRef.current) {
+      notifyPriceAlert(priceAlerts);
+    }
+    prevAlertsRef.current = priceAlerts;
+  }, [priceAlerts, notifyPriceAlert]);
 
   if (loading || !data) return (
     <div style={{ background: "#0a0a10", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#00e676", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif", fontSize: 15, fontWeight: 500, letterSpacing: 0.5 }}>
