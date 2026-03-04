@@ -5,7 +5,7 @@ import { defaultState, generateOpportunities } from "../defaults.js";
 import {
   DEFAULT_HOURLY_WAGE, DEFAULT_AVG_PER_SHIFT, AI_COOLDOWN_SECONDS,
   AI_INSIGHT_MAX_TOKENS, STOCK_STALE_THRESHOLD, BACKUP_REMINDER_DAYS,
-  MS_PER_DAY, BUDGET_WARN_THRESHOLD, HISTORY_WINDOW,
+  MS_PER_DAY, BUDGET_WARN_THRESHOLD, HISTORY_WINDOW, TABS,
 } from "../constants.js";
 
 const getHourlyWage = () => {
@@ -38,7 +38,11 @@ export const parseDateLabel = (label, year) => {
 
 export default function useAppState() {
   const [data,        setData]        = useState(null);
-  const [tab,         setTab]         = useState("overview");
+  const [tab,         setTabRaw]      = useState(() => {
+    const saved = sessionStorage.getItem("cc-tab");
+    return saved && TABS.includes(saved) ? saved : "overview";
+  });
+  const setTab = useCallback((t) => { sessionStorage.setItem("cc-tab", t); setTabRaw(t); }, []);
   const [modal,       setModal]       = useState(null);
   const [form,        setForm]        = useState({});
   const [loading,     setLoading]     = useState(true);
