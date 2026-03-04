@@ -200,27 +200,27 @@ export default function CSVImport({ data, save, onClose }) {
   const totalTransfer = transferRows.reduce((s, r) => s + r.amount, 0);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#000000cc", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: 12, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ background: "rgba(20,20,30,0.9)", backdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto" }}>
 
         {/* Header */}
         <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2, fontFamily: "monospace" }}>IMPORT CSV</div>
-            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>
+            <div style={{ color: "#34d399", fontSize: 11, letterSpacing: 2, fontWeight: 500 }}>Import CSV</div>
+            <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 3 }}>
               {step === "upload"  && "Upload your bank export"}
               {step === "map"     && `${rows.length} rows detected — map columns`}
               {step === "preview" && `${preview.length} transactions · ${expenseRows.length} out · ${incomeRows.length} in · ${transferRows.length} transfers`}
               {step === "done"    && "Import complete"}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "1px solid #333", color: "#666", fontSize: 13, padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontFamily: "monospace" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 13, padding: "4px 10px", borderRadius: 10, cursor: "pointer" }}>✕</button>
         </div>
 
         {/* Step indicators */}
         <div style={{ padding: "14px 24px", display: "flex", gap: 6 }}>
           {["upload","map","preview"].map((s, i) => (
-            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: STEPS.indexOf(step) >= i ? "#34d399" : "#1a1a1a", transition: "background 0.3s" }} />
+            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: STEPS.indexOf(step) >= i ? "#34d399" : "rgba(255,255,255,0.06)", transition: "background 0.3s" }} />
           ))}
         </div>
 
@@ -231,18 +231,18 @@ export default function CSVImport({ data, save, onClose }) {
             <div>
               <div
                 onClick={() => fileRef.current?.click()}
-                style={{ border: "2px dashed #222", borderRadius: 10, padding: "40px 20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
+                style={{ border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 16, padding: "40px 20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = "#34d399"}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "#222"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
               >
                 <div style={{ fontSize: 32, marginBottom: 12 }}>📂</div>
-                <div style={{ color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, marginBottom: 6 }}>Click to select your bank CSV</div>
-                <div style={{ color: "#444", fontFamily: "monospace", fontSize: 10 }}>Exported from Desert Financial, Chase, WF, BoA, etc.</div>
+                <div style={{ color: "#e8e8e8", fontSize: 13, marginBottom: 6 }}>Click to select your bank CSV</div>
+                <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10 }}>Exported from Desert Financial, Chase, WF, BoA, etc.</div>
                 <input ref={fileRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFile} />
               </div>
-              {error && <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginTop: 12 }}>{error}</div>}
-              <div style={{ marginTop: 16, color: "#333", fontSize: 10, fontFamily: "monospace", lineHeight: 1.8 }}>
-                HOW TO EXPORT FROM YOUR BANK:<br />
+              {error && <div style={{ color: "#ff3b3b", fontSize: 11, marginTop: 12 }}>{error}</div>}
+              <div style={{ marginTop: 16, color: "rgba(255,255,255,0.15)", fontSize: 10, lineHeight: 1.8 }}>
+                How to Export From Your Bank:<br />
                 Desert Financial → Accounts → Select account → Download → CSV<br />
                 Chase → Activity → Download → CSV<br />
                 Wells Fargo → Account Activity → Download → Comma Delimited
@@ -253,33 +253,33 @@ export default function CSVImport({ data, save, onClose }) {
           {/* STEP 2: MAP COLUMNS */}
           {step === "map" && (
             <div>
-              <div style={{ color: "#666", fontSize: 10, fontFamily: "monospace", marginBottom: 16 }}>
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500, marginBottom: 16 }}>
                 Columns found: {headers.join(", ")}
               </div>
               {[
-                { key: "date",    label: "Date column",                                             required: true  },
-                { key: "desc",    label: "Description column",                                      required: true  },
+                { key: "date",    label: "Date Column",                                             required: true  },
+                { key: "desc",    label: "Description Column",                                      required: true  },
                 { key: "amount",  label: "Amount (negative = expense, positive = income)",          required: true  },
-                { key: "balance", label: "Running Balance column (optional — auto-fills Checking)", required: false },
+                { key: "balance", label: "Running Balance Column (optional — auto-fills Checking)", required: false },
               ].map(({ key, label, required }) => (
                 <div key={key} style={{ marginBottom: 14 }}>
-                  <label style={{ color: required ? "#e8e8e8" : "#555", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>
-                    {label.toUpperCase()}
+                  <label style={{ color: required ? "#e8e8e8" : "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500, letterSpacing: 1, display: "block", marginBottom: 5 }}>
+                    {label}
                   </label>
                   <select
                     value={mapping[key]}
                     onChange={e => setMapping(m => ({ ...m, [key]: e.target.value }))}
-                    style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none" }}
+                    style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "9px 12px", color: "#e8e8e8", fontSize: 12, outline: "none" }}
                   >
                     <option value="">— {required ? "select column" : "skip"} —</option>
                     {headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
               ))}
-              {error && <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11, marginBottom: 12 }}>{error}</div>}
+              {error && <div style={{ color: "#ff3b3b", fontSize: 11, marginBottom: 12 }}>{error}</div>}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                <button onClick={() => setStep("upload")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
-                <button onClick={buildPreview} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>PREVIEW IMPORT →</button>
+                <button onClick={() => setStep("upload")} style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", fontSize: 11, padding: "10px", borderRadius: 12, cursor: "pointer" }}>← Back</button>
+                <button onClick={buildPreview} style={{ flex: 2, background: "#34d39912", border: "1px solid #34d39944", color: "#34d399", fontSize: 11, padding: "10px", borderRadius: 12, cursor: "pointer" }}>Preview Import →</button>
               </div>
             </div>
           )}
@@ -287,7 +287,7 @@ export default function CSVImport({ data, save, onClose }) {
           {/* STEP 3: PREVIEW */}
           {step === "preview" && (
             <div>
-              <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 12 }}>
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500, marginBottom: 12 }}>
                 Review transactions. Green = income, Red = expense. Edit categories or ✕ to remove.
               </div>
               <div style={{ maxHeight: 360, overflow: "auto", display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
@@ -297,79 +297,79 @@ export default function CSVImport({ data, save, onClose }) {
                   const color = CAT_COLOR[row.category] || "#888";
                   const cats = isTransfer ? TRANSFER_CATEGORIES : (isIncome ? INCOME_CATEGORIES : CATEGORIES);
                   const amtColor = isTransfer ? "#ffd70088" : (isIncome ? "#00ff88" : "#ff3b3b");
-                  const borderColor = isTransfer ? "#ffd70022" : (isIncome ? "#00ff8822" : "#1a1a1a");
+                  const borderColor = isTransfer ? "#ffd70022" : (isIncome ? "#00ff8822" : "rgba(255,255,255,0.06)");
                   return (
-                    <div key={idx} style={{ background: "#111", border: `1px solid ${borderColor}`, borderRadius: 7, padding: "10px 12px", display: "flex", gap: 10, alignItems: "center" }}>
+                    <div key={idx} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${borderColor}`, borderRadius: 16, padding: "10px 12px", display: "flex", gap: 10, alignItems: "center" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: "#e8e8e8", fontSize: 12, fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{row.desc}</div>
-                        <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>{row.date} · {row.month}</div>
+                        <div style={{ color: "#e8e8e8", fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{row.desc}</div>
+                        <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 2 }}>{row.date} · {row.month}</div>
                       </div>
                       <select
                         value={row.category}
                         onChange={e => updateCategory(idx, e.target.value)}
-                        style={{ background: `${color}18`, border: `1px solid ${color}55`, borderRadius: 4, padding: "3px 7px", color, fontFamily: "monospace", fontSize: 9, outline: "none", cursor: "pointer" }}
+                        style={{ background: `${color}15`, border: `1px solid ${color}33`, borderRadius: 8, padding: "3px 7px", color, fontSize: 9, outline: "none", cursor: "pointer" }}
                       >
                         {cats.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
-                      <div style={{ color: amtColor, fontFamily: "monospace", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+                      <div style={{ color: amtColor, fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
                         {isTransfer ? "↔" : (isIncome ? "+" : "-")}${row.amount.toFixed(2)}
                       </div>
-                      <button onClick={() => removeRow(idx)} style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 13, padding: "0 2px" }}>✕</button>
+                      <button onClick={() => removeRow(idx)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.15)", cursor: "pointer", fontSize: 13, padding: "0 2px" }}>✕</button>
                     </div>
                   );
                 })}
               </div>
               {/* Summary */}
               <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: 100, background: "#0d0d0d", border: "1px solid #00ff8822", borderRadius: 8, padding: "10px 14px" }}>
-                  <div style={{ color: "#555", fontFamily: "monospace", fontSize: 9, marginBottom: 4 }}>INCOME ({incomeRows.length})</div>
-                  <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>+${totalIncome.toFixed(2)}</div>
+                <div style={{ flex: 1, minWidth: 100, background: "rgba(255,255,255,0.03)", border: "1px solid #00ff8822", borderRadius: 16, padding: "10px 14px" }}>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: 500, marginBottom: 4 }}>Income ({incomeRows.length})</div>
+                  <div style={{ color: "#00ff88", fontSize: 14, fontWeight: 700 }}>+${totalIncome.toFixed(2)}</div>
                 </div>
-                <div style={{ flex: 1, minWidth: 100, background: "#0d0d0d", border: "1px solid #ff3b3b22", borderRadius: 8, padding: "10px 14px" }}>
-                  <div style={{ color: "#555", fontFamily: "monospace", fontSize: 9, marginBottom: 4 }}>EXPENSES ({expenseRows.length})</div>
-                  <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>-${totalExpense.toFixed(2)}</div>
+                <div style={{ flex: 1, minWidth: 100, background: "rgba(255,255,255,0.03)", border: "1px solid #ff3b3b22", borderRadius: 16, padding: "10px 14px" }}>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: 500, marginBottom: 4 }}>Expenses ({expenseRows.length})</div>
+                  <div style={{ color: "#ff3b3b", fontSize: 14, fontWeight: 700 }}>-${totalExpense.toFixed(2)}</div>
                 </div>
                 {transferRows.length > 0 && (
-                  <div style={{ flex: 1, minWidth: 100, background: "#0d0d0d", border: "1px solid #ffd70022", borderRadius: 8, padding: "10px 14px" }}>
-                    <div style={{ color: "#555", fontFamily: "monospace", fontSize: 9, marginBottom: 4 }}>TRANSFERS ({transferRows.length})</div>
-                    <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>↔${totalTransfer.toFixed(2)}</div>
+                  <div style={{ flex: 1, minWidth: 100, background: "rgba(255,255,255,0.03)", border: "1px solid #ffd70022", borderRadius: 16, padding: "10px 14px" }}>
+                    <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: 500, marginBottom: 4 }}>Transfers ({transferRows.length})</div>
+                    <div style={{ color: "#ffd70088", fontSize: 14, fontWeight: 700 }}>↔${totalTransfer.toFixed(2)}</div>
                   </div>
                 )}
               </div>
-              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 14px", display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>NET CASH FLOW</span>
-                <span style={{ color: totalIncome - totalExpense >= 0 ? "#00ff88" : "#ff3b3b", fontFamily: "monospace", fontSize: 14, fontWeight: 700 }}>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "10px 14px", display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500 }}>Net Cash Flow</span>
+                <span style={{ color: totalIncome - totalExpense >= 0 ? "#00ff88" : "#ff3b3b", fontSize: 14, fontWeight: 700 }}>
                   {totalIncome - totalExpense >= 0 ? "+" : "-"}${Math.abs(totalIncome - totalExpense).toFixed(2)}
                 </span>
               </div>
               {/* Balance sync — updates Checking + Savings on main screen */}
-              <div style={{ background: "#0d0d0d", border: "1px solid #34d39933", borderRadius: 8, padding: "14px 16px", marginBottom: 16 }}>
-                <div style={{ color: "#34d399", fontSize: 9, fontFamily: "monospace", letterSpacing: 2, marginBottom: 6 }}>UPDATE MAIN SCREEN BALANCES</div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #34d39933", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+                <div style={{ color: "#34d399", fontSize: 9, fontWeight: 500, letterSpacing: 2, marginBottom: 6 }}>Update Main Screen Balances</div>
                 {detectedBalance != null && (
-                  <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginBottom: 10 }}>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500, marginBottom: 10 }}>
                     Checking auto-filled from your CSV's balance column.
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 10 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ color: "#666", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>CHECKING ($)</label>
+                    <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: 500, letterSpacing: 1, display: "block", marginBottom: 5 }}>Checking ($)</label>
                     <input type="number" value={balanceForm.checking} onChange={e => setBalanceForm(f => ({ ...f, checking: e.target.value }))}
                       placeholder={`${data.bankBalance?.toFixed(2) || "0.00"} current`}
-                      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "8px 10px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "8px 10px", color: "#e8e8e8", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ color: "#666", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, display: "block", marginBottom: 5 }}>SAVINGS ($)</label>
+                    <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, fontWeight: 500, letterSpacing: 1, display: "block", marginBottom: 5 }}>Savings ($)</label>
                     <input type="number" value={balanceForm.savings} onChange={e => setBalanceForm(f => ({ ...f, savings: e.target.value }))}
                       placeholder={`${(data.savings || 0).toFixed(2)} current`}
-                      style={{ width: "100%", background: "#111", border: "1px solid #2a2a2a", borderRadius: 6, padding: "8px 10px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "8px 10px", color: "#e8e8e8", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                   </div>
                 </div>
-                <div style={{ color: "#333", fontSize: 9, fontFamily: "monospace", marginTop: 8 }}>Leave blank to keep current balances unchanged.</div>
+                <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 9, marginTop: 8 }}>Leave blank to keep current balances unchanged.</div>
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setStep("map")} style={{ flex: 1, background: "none", border: "1px solid #222", color: "#555", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>← BACK</button>
-                <button onClick={doImport} style={{ flex: 2, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 11, padding: "10px", borderRadius: 6, cursor: "pointer" }}>IMPORT {preview.length} TRANSACTIONS</button>
+                <button onClick={() => setStep("map")} style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", fontSize: 11, padding: "10px", borderRadius: 12, cursor: "pointer" }}>← Back</button>
+                <button onClick={doImport} style={{ flex: 2, background: "#34d39912", border: "1px solid #34d39944", color: "#34d399", fontSize: 11, padding: "10px", borderRadius: 12, cursor: "pointer" }}>Import {preview.length} Transactions</button>
               </div>
             </div>
           )}
@@ -378,23 +378,23 @@ export default function CSVImport({ data, save, onClose }) {
           {step === "done" && (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
-              <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>IMPORT COMPLETE</div>
+              <div style={{ color: "#34d399", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Import Complete</div>
               <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 12, flexWrap: "wrap" }}>
-                <div style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 12 }}>{imported.expenses} expenses</div>
-                <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 12 }}>{imported.income} income</div>
-                <div style={{ color: "#ffd70088", fontFamily: "monospace", fontSize: 12 }}>{imported.transfers} transfers</div>
+                <div style={{ color: "#ff3b3b", fontSize: 12 }}>{imported.expenses} expenses</div>
+                <div style={{ color: "#00ff88", fontSize: 12 }}>{imported.income} income</div>
+                <div style={{ color: "#ffd70088", fontSize: 12 }}>{imported.transfers} transfers</div>
               </div>
               {(!isNaN(parseFloat(balanceForm.checking)) && parseFloat(balanceForm.checking) >= 0) && (
-                <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}>
+                <div style={{ color: "#34d399", fontSize: 11, marginBottom: 4 }}>
                   Checking updated → ${parseFloat(balanceForm.checking).toFixed(2)}
                 </div>
               )}
               {(!isNaN(parseFloat(balanceForm.savings)) && parseFloat(balanceForm.savings) >= 0) && (
-                <div style={{ color: "#34d399", fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}>
+                <div style={{ color: "#34d399", fontSize: 11, marginBottom: 4 }}>
                   Savings updated → ${parseFloat(balanceForm.savings).toFixed(2)}
                 </div>
               )}
-              <button onClick={onClose} style={{ marginTop: 16, background: "#34d39918", border: "1px solid #34d399", color: "#34d399", fontFamily: "monospace", fontSize: 12, padding: "12px 32px", borderRadius: 7, cursor: "pointer" }}>DONE</button>
+              <button onClick={onClose} style={{ marginTop: 16, background: "#34d39912", border: "1px solid #34d39944", color: "#34d399", fontSize: 12, padding: "12px 32px", borderRadius: 12, cursor: "pointer" }}>Done</button>
             </div>
           )}
 

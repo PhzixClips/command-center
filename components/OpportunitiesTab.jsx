@@ -500,7 +500,7 @@ function scoreOpp(opp, liquid, bankBalance, flips, hasTruck) {
 // ── Playbook text formatter ───────────────────────────────────────────────────
 function PlaybookText({ text }) {
   return (
-    <div style={{ fontFamily: "monospace", fontSize: 12, lineHeight: 1.8 }}>
+    <div style={{ fontSize: 12, lineHeight: 1.8 }}>
       {text.split("\n").map((line, i) => {
         if (/^MOVE \d/i.test(line))
           return <div key={i} style={{ color: "#ffd700", fontWeight: 700, fontSize: 14, marginTop: i > 0 ? 18 : 0 }}>{line}</div>;
@@ -513,7 +513,7 @@ function PlaybookText({ text }) {
         if (/^NET PROFIT:/i.test(line))
           return <div key={i} style={{ color: "#00ff88", fontWeight: 700, marginTop: 2 }}>{line}</div>;
         if (/^TIME:/i.test(line))
-          return <div key={i} style={{ color: "#555", marginTop: 2 }}>{line}</div>;
+          return <div key={i} style={{ color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{line}</div>;
         if (/^DATES:/i.test(line))
           return <div key={i} style={{ color: "#ffd700", marginTop: 2 }}>{line}</div>;
         if (/^LINK:/i.test(line)) {
@@ -522,10 +522,10 @@ function PlaybookText({ text }) {
           return (
             <div key={i} style={{ marginTop: 4 }}>
               {url
-                ? <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", fontFamily: "monospace", fontSize: 11, textDecoration: "none", border: "1px solid #38bdf844", padding: "2px 9px", borderRadius: 4, background: "#38bdf808" }}>
+                ? <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", fontSize: 11, textDecoration: "none", border: "1px solid #38bdf844", padding: "2px 9px", borderRadius: 4, background: "#38bdf808" }}>
                     🔗 {label || url}
                   </a>
-                : <span style={{ color: "#555" }}>{line}</span>
+                : <span style={{ color: "rgba(255,255,255,0.35)" }}>{line}</span>
               }
             </div>
           );
@@ -534,7 +534,7 @@ function PlaybookText({ text }) {
           return <div key={i} style={{ color: "#ff8c00", fontWeight: 700, marginTop: 18, borderTop: "1px solid #1a1a1a", paddingTop: 14 }}>{line}</div>;
         if (line.trim() === "")
           return <div key={i} style={{ height: 4 }} />;
-        return <div key={i} style={{ color: "#888" }}>{line}</div>;
+        return <div key={i} style={{ color: "rgba(255,255,255,0.4)" }}>{line}</div>;
       })}
     </div>
   );
@@ -563,9 +563,9 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
 
   return (
     <div style={{
-      background: "#0a0a0a",
+      background: "rgba(255,255,255,0.03)",
       border: `1px solid ${open ? laneColor + "66" : rank && rank <= 3 ? laneColor + "44" : "#1a1a1a"}`,
-      borderRadius: 8,
+      borderRadius: 14,
       opacity: gap > 500 ? 0.55 : 1,
       overflow: "hidden",
     }}>
@@ -577,17 +577,17 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
         {/* Row 1: rank · icon · title · AI badge · dismiss · chevron */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
           {rank && rank <= 3 && (
-            <span style={{ color: laneColor, fontSize: 10, fontFamily: "monospace", fontWeight: 700, flexShrink: 0 }}>#{rank}</span>
+            <span style={{ color: laneColor, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>#{rank}</span>
           )}
           <span style={{ fontSize: 13, flexShrink: 0 }}>{opp.icon || LANE_META[opp.lane]?.icon}</span>
           <span style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 13, lineHeight: 1.2, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opp.title}</span>
           {opp.ai && (
-            <span style={{ color: "#a78bfa", fontSize: 7, fontFamily: "monospace", border: "1px solid #a78bfa44", padding: "1px 4px", borderRadius: 3, flexShrink: 0 }}>AI</span>
+            <span style={{ color: "#a78bfa", fontSize: 7, border: "1px solid #a78bfa44", padding: "1px 4px", borderRadius: 3, flexShrink: 0 }}>AI</span>
           )}
           {onDismiss && (
             <button
               onClick={(e) => { e.stopPropagation(); onDismiss(opp.id); }}
-              style={{ background: "none", border: "1px solid #1a1a1a", color: "#333", fontSize: 10, width: 22, height: 22, borderRadius: 3, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+              style={{ background: "none", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.15)", fontSize: 10, width: 22, height: 22, borderRadius: 3, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
               title="Dismiss — swap for new"
             >✕</button>
           )}
@@ -596,29 +596,29 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
 
         {/* Row 2: lane / urgency / truck badges — own full row, wraps freely */}
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
-          <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", letterSpacing: 1, whiteSpace: "nowrap" }}>
+          <span style={{ color: laneColor, fontSize: 8, border: `1px solid ${laneColor}44`, padding: "1px 5px", borderRadius: 3, letterSpacing: 1, whiteSpace: "nowrap" }}>
             {LANE_META[opp.lane]?.label?.toUpperCase()}
           </span>
-          {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>HOT</span>}
-          {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>SEASONAL</span>}
-          {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", whiteSpace: "nowrap" }}>TRUCK</span>}
+          {opp.urgency === "hot-now"  && <span style={{ color: "#ff3b3b", fontSize: 8, border: "1px solid #ff3b3b44", padding: "1px 5px", borderRadius: 3, whiteSpace: "nowrap" }}>HOT</span>}
+          {opp.urgency === "seasonal" && <span style={{ color: "#ffd700",  fontSize: 8, border: "1px solid #ffd70044", padding: "1px 5px", borderRadius: 3, whiteSpace: "nowrap" }}>SEASONAL</span>}
+          {opp.truckRequired          && <span style={{ color: "#38bdf8", fontSize: 8, border: "1px solid #38bdf844", padding: "1px 5px", borderRadius: 3, whiteSpace: "nowrap" }}>TRUCK</span>}
         </div>
 
         {/* Row 3: stats + GO button — right-aligned, never competes with title or badges */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 14 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
-            <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>{roiLabel}</div>
+            <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1 }}>{opp.isService ? "RATE" : "ROI"}</div>
+            <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, }}>{roiLabel}</div>
           </div>
           {capitalLabel && (
             <div style={{ textAlign: "right" }}>
-              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>BUY</div>
-              <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, fontFamily: "monospace" }}>{capitalLabel}</div>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1 }}>BUY</div>
+              <div style={{ color: locked ? "#ff3b3b" : "#777", fontSize: 11, }}>{capitalLabel}</div>
             </div>
           )}
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1 }}>RISK</div>
-            <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontFamily: "monospace", fontWeight: 600 }}>{opp.risk}</div>
+            <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1 }}>RISK</div>
+            <div style={{ color: RISK_COLOR[opp.risk] || "#888", fontSize: 11, fontWeight: 600 }}>{opp.risk}</div>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); if (!locked) onExecute(opp); }}
@@ -626,7 +626,7 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
               background: locked ? "transparent" : `${laneColor}18`,
               border: `1px solid ${locked ? "#1a1a1a" : laneColor}`,
               color: locked ? "#2a2a2a" : laneColor,
-              fontFamily: "monospace", fontSize: 9, letterSpacing: 1,
+              fontSize: 9, letterSpacing: 1,
               padding: "6px 11px", borderRadius: 4, cursor: locked ? "default" : "pointer", flexShrink: 0,
             }}
           >
@@ -638,24 +638,24 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
       {/* ── Expanded detail ── */}
       {open && (
         <div style={{ padding: "12px 14px 14px", borderTop: "1px solid #111" }}>
-          <p style={{ color: "#666", fontSize: 12, lineHeight: 1.65, margin: "0 0 12px" }}>{opp.detail}</p>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, lineHeight: 1.65, margin: "0 0 12px" }}>{opp.detail}</p>
 
           {/* Action plan */}
           {opp.action && (
-            <div style={{ background: "#111", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
-              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 4, fontFamily: "monospace" }}>▶ ACTION</div>
+            <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 2, marginBottom: 4, }}>▶ ACTION</div>
               <div style={{ color: "#aaa", fontSize: 11, lineHeight: 1.7 }}>{opp.action}</div>
             </div>
           )}
 
           {/* Hot items table (FBMKT) */}
           {opp.hotItems?.length > 0 && (
-            <div style={{ background: "#111", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
-              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 7, fontFamily: "monospace" }}>🔥 HOT ITEMS TO WATCH</div>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "monospace", fontSize: 11 }}>
+            <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 5, padding: "9px 12px", marginBottom: 12, borderLeft: `3px solid ${laneColor}44` }}>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 2, marginBottom: 7, }}>🔥 HOT ITEMS TO WATCH</div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
                 <thead>
                   <tr>
-                    <th style={{ color: "#444", textAlign: "left", paddingBottom: 5, fontSize: 8, letterSpacing: 1, fontWeight: 500 }}>MODEL</th>
+                    <th style={{ color: "rgba(255,255,255,0.25)", textAlign: "left", paddingBottom: 5, fontSize: 8, letterSpacing: 1, fontWeight: 500 }}>MODEL</th>
                     <th style={{ color: "#ff6b6b", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>BUY</th>
                     <th style={{ color: "#00ff88", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>SELL</th>
                     <th style={{ color: "#ffd700", textAlign: "right", paddingBottom: 5, fontSize: 8, fontWeight: 500 }}>ROI</th>
@@ -678,14 +678,14 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
           {/* Scout terms (FBMKT) */}
           {opp.searchTerms?.length > 0 && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ color: "#333", fontSize: 8, letterSpacing: 2, marginBottom: 6, fontFamily: "monospace" }}>🔍 SCOUT FB MARKETPLACE</div>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 2, marginBottom: 6, }}>🔍 SCOUT FB MARKETPLACE</div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {opp.searchTerms.map(t => (
                   <button
                     key={t} onClick={() => scout(t)}
                     style={{
                       background: `${laneColor}10`, border: `1px solid ${laneColor}44`, color: laneColor,
-                      fontFamily: "monospace", fontSize: 9, padding: "4px 9px", borderRadius: 3, cursor: "pointer",
+                      fontSize: 9, padding: "4px 9px", borderRadius: 3, cursor: "pointer",
                     }}
                   >
                     {t}
@@ -699,17 +699,17 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
           {opp.buyRange && (
             <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
               <div>
-                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>BUY RANGE</div>
-                <div style={{ color: "#ff6b6b", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>${opp.buyRange[0]}–${opp.buyRange[1]}</div>
+                <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1, marginBottom: 2 }}>BUY RANGE</div>
+                <div style={{ color: "#ff6b6b", fontSize: 12, fontWeight: 700, }}>${opp.buyRange[0]}–${opp.buyRange[1]}</div>
               </div>
               <div style={{ color: "#222", fontSize: 14, marginBottom: 2 }}>→</div>
               <div>
-                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELL RANGE</div>
-                <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, fontFamily: "monospace" }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
+                <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1, marginBottom: 2 }}>SELL RANGE</div>
+                <div style={{ color: "#00ff88", fontSize: 12, fontWeight: 700, }}>${opp.sellRange[0]}–${opp.sellRange[1]}</div>
               </div>
               <div>
-                <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
-                <div style={{ color: "#aaa", fontSize: 12, fontFamily: "monospace" }}>{opp.daysToSell}d</div>
+                <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1, marginBottom: 2 }}>SELLS IN</div>
+                <div style={{ color: "#aaa", fontSize: 12, }}>{opp.daysToSell}d</div>
               </div>
             </div>
           )}
@@ -717,8 +717,8 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
           {/* Timeframe (non-FBMKT) */}
           {opp.timeframe && (
             <div style={{ marginBottom: 12 }}>
-              <div style={{ color: "#333", fontSize: 8, fontFamily: "monospace", letterSpacing: 1, marginBottom: 2 }}>TIMEFRAME</div>
-              <div style={{ color: "#888", fontSize: 11, fontFamily: "monospace" }}>{opp.timeframe}</div>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 8, letterSpacing: 1, marginBottom: 2 }}>TIMEFRAME</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, }}>{opp.timeframe}</div>
             </div>
           )}
 
@@ -921,12 +921,12 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2 }}>OPPORTUNITY ENGINE</div>
-          <div style={{ color: "#555", fontSize: 12, fontFamily: "monospace", marginTop: 4 }}>
+          <div style={{ color: "#ffd700", fontSize: 14, fontWeight: 600 }}>Opportunity Engine</div>
+          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 4 }}>
             <span style={{ color: "#00ff88", fontWeight: 700 }}>${liquid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> checking ·{" "}
             <button
               onClick={() => save({ ...data, hasTruck: !hasTruck })}
-              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 12, color: hasTruck ? "#38bdf8" : "#444", padding: 0 }}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: hasTruck ? "#38bdf8" : "#444", padding: 0 }}
             >
               🚛 Truck {hasTruck ? "ON" : "OFF"}
             </button>
@@ -937,26 +937,26 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
           onClick={buildPlaybook}
           disabled={playbookLoading}
           style={{
-            background: playbookLoading ? "#111" : "linear-gradient(135deg, #ffd70022, #ff8c0022)",
-            border: "1px solid #ffd70066",
-            color: playbookLoading ? "#555" : "#ffd700",
-            fontFamily: "monospace", fontSize: 11, letterSpacing: 2,
-            padding: "10px 20px", borderRadius: 6, cursor: playbookLoading ? "default" : "pointer",
+            background: playbookLoading ? "rgba(255,255,255,0.04)" : "linear-gradient(135deg, #ffd70012, #ff8c0012)",
+            border: "1px solid #ffd70044",
+            color: playbookLoading ? "rgba(255,255,255,0.35)" : "#ffd700",
+            fontSize: 12, fontWeight: 500,
+            padding: "10px 20px", borderRadius: 12, cursor: playbookLoading ? "default" : "pointer",
           }}
         >
-          {playbookLoading ? "⚡ THINKING..." : "⚡ BUILD MY WEEK"}
+          {playbookLoading ? "Thinking..." : "Build My Week"}
         </button>
       </div>
 
       {/* AI Playbook */}
       {(playbook || playbookLoading) && (
-        <div style={{ background: "#080808", border: "1px solid #ffd70033", borderRadius: 10, padding: 20, marginBottom: 24 }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: 22, marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ color: "#ffd700", fontSize: 10, letterSpacing: 2, fontFamily: "monospace" }}>⚡ AI WEEKLY PLAYBOOK</div>
-            {playbookTime && <div style={{ color: "#333", fontSize: 9, fontFamily: "monospace" }}>generated {playbookTime}</div>}
+            <div style={{ color: "#ffd700", fontSize: 13, fontWeight: 600 }}>AI Weekly Playbook</div>
+            {playbookTime && <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 9, }}>generated {playbookTime}</div>}
           </div>
           {playbookLoading
-            ? <div style={{ color: "#555", fontFamily: "monospace", fontSize: 12 }}>Analyzing your situation and building your personalized plan...</div>
+            ? <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>Analyzing your situation and building your personalized plan...</div>
             : <PlaybookText text={playbook} />
           }
         </div>
@@ -973,11 +973,11 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
               key={f}
               onClick={() => setActiveFilter(f)}
               style={{
-                background: active ? `${color}18` : "none",
-                border: `1px solid ${active ? color : "#1a1a1a"}`,
-                color: active ? color : "#444",
-                fontFamily: "monospace", fontSize: 9, letterSpacing: 0.5,
-                padding: "5px 9px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                background: active ? "rgba(255,255,255,0.08)" : "transparent",
+                border: "none",
+                color: active ? color : "rgba(255,255,255,0.3)",
+                fontSize: 11, fontWeight: active ? 600 : 400,
+                padding: "6px 12px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
               }}
             >
               {f === "ALL" ? "ALL" : `${LANE_META[f]?.icon} ${f}`} ({count})
@@ -988,8 +988,8 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
 
       {/* Generating indicator */}
       {generating && (
-        <div style={{ background: "#0a0a0a", border: "1px solid #a78bfa44", borderRadius: 8, padding: "12px 14px", marginBottom: 14, borderLeft: "3px solid #a78bfa", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: "#a78bfa", fontSize: 9, fontFamily: "monospace", letterSpacing: 2 }}>⚡ AI GENERATING NEW OPPORTUNITY...</span>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #a78bfa44", borderRadius: 14, padding: "12px 14px", marginBottom: 14, borderLeft: "3px solid #a78bfa", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: "#a78bfa", fontSize: 12 }}>AI generating new opportunity...</span>
         </div>
       )}
 
@@ -997,7 +997,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       {activeFilter === "ALL" && displayed.length > 0 ? (
         <>
           {/* Top 3 */}
-          <div style={{ color: "#ffd700", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 12 }}>
+          <div style={{ color: "#ffd700", fontSize: 9, letterSpacing: 2, marginBottom: 12 }}>
             ⭐ TOP 3 PICKS — RANKED FOR YOUR SITUATION
           </div>
           <div style={{ display: "grid", gap: 14, marginBottom: displayed.length > 3 ? 28 : 0 }}>
@@ -1008,7 +1008,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
           {/* Rest */}
           {displayed.length > 3 && (
             <>
-              <div style={{ color: "#333", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 14, borderTop: "1px solid #1a1a1a", paddingTop: 16 }}>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 9, letterSpacing: 2, marginBottom: 14, borderTop: "1px solid #1a1a1a", paddingTop: 16 }}>
                 MORE OPPORTUNITIES — SORTED BY SCORE
               </div>
               <div style={{ display: "grid", gap: 14 }}>
@@ -1031,8 +1031,8 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       {oppHistory.length > 0 && (
         <div style={{ marginTop: 32 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace" }}>OPP HISTORY</div>
-            <div style={{ color: "#00ff88", fontSize: 13, fontFamily: "monospace", fontWeight: 700 }}>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500 }}>History</div>
+            <div style={{ color: "#00ff88", fontSize: 13, fontWeight: 700 }}>
               ${totalHustled.toLocaleString()} earned total
             </div>
           </div>
@@ -1040,20 +1040,20 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
             {[...oppHistory].reverse().map(o => {
               const color = LANE_META[o.lane]?.color || "#555";
               return (
-                <div key={o.id} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 12px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "4px 10px" }}>
+                <div key={o.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "10px 12px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "4px 10px" }}>
                   <div style={{ flex: "1 1 0", minWidth: 140 }}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
-                      <span style={{ color, fontSize: 9, fontFamily: "monospace", border: `1px solid ${color}44`, padding: "1px 6px", borderRadius: 3 }}>{o.lane}</span>
+                      <span style={{ color, fontSize: 9, border: `1px solid ${color}44`, padding: "1px 6px", borderRadius: 3 }}>{o.lane}</span>
                       <div style={{ color: "#e8e8e8", fontSize: 13 }}>{o.title}</div>
                     </div>
-                    <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace" }}>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, }}>
                       {o.date}{o.hours ? ` · ${o.hours}hr` : ""}
-                      {o.hours ? <span style={{ color: "#555" }}> · ${(o.earned / o.hours).toFixed(0)}/hr eff.</span> : ""}
+                      {o.hours ? <span style={{ color: "rgba(255,255,255,0.35)" }}> · ${(o.earned / o.hours).toFixed(0)}/hr eff.</span> : ""}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
-                    <div style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 16, fontWeight: 700 }}>+${o.earned}</div>
-                    <button onClick={() => deleteHistory(o.id)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 7px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                    <div style={{ color: "#00ff88", fontSize: 16, fontWeight: 700 }}>+${o.earned}</div>
+                    <button onClick={() => deleteHistory(o.id)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 7px", borderRadius: 4, cursor: "pointer" }}>✕</button>
                   </div>
                 </div>
               );
@@ -1065,7 +1065,7 @@ FIRST MOVE: [one sentence — which to do first and why given I have $${liquid}]
       {/* Log hustle modal */}
       {modal === "log-hustle" && (
         <Modal title={`LOG: ${form.title}`} onClose={() => { setModal(null); setForm({}); }}>
-          <div style={{ color: "#555", fontSize: 11, fontFamily: "monospace", marginBottom: 14 }}>
+          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginBottom: 14 }}>
             Record what you actually made so your history tracks your real results.
           </div>
           <Input label="Amount Earned ($)" type="number" value={form.earned || ""} onChange={v => setForm({ ...form, earned: v })} placeholder="180" />

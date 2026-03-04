@@ -253,8 +253,8 @@ export default function App() {
   };
 
   if (loading || !data) return (
-    <div style={{ background: "#080808", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#00ff88", fontFamily: "monospace", fontSize: 14, letterSpacing: 2 }}>
-      LOADING COMMAND CENTER...
+    <div style={{ background: "#0a0a10", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#00e676", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif", fontSize: 15, fontWeight: 500, letterSpacing: 0.5 }}>
+      Loading Capital Command...
     </div>
   );
 
@@ -506,69 +506,72 @@ export default function App() {
   };
 
   // ── Select styles helper ─────────────────────────────────────────────────────
-  const selStyle = { width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none" };
+  const selStyle = { width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none" };
 
   return (
-    <div style={{ background: "#080808", minHeight: "100vh", color: "#e8e8e8", fontFamily: "'Courier New', monospace", padding: "0 0 80px" }}>
+    <div style={{ background: "#0a0a10", minHeight: "100vh", color: "#e8e8e8", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif", padding: "0 0 80px" }}>
 
       {/* Settings modal */}
       {showSettings && (
-        <Modal title="⚙ SETTINGS" onClose={() => setShowSettings(false)}>
-          <div style={{ marginBottom: 8, color: "#555", fontSize: 11, fontFamily: "monospace", letterSpacing: 1 }}>GEMINI API KEY</div>
+        <Modal title="Settings" onClose={() => setShowSettings(false)}>
+          <div style={{ marginBottom: 8, color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500, letterSpacing: 0.8 }}>GEMINI API KEY</div>
           <input
             type="password"
             value={apiKeyDraft}
             onChange={e => setApiKeyDraft(e.target.value)}
             placeholder="AIza..."
-            style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "10px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+            style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
           />
-          <div style={{ marginBottom: 8, color: "#555", fontSize: 11, fontFamily: "monospace", letterSpacing: 1 }}>GEMINI MODEL</div>
+          <div style={{ marginBottom: 8, color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500, letterSpacing: 0.8 }}>GEMINI MODEL</div>
           <input
             type="text"
             value={modelDraft}
             onChange={e => setModelDraft(e.target.value)}
             placeholder="gemini-3-flash"
-            style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "10px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+            style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
           />
-          <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginBottom: 18 }}>
-            Stored in your browser only — never sent to any server or committed to the repo.<br />
+          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginBottom: 20 }}>
+            Stored in your browser only — never sent to any server.<br />
             Get a key at <span style={{ color: "#60a5fa" }}>aistudio.google.com/apikey</span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Btn onClick={() => { localStorage.setItem("cc-gemini-key", apiKeyDraft.trim()); localStorage.setItem("cc-gemini-model", modelDraft.trim()); setShowSettings(false); }}>SAVE</Btn>
+            <Btn onClick={() => { localStorage.setItem("cc-gemini-key", apiKeyDraft.trim()); localStorage.setItem("cc-gemini-model", modelDraft.trim()); setShowSettings(false); }}>Save</Btn>
             {localStorage.getItem("cc-gemini-key") && (
-              <Btn onClick={() => { localStorage.removeItem("cc-gemini-key"); setApiKeyDraft(""); setShowSettings(false); }} color="#ff3b3b">REMOVE KEY</Btn>
+              <Btn onClick={() => { localStorage.removeItem("cc-gemini-key"); setApiKeyDraft(""); setShowSettings(false); }} color="#ff3b3b">Remove Key</Btn>
             )}
           </div>
         </Modal>
       )}
 
       {/* Header */}
-      <div style={{ borderBottom: "1px solid #1a1a1a", padding: "18px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0a0a0a" }}>
+      <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)" }}>
         <div>
-          <div style={{ color: "#00ff88", fontSize: 18, fontWeight: 700, letterSpacing: 3 }}>⚡ CAPITAL COMMAND</div>
-          <div style={{ color: "#333", fontSize: 10, letterSpacing: 2, marginTop: 2 }}>PERSONAL FINANCIAL INTELLIGENCE CENTER</div>
+          <div style={{ color: "#e8e8e8", fontSize: 20, fontWeight: 700, letterSpacing: -0.3 }}>Capital Command</div>
+          <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 400, marginTop: 2 }}>Personal Finance Intelligence</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#666", fontSize: 10, letterSpacing: 1 }}>NET WORTH</div>
-            <div style={{ color: "#00ff88", fontSize: 22, fontWeight: 700 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500 }}>Net Worth</div>
+            <div style={{ color: "#00e676", fontSize: 24, fontWeight: 700, letterSpacing: -0.5 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
           </div>
           <button
             onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-3-flash"); setShowSettings(true); }}
             title="Settings"
-            style={{ background: "none", border: "1px solid #333", borderRadius: 6, color: "#555", cursor: "pointer", fontSize: 16, padding: "6px 10px", lineHeight: 1 }}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 16, padding: "8px 12px", lineHeight: 1 }}
           >⚙</button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 2, padding: "12px 24px", borderBottom: "1px solid #1a1a1a", overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            background: tab === t ? "#00ff8822" : "none", border: `1px solid ${tab === t ? "#00ff88" : "#1a1a1a"}`,
-            color: tab === t ? "#00ff88" : "#555", padding: "6px 16px", borderRadius: 4, cursor: "pointer",
-            fontFamily: "monospace", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", whiteSpace: "nowrap"
+            background: tab === t ? "rgba(255,255,255,0.08)" : "transparent",
+            border: "none",
+            color: tab === t ? "#fff" : "rgba(255,255,255,0.3)",
+            padding: "8px 16px", borderRadius: 16, cursor: "pointer",
+            fontSize: 12, fontWeight: tab === t ? 600 : 400, letterSpacing: 0.3, textTransform: "capitalize", whiteSpace: "nowrap",
+            transition: "all 0.2s ease",
           }}>{t}</button>
         ))}
       </div>
@@ -591,63 +594,63 @@ export default function App() {
 
             {/* Backup prompt */}
             {showBackupPrompt && (
-              <div style={{ background: "#ffd70010", border: "1px solid #ffd70044", borderRadius: 10, padding: "14px 18px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ background: "rgba(255,215,0,0.04)", border: "1px solid rgba(255,215,0,0.12)", borderRadius: 16, padding: "16px 20px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
                 <div>
-                  <div style={{ color: "#ffd700", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", marginBottom: 3 }}>⚠ WEEKLY BACKUP REMINDER</div>
-                  <div style={{ color: "#666", fontSize: 11, fontFamily: "monospace" }}>Export your data so you never lose it.</div>
+                  <div style={{ color: "#ffd700", fontSize: 12, fontWeight: 600, marginBottom: 3 }}>Backup Reminder</div>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>Export your data so you never lose it.</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <Btn onClick={() => { exportJSON(); dismissBackupPrompt(); }} color="#ffd700" style={{ fontSize: 10 }}>⬇ EXPORT NOW</Btn>
-                  <button onClick={dismissBackupPrompt} style={{ background: "none", border: "1px solid #333", color: "#555", fontSize: 10, fontFamily: "monospace", padding: "6px 12px", borderRadius: 4, cursor: "pointer" }}>DISMISS 7d</button>
+                  <Btn onClick={() => { exportJSON(); dismissBackupPrompt(); }} color="#ffd700" style={{ fontSize: 11 }}>Export Now</Btn>
+                  <button onClick={dismissBackupPrompt} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)", fontSize: 11, padding: "8px 14px", borderRadius: 16, cursor: "pointer" }}>Dismiss</button>
                 </div>
               </div>
             )}
 
             {/* Overspend warnings */}
             {overspendWarnings.length > 0 && (
-              <div style={{ background: "#ff3b3b08", border: "1px solid #ff3b3b33", borderRadius: 10, padding: "14px 18px", marginBottom: 20 }}>
-                <div style={{ color: "#ff3b3b", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", marginBottom: 10 }}>⚠ BUDGET WARNINGS · {daysLeft} DAYS LEFT IN MONTH</div>
+              <div style={{ background: "rgba(255,59,59,0.04)", border: "1px solid rgba(255,59,59,0.12)", borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+                <div style={{ color: "#ff3b3b", fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Budget Warnings · {daysLeft} days left</div>
                 {overspendWarnings.map(({ cat, spent, limit, pct }) => (
-                  <div key={cat} style={{ color: +pct >= 100 ? "#ff3b3b" : "#ff8c00", fontFamily: "monospace", fontSize: 12, marginBottom: 4 }}>
-                    {cat}: ${spent.toFixed(0)} / ${limit} ({pct}%){+pct >= 100 ? " — OVER BUDGET" : " — approaching limit"}
+                  <div key={cat} style={{ color: +pct >= 100 ? "#ff3b3b" : "#ff8c00", fontSize: 13, marginBottom: 4 }}>
+                    {cat}: ${spent.toFixed(0)} / ${limit} ({pct}%){+pct >= 100 ? " — over budget" : " — approaching limit"}
                   </div>
                 ))}
               </div>
             )}
 
             {/* Monthly P&L */}
-            <div style={{ background: "#0d0d0d", border: "1px solid #00ff8818", borderRadius: 10, padding: "18px 20px", marginBottom: 20 }}>
-              <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>
-                MONTHLY P&L · {now.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()}
+            <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "20px 22px", marginBottom: 20 }}>
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 16 }}>
+                Monthly P&L · {now.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
                 {[
-                  { label: "SHIFT INCOME", value: `+$${Math.round(monthShiftIncome).toLocaleString()}`, color: "#a78bfa" },
-                  { label: "FLIP INCOME",  value: `+$${Math.round(monthFlipIncome).toLocaleString()}`,  color: "#ff8c00", sub: monthFlipIncome === 0 ? "no sales w/ date yet" : null },
-                  { label: "EXPENSES",     value: `-$${Math.round(monthExpensesTotal).toLocaleString()}`, color: "#ff3b3b" },
-                  { label: "NET",          value: `${monthNetPL >= 0 ? "+" : ""}$${Math.round(monthNetPL).toLocaleString()}`, color: monthNetPL >= 0 ? "#00ff88" : "#ff3b3b" },
+                  { label: "Shift Income", value: `+$${Math.round(monthShiftIncome).toLocaleString()}`, color: "#a78bfa" },
+                  { label: "Flip Income",  value: `+$${Math.round(monthFlipIncome).toLocaleString()}`,  color: "#ff8c00", sub: monthFlipIncome === 0 ? "no sales yet" : null },
+                  { label: "Expenses",     value: `-$${Math.round(monthExpensesTotal).toLocaleString()}`, color: "#ff3b3b" },
+                  { label: "Net",          value: `${monthNetPL >= 0 ? "+" : ""}$${Math.round(monthNetPL).toLocaleString()}`, color: monthNetPL >= 0 ? "#00e676" : "#ff3b3b" },
                 ].map((c, i) => (
                   <div key={i}>
-                    <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{c.label}</div>
-                    <div style={{ color: c.color, fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>{c.value}</div>
-                    {c.sub && <div style={{ color: "#333", fontSize: 9, fontFamily: "monospace", marginTop: 3 }}>{c.sub}</div>}
+                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 500, marginBottom: 6 }}>{c.label}</div>
+                    <div style={{ color: c.color, fontSize: 20, fontWeight: 700 }}>{c.value}</div>
+                    {c.sub && <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginTop: 3 }}>{c.sub}</div>}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* EOD cash projection */}
-            <div style={{ background: "#0d0d0d", border: "1px solid #60a5fa18", borderRadius: 10, padding: "18px 20px", marginBottom: 20, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
               <div>
-                <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 8 }}>
-                  END-OF-MONTH FORECAST · {daysLeft} DAYS LEFT
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 8 }}>
+                  End-of-Month Forecast · {daysLeft} days left
                 </div>
-                <div style={{ color: "#60a5fa", fontSize: 28, fontWeight: 700, fontFamily: "monospace" }}>
+                <div style={{ color: "#60a5fa", fontSize: 30, fontWeight: 700, letterSpacing: -0.5 }}>
                   ${Math.round(projectedEODBalance).toLocaleString()}
                 </div>
-                <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>projected checking balance</div>
+                <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 4 }}>projected checking balance</div>
               </div>
-              <div style={{ borderLeft: "1px solid #1a1a1a", paddingLeft: 24, fontSize: 11, fontFamily: "monospace", lineHeight: 2, color: "#555" }}>
+              <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", paddingLeft: 24, fontSize: 13, lineHeight: 2, color: "rgba(255,255,255,0.35)" }}>
                 <div>${data.bankBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} current</div>
                 <div style={{ color: "#a78bfa" }}>+${Math.round(projectedShiftIncome)} from {remainingMonthShifts.length} shifts (${Math.round(avgPerShift)} avg)</div>
                 <div style={{ color: "#ff3b3b" }}>−${Math.round(projectedRemainingExpenses)} est. remaining spend</div>
@@ -659,22 +662,22 @@ export default function App() {
             <AlertsFeed liquid={data.liquidCash || data.bankBalance} onStartFlip={startFlipFromOpp} />
 
             {/* AI Brief */}
-            <div style={{ background: "#0d0d0d", border: "1px solid #ffd70033", borderRadius: 10, padding: 20, marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <div style={{ color: "#ffd700", fontSize: 11, letterSpacing: 2 }}>⚡ AI MONEY BRIEF</div>
-                <Btn onClick={() => fetchAIInsight(data)} color="#ffd700" style={{ fontSize: 10 }}>{aiLoading ? "THINKING..." : "GET BRIEF"}</Btn>
+            <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: 22, marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ color: "#ffd700", fontSize: 13, fontWeight: 600 }}>AI Money Brief</div>
+                <Btn onClick={() => fetchAIInsight(data)} color="#ffd700" style={{ fontSize: 11 }}>{aiLoading ? "Thinking..." : "Get Brief"}</Btn>
               </div>
               {aiInsight
-                ? <p style={{ color: "#ccc", lineHeight: 1.8, fontSize: 13, margin: 0 }}>{aiInsight}</p>
-                : <p style={{ color: "#444", fontSize: 12, margin: 0, fontStyle: "italic" }}>Hit "GET BRIEF" for your personalized AI money coach insight.</p>
+                ? <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.8, fontSize: 14, margin: 0 }}>{aiInsight}</p>
+                : <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 13, margin: 0, fontStyle: "italic" }}>Tap "Get Brief" for your personalized AI money coach insight.</p>
               }
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Btn onClick={() => { setModal("balance"); setForm({ bank: data.bankBalance, liquid: data.liquidCash, savings: data.savings }); }}>UPDATE BALANCES</Btn>
-              <Btn onClick={exportJSON} color="#60a5fa">⬇ EXPORT JSON</Btn>
-              <Btn onClick={exportCSV}  color="#a78bfa">⬇ SHIFTS CSV</Btn>
-              <Btn onClick={() => importRef.current?.click()} color="#ffd700">⬆ IMPORT JSON</Btn>
+              <Btn onClick={() => { setModal("balance"); setForm({ bank: data.bankBalance, liquid: data.liquidCash, savings: data.savings }); }}>Update Balances</Btn>
+              <Btn onClick={exportJSON} color="#60a5fa">Export JSON</Btn>
+              <Btn onClick={exportCSV}  color="#a78bfa">Shifts CSV</Btn>
+              <Btn onClick={() => importRef.current?.click()} color="#ffd700">Import JSON</Btn>
             </div>
             <input ref={importRef} type="file" accept=".json" onChange={importJSON} style={{ display: "none" }} />
           </div>
@@ -687,15 +690,15 @@ export default function App() {
         {tab === "shifts" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ color: "#a78bfa", fontSize: 11, letterSpacing: 2 }}>SERVING SHIFTS</div>
-              <Btn onClick={() => { setModal("shift"); setForm({}); }} color="#a78bfa">+ LOG SHIFT</Btn>
+              <div style={{ color: "#a78bfa", fontSize: 14, fontWeight: 600 }}>Serving Shifts</div>
+              <Btn onClick={() => { setModal("shift"); setForm({}); }} color="#a78bfa">+ Log Shift</Btn>
             </div>
 
             {/* Shift pattern insights — days are clickable to filter */}
             {dayEntries.length > 0 && (
-              <div style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 10, padding: "16px 20px", marginBottom: 20 }}>
-                <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>
-                  EARNINGS BY DAY · avg per shift · {filterDay ? <span style={{ color: "#a78bfa" }}>tap again to clear</span> : "tap a day to filter"}
+              <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "18px 20px", marginBottom: 20 }}>
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 14 }}>
+                  Earnings by Day · {filterDay ? <span style={{ color: "#a78bfa" }}>tap again to clear</span> : "tap a day to filter"}
                 </div>
                 <div style={{ display: "grid", gap: 10 }}>
                   {dayEntries.map(({ day, avg, count }) => {
@@ -706,12 +709,12 @@ export default function App() {
                       <div key={day} onClick={() => setFilterDay(active ? null : day)}
                         style={{ cursor: "pointer", opacity: dimmed ? 0.35 : 1, transition: "opacity 0.2s" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                          <div style={{ color: active ? "#fff" : "#a78bfa", fontSize: 11, fontFamily: "monospace", fontWeight: active ? 700 : 400 }}>
+                          <div style={{ color: active ? "#fff" : "#a78bfa", fontSize: 11, fontWeight: active ? 700 : 400 }}>
                             {active ? "▶ " : ""}{day}
                           </div>
-                          <div style={{ color: "#e8e8e8", fontSize: 11, fontFamily: "monospace" }}>${Math.round(avg)} avg · {count} shift{count !== 1 ? "s" : ""}</div>
+                          <div style={{ color: "#e8e8e8", fontSize: 11, }}>${Math.round(avg)} avg · {count} shift{count !== 1 ? "s" : ""}</div>
                         </div>
-                        <div style={{ background: "#1a1a1a", borderRadius: 3, height: active ? 8 : 6, transition: "height 0.2s" }}>
+                        <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: active ? 8 : 6, transition: "height 0.2s" }}>
                           <div style={{ background: active ? "linear-gradient(90deg, #fff, #a78bfa)" : "linear-gradient(90deg, #a78bfa, #7c3aed)", width: `${pct}%`, height: "100%", borderRadius: 3 }} />
                         </div>
                       </div>
@@ -719,7 +722,7 @@ export default function App() {
                   })}
                 </div>
                 {dayEntries.length > 0 && (
-                  <div style={{ marginTop: 12, color: "#444", fontSize: 10, fontFamily: "monospace" }}>
+                  <div style={{ marginTop: 12, color: "rgba(255,255,255,0.25)", fontSize: 10, }}>
                     🏆 Best day: <span style={{ color: "#a78bfa" }}>{dayEntries[0].day}</span> averaging ${Math.round(dayEntries[0].avg)}/shift
                     {data.shifts.length >= 4 && (() => {
                       const last4  = data.shifts.slice(-4).reduce((a, s) => a + s.tips + s.hours * s.wage, 0) / 4;
@@ -760,8 +763,8 @@ export default function App() {
                 return (
                   <div>
                     <div style={{ textAlign: "center", padding: "16px 0 20px", borderBottom: "1px solid #1a1a1a", marginBottom: 16 }}>
-                      <div style={{ color: "#a78bfa", fontSize: 32, fontWeight: 900, fontFamily: "monospace", letterSpacing: 4 }}>{fullName.toUpperCase()}</div>
-                      <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>{filtered.length} shift{filtered.length !== 1 ? "s" : ""} logged</div>
+                      <div style={{ color: "#a78bfa", fontSize: 32, fontWeight: 900, letterSpacing: 4 }}>{fullName.toUpperCase()}</div>
+                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 4 }}>{filtered.length} shift{filtered.length !== 1 ? "s" : ""} logged</div>
                     </div>
                     <div style={{ display: "grid", gap: 8 }}>
                       {filtered.map(({ s, origIdx }) => {
@@ -769,18 +772,18 @@ export default function App() {
                         const hourly    = total / s.hours;
                         const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
                         return (
-                          <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #a78bfa22", borderRadius: 8, padding: "12px 16px" }}>
+                          <div key={origIdx} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #a78bfa22", borderRadius: 14, padding: "12px 16px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                               <div>
                                 <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
-                                <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
-                                <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
-                                {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "rgba(255,255,255,0.35)" }}>${hourly.toFixed(2)}/hr eff.</span></div>
+                                <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                                {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, marginTop: 2 }}>shift: {scheduled.time}</div>}
                               </div>
                               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
-                                <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                                <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                                <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, }}>${Math.round(total)}</div>
+                                <button onClick={() => openEditShift(origIdx)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 9, padding: "4px 8px", borderRadius: 8, cursor: "pointer" }}>Edit</button>
+                                <button onClick={() => deleteShift(origIdx)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 8px", borderRadius: 8, cursor: "pointer" }}>✕</button>
                               </div>
                             </div>
                           </div>
@@ -839,45 +842,45 @@ export default function App() {
                     const weekAvg   = wShifts.length ? weekTotal / wShifts.length : 0;
 
                     return (
-                      <div key={weekKey} style={{ border: "1px solid #1a1a1a", borderRadius: 10, overflow: "hidden" }}>
+                      <div key={weekKey} style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
                         {/* Week header — clickable */}
                         <div
                           onClick={() => toggleWeek(weekKey)}
-                          style={{ background: "#0d0d0d", padding: "14px 18px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none" }}>
+                          style={{ background: "rgba(255,255,255,0.03)", padding: "14px 18px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none" }}>
                           <div>
-                            <div style={{ color: "#a78bfa", fontSize: 11, fontFamily: "monospace", letterSpacing: 2 }}>
-                              {isOpen ? "▼" : "▶"} WEEK OF {label.toUpperCase()}
+                            <div style={{ color: "#a78bfa", fontSize: 13, fontWeight: 600 }}>
+                              {isOpen ? "▼" : "▶"} Week of {label}
                             </div>
-                            <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>
+                            <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 3 }}>
                               {wShifts.length} shift{wShifts.length !== 1 ? "s" : ""} · {weekHours}hrs · ${Math.round(weekTips)} tips
                             </div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <div style={{ color: "#a78bfa", fontSize: 22, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(weekTotal)}</div>
-                            <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace" }}>${Math.round(weekAvg)}/shift avg</div>
+                            <div style={{ color: "#a78bfa", fontSize: 22, fontWeight: 700, }}>${Math.round(weekTotal)}</div>
+                            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, }}>${Math.round(weekAvg)}/shift avg</div>
                           </div>
                         </div>
 
                         {/* Expanded shifts */}
                         {isOpen && (
-                          <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8, background: "#080808" }}>
+                          <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8, background: "#0a0a10" }}>
                             {wShifts.map(({ s, origIdx }) => {
                               const total     = s.tips + s.hours * s.wage;
                               const hourly    = total / s.hours;
                               const scheduled = (data.schedule || []).find(sc => sc.date === s.date);
                               return (
-                                <div key={origIdx} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
+                                <div key={origIdx} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "12px 16px" }}>
                                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                     <div>
                                       <div style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 14 }}>{s.date}</div>
-                                      <div style={{ color: "#555", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "#666" }}>${hourly.toFixed(2)}/hr eff.</span></div>
-                                      <div style={{ color: "#444", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
-                                      {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace", marginTop: 2 }}>shift: {scheduled.time}</div>}
+                                      <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginTop: 2 }}>{s.hours}hrs · ${s.wage}/hr · <span style={{ color: "rgba(255,255,255,0.35)" }}>${hourly.toFixed(2)}/hr eff.</span></div>
+                                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 1 }}>tips: ${s.tips}</div>
+                                      {scheduled?.time && <div style={{ color: "#38bdf8", fontSize: 10, marginTop: 2 }}>shift: {scheduled.time}</div>}
                                     </div>
                                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                      <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(total)}</div>
-                                      <button onClick={(e) => { e.stopPropagation(); openEditShift(origIdx); }} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                                      <button onClick={(e) => { e.stopPropagation(); deleteShift(origIdx); }} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                                      <div style={{ color: "#a78bfa", fontSize: 20, fontWeight: 700, }}>${Math.round(total)}</div>
+                                      <button onClick={(e) => { e.stopPropagation(); openEditShift(origIdx); }} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 9, padding: "4px 8px", borderRadius: 8, cursor: "pointer" }}>Edit</button>
+                                      <button onClick={(e) => { e.stopPropagation(); deleteShift(origIdx); }} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 8px", borderRadius: 8, cursor: "pointer" }}>✕</button>
                                     </div>
                                   </div>
                                 </div>
@@ -891,9 +894,9 @@ export default function App() {
                                 { label: "HOURS",      value: `${weekHours}h`,             color: "#60a5fa" },
                                 { label: "TIPS",       value: `$${Math.round(weekTips)}`,  color: "#00ff88" },
                               ].map((st, i) => (
-                                <div key={i} style={{ background: "#111", borderRadius: 6, padding: "8px 10px" }}>
-                                  <div style={{ color: "#444", fontSize: 8, letterSpacing: 1, fontFamily: "monospace" }}>{st.label}</div>
-                                  <div style={{ color: st.color, fontSize: 14, fontWeight: 700, fontFamily: "monospace", marginTop: 2 }}>{st.value}</div>
+                                <div key={i} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 6, padding: "8px 10px" }}>
+                                  <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 8, letterSpacing: 1, }}>{st.label}</div>
+                                  <div style={{ color: st.color, fontSize: 14, fontWeight: 700, marginTop: 2 }}>{st.value}</div>
                                 </div>
                               ))}
                             </div>
@@ -914,9 +917,9 @@ export default function App() {
                 { label: "AVG $/HR",      value: data.shifts.length ? `$${(data.shifts.reduce((a,s)=>a+(s.tips+s.hours*s.wage)/s.hours,0)/data.shifts.length).toFixed(2)}` : "$0", color: "#60a5fa" },
                 { label: "SHIFTS LOGGED", value: data.shifts.length, color: "#e8e8e8" },
               ].map((stat, i) => (
-                <div key={i} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "12px 16px" }}>
-                  <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 4 }}>{stat.label}</div>
-                  <div style={{ color: stat.color, fontSize: 18, fontWeight: 700, fontFamily: "monospace" }}>{stat.value}</div>
+                <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "12px 16px" }}>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500, marginBottom: 4 }}>{stat.label}</div>
+                  <div style={{ color: stat.color, fontSize: 18, fontWeight: 700, }}>{stat.value}</div>
                 </div>
               ))}
             </div>
@@ -928,20 +931,20 @@ export default function App() {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
-                <div style={{ color: "#ff8c00", fontSize: 11, letterSpacing: 2 }}>FLIP TRACKER</div>
+                <div style={{ color: "#ff8c00", fontSize: 14, fontWeight: 600 }}>Flip Tracker</div>
                 <button
                   onClick={() => setTab("opportunities")}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "#ffd700", fontFamily: "monospace", fontSize: 10, letterSpacing: 1, padding: 0, marginTop: 4 }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#ffd700", fontSize: 12, fontWeight: 500, padding: 0, marginTop: 4 }}
                 >
-                  ⚡ Find opportunities →
+                  Find opportunities →
                 </button>
               </div>
-              <Btn onClick={() => { setModal("flip"); setForm({ status: "listed" }); }} color="#ff8c00">+ ADD FLIP</Btn>
+              <Btn onClick={() => { setModal("flip"); setForm({ status: "listed" }); }} color="#ff8c00">+ Add Flip</Btn>
             </div>
 
             {soldFlips.length > 0 && (
-              <div style={{ background: "#0d0d0d", border: "1px solid #ff8c0022", borderRadius: 10, padding: "16px 20px", marginBottom: 20 }}>
-                <div style={{ color: "#555", fontSize: 9, letterSpacing: 2, marginBottom: 14 }}>FLIP ANALYTICS · NET OF FEES</div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #ff8c0022", borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 14 }}>Flip Analytics · Net of Fees</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
                   {[
                     { label: "NET PROFIT",      value: `$${Math.round(flipProfit)}`,                          color: "#00ff88" },
@@ -952,25 +955,25 @@ export default function App() {
                     { label: "ACTIVE",          value: data.flips.filter(f=>f.status!=="sold").length,        color: "#60a5fa" },
                   ].map((s, i) => (
                     <div key={i}>
-                      <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", letterSpacing: 1 }}>{s.label}</div>
-                      <div style={{ color: s.color, fontSize: 18, fontWeight: 700, fontFamily: "monospace", marginTop: 4 }}>{s.value}</div>
+                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, letterSpacing: 1 }}>{s.label}</div>
+                      <div style={{ color: s.color, fontSize: 18, fontWeight: 700, marginTop: 4 }}>{s.value}</div>
                     </div>
                   ))}
                 </div>
                 {bestFlip && (
-                  <div style={{ marginTop: 14, borderTop: "1px solid #1a1a1a", paddingTop: 12, color: "#555", fontSize: 11, fontFamily: "monospace" }}>
+                  <div style={{ marginTop: 14, borderTop: "1px solid #1a1a1a", paddingTop: 12, color: "rgba(255,255,255,0.35)", fontSize: 11, }}>
                     🏆 Best: <span style={{ color: "#a78bfa" }}>{bestFlip.item}</span> — ${bestFlip.bought} → ${bestFlip.sold} (+{((bestFlip.sold-bestFlip.bought)/bestFlip.bought*100).toFixed(0)}% ROI{bestFlip.fees ? `, ${bestFlip.fees}% fee` : ""})
                   </div>
                 )}
                 {Object.keys(flipsByCategory).length > 0 && (
                   <div style={{ marginTop: 14, borderTop: "1px solid #1a1a1a", paddingTop: 12 }}>
-                    <div style={{ color: "#333", fontSize: 9, letterSpacing: 2, fontFamily: "monospace", marginBottom: 8 }}>ROI BY CATEGORY</div>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 500, marginBottom: 8 }}>ROI by Category</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {Object.entries(flipsByCategory).map(([cat, v]) => (
-                        <div key={cat} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: 5, padding: "6px 10px" }}>
-                          <div style={{ color: "#ff8c00", fontSize: 9, fontFamily: "monospace" }}>{cat}</div>
-                          <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 700, fontFamily: "monospace" }}>${Math.round(v.profit)}</div>
-                          <div style={{ color: "#555", fontSize: 9, fontFamily: "monospace" }}>+{(v.roiSum/v.count).toFixed(0)}% avg · {v.count} sold</div>
+                        <div key={cat} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 5, padding: "6px 10px" }}>
+                          <div style={{ color: "#ff8c00", fontSize: 9, }}>{cat}</div>
+                          <div style={{ color: "#e8e8e8", fontSize: 13, fontWeight: 700, }}>${Math.round(v.profit)}</div>
+                          <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, }}>+{(v.roiSum/v.count).toFixed(0)}% avg · {v.count} sold</div>
                         </div>
                       ))}
                     </div>
@@ -991,34 +994,34 @@ export default function App() {
                 })() : null;
                 const isStale = daysListed !== null && daysListed > 30;
                 return (
-                  <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${isStale ? "#ff3b3b44" : f.status==="sold" ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${isStale ? "#ff3b3b44" : f.status==="sold" ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 14, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <div style={{ color: "#e8e8e8", fontWeight: 600 }}>{f.item}</div>
-                        {f.category && <span style={{ color: "#38bdf8", fontSize: 9, fontFamily: "monospace", border: "1px solid #38bdf844", padding: "1px 6px", borderRadius: 3 }}>{f.category}</span>}
-                        {daysListed !== null && <span style={{ color: isStale ? "#ff3b3b" : "#444", fontSize: 9, fontFamily: "monospace", border: `1px solid ${isStale ? "#ff3b3b44" : "#33333344"}`, padding: "1px 6px", borderRadius: 3 }}>{daysListed}d{isStale ? " STALE" : ""}</span>}
+                        {f.category && <span style={{ color: "#38bdf8", fontSize: 9, border: "1px solid #38bdf844", padding: "2px 8px", borderRadius: 8 }}>{f.category}</span>}
+                        {daysListed !== null && <span style={{ color: isStale ? "#ff3b3b" : "#444", fontSize: 9, border: `1px solid ${isStale ? "#ff3b3b44" : "#33333344"}`, padding: "2px 8px", borderRadius: 8 }}>{daysListed}d{isStale ? " STALE" : ""}</span>}
                       </div>
-                      <div style={{ color: "#555", fontSize: 11, marginTop: 3 }}>
+                      <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, marginTop: 3 }}>
                         Bought ${f.bought.toLocaleString()} {f.sold ? `→ Sold $${f.sold.toLocaleString()}` : "· Listed"}
-                        {hasFee && <span style={{ color: "#444" }}> · {f.fees}% fee</span>}
+                        {hasFee && <span style={{ color: "rgba(255,255,255,0.25)" }}> · {f.fees}% fee</span>}
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                       {net !== null
                         ? <div style={{ textAlign: "right" }}>
                             <div style={{ color: "#00ff88", fontSize: 18, fontWeight: 700 }}>+${Math.round(net)}</div>
-                            <div style={{ color: "#555", fontSize: 10 }}>+{roi}% ROI{hasFee ? <span style={{ color: "#444" }}> (gross +${Math.round(gross)})</span> : ""}</div>
+                            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>+{roi}% ROI{hasFee ? <span style={{ color: "rgba(255,255,255,0.25)" }}> (gross +${Math.round(gross)})</span> : ""}</div>
                           </div>
                         : <div style={{ color: "#ffd700", fontSize: 12, border: "1px solid #ffd70055", padding: "4px 10px", borderRadius: 4 }}>ACTIVE</div>
                       }
-                      <button onClick={() => openEditFlip(i)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                      <button onClick={() => deleteFlip(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                      <button onClick={() => openEditFlip(i)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 9, padding: "4px 8px", borderRadius: 8, cursor: "pointer" }}>Edit</button>
+                      <button onClick={() => deleteFlip(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 8px", borderRadius: 8, cursor: "pointer" }}>✕</button>
                     </div>
                   </div>
                 );
               })}
               {data.flips.length === 0 && (
-                <div style={{ color: "#333", fontFamily: "monospace", fontSize: 12, textAlign: "center", padding: "32px 0" }}>No flips yet. Add your first one above.</div>
+                <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 12, textAlign: "center", padding: "32px 0" }}>No flips yet. Add your first one above.</div>
               )}
             </div>
           </div>
@@ -1029,10 +1032,10 @@ export default function App() {
           <div>
             {/* Price alert banner */}
             {priceAlerts.length > 0 && (
-              <div style={{ background: "#ff3b3b11", border: "1px solid #ff3b3b44", borderRadius: 8, padding: "12px 16px", marginBottom: 16 }}>
-                <div style={{ color: "#ff3b3b", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", marginBottom: 6 }}>⚠ PRICE ALERT</div>
+              <div style={{ background: "#ff3b3b11", border: "1px solid #ff3b3b44", borderRadius: 14, padding: "12px 16px", marginBottom: 16 }}>
+                <div style={{ color: "#ff3b3b", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Price Alert</div>
                 {priceAlerts.map((s, i) => (
-                  <div key={i} style={{ color: "#ff8c00", fontFamily: "monospace", fontSize: 12 }}>
+                  <div key={i} style={{ color: "#ff8c00", fontSize: 12 }}>
                     {s.ticker} is ${s.currentPrice.toFixed(2)} — below your alert of ${s.alertBelow}
                   </div>
                 ))}
@@ -1041,14 +1044,14 @@ export default function App() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
-                <div style={{ color: "#60a5fa", fontSize: 11, letterSpacing: 2 }}>STOCK PORTFOLIO</div>
-                {lastSynced && <div style={{ color: "#444", fontSize: 10, fontFamily: "monospace", marginTop: 3 }}>last synced {lastSynced}</div>}
+                <div style={{ color: "#60a5fa", fontSize: 14, fontWeight: 600 }}>Stock Portfolio</div>
+                {lastSynced && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 3 }}>last synced {lastSynced}</div>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={syncStockPrices} disabled={syncLoading} style={{ background: syncLoading ? "#111" : "#60a5fa18", border: "1px solid #60a5fa", color: "#60a5fa", fontFamily: "monospace", fontSize: 10, padding: "7px 14px", borderRadius: 5, cursor: "pointer", letterSpacing: 1 }}>
-                  {syncLoading ? "SYNCING..." : "⟳ SYNC PRICES"}
+                <button onClick={syncStockPrices} disabled={syncLoading} style={{ background: syncLoading ? "rgba(255,255,255,0.04)" : "#60a5fa12", border: "1px solid #60a5fa44", color: "#60a5fa", fontSize: 11, fontWeight: 500, padding: "8px 16px", borderRadius: 12, cursor: "pointer" }}>
+                  {syncLoading ? "Syncing..." : "Sync Prices"}
                 </button>
-                <Btn onClick={() => { setModal("stock"); setForm({}); }} color="#60a5fa">+ ADD</Btn>
+                <Btn onClick={() => { setModal("stock"); setForm({}); }} color="#60a5fa">+ Add</Btn>
               </div>
             </div>
 
@@ -1060,23 +1063,23 @@ export default function App() {
                 const plPct     = ((pl / cost) * 100).toFixed(1);
                 const isAlerted = s.alertBelow && s.currentPrice < s.alertBelow;
                 return (
-                  <div key={i} style={{ background: "#0d0d0d", border: `1px solid ${isAlerted ? "#ff3b3b55" : pl>=0?"#00ff8822":"#ff3b3b22"}`, borderRadius: 8, padding: "14px 18px" }}>
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${isAlerted ? "#ff3b3b55" : pl>=0?"#00ff8822":"#ff3b3b22"}`, borderRadius: 14, padding: "14px 18px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 18 }}>{s.ticker}</div>
-                          {isAlerted && <span style={{ color: "#ff3b3b", fontSize: 9, fontFamily: "monospace", border: "1px solid #ff3b3b44", padding: "1px 6px", borderRadius: 3 }}>⚠ ALERT</span>}
-                          {s.alertBelow && !isAlerted && <span style={{ color: "#444", fontSize: 9, fontFamily: "monospace" }}>alert ↓${s.alertBelow}</span>}
+                          {isAlerted && <span style={{ color: "#ff3b3b", fontSize: 9, border: "1px solid #ff3b3b44", padding: "2px 8px", borderRadius: 8 }}>⚠ ALERT</span>}
+                          {s.alertBelow && !isAlerted && <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, }}>alert ↓${s.alertBelow}</span>}
                         </div>
-                        <div style={{ color: "#555", fontSize: 11 }}>{s.name} · {s.shares} sh · avg ${s.buyPrice} → <span style={{ color: "#60a5fa" }}>${s.currentPrice}</span></div>
+                        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{s.name} · {s.shares} sh · avg ${s.buyPrice} → <span style={{ color: "#60a5fa" }}>${s.currentPrice}</span></div>
                       </div>
                       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                         <div style={{ textAlign: "right" }}>
                           <div style={{ color: "#e8e8e8", fontSize: 16, fontWeight: 700 }}>${value.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
                           <div style={{ color: pl>=0?"#00ff88":"#ff3b3b", fontSize: 12 }}>{pl>=0?"+":""}${Math.round(pl)} ({plPct}%)</div>
                         </div>
-                        <button onClick={() => openEditStock(i)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "4px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                        <button onClick={() => deleteStock(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                        <button onClick={() => openEditStock(i)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 9, padding: "4px 8px", borderRadius: 8, cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => deleteStock(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "3px 8px", borderRadius: 8, cursor: "pointer" }}>✕</button>
                       </div>
                     </div>
                   </div>
@@ -1084,9 +1087,9 @@ export default function App() {
               })}
             </div>
 
-            <div style={{ marginTop: 20, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "14px 18px", display: "flex", gap: 32 }}>
-              <div><div style={{ color: "#555", fontSize: 10 }}>PORTFOLIO VALUE</div><div style={{ color: "#60a5fa", fontSize: 18, fontWeight: 700 }}>${Math.round(stockValue).toLocaleString()}</div></div>
-              <div><div style={{ color: "#555", fontSize: 10 }}>TOTAL P&L</div><div style={{ color: stockValue>=stockCost?"#00ff88":"#ff3b3b", fontSize: 18, fontWeight: 700 }}>{stockValue>=stockCost?"+":""}${Math.round(stockValue-stockCost).toLocaleString()}</div></div>
+            <div style={{ marginTop: 20, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "14px 18px", display: "flex", gap: 32 }}>
+              <div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>PORTFOLIO VALUE</div><div style={{ color: "#60a5fa", fontSize: 18, fontWeight: 700 }}>${Math.round(stockValue).toLocaleString()}</div></div>
+              <div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>TOTAL P&L</div><div style={{ color: stockValue>=stockCost?"#00ff88":"#ff3b3b", fontSize: 18, fontWeight: 700 }}>{stockValue>=stockCost?"+":""}${Math.round(stockValue-stockCost).toLocaleString()}</div></div>
             </div>
           </div>
         )}
@@ -1100,8 +1103,8 @@ export default function App() {
         {tab === "goals" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ color: "#e879f9", fontSize: 11, letterSpacing: 2 }}>FINANCIAL GOALS</div>
-              <Btn onClick={() => { setForm({ autoKey: "none" }); setModal("goal"); }} color="#e879f9">+ ADD GOAL</Btn>
+              <div style={{ color: "#e879f9", fontSize: 14, fontWeight: 600 }}>Financial Goals</div>
+              <Btn onClick={() => { setForm({ autoKey: "none" }); setModal("goal"); }} color="#e879f9">+ Add Goal</Btn>
             </div>
             <div style={{ display: "grid", gap: 14 }}>
               {data.goals.map((g, i) => {
@@ -1109,31 +1112,31 @@ export default function App() {
                 const pct       = Math.min(100, (current / g.target) * 100);
                 const autoLabel = { bank: "auto · checking", stocks: "auto · portfolio", flips: "auto · flip profit" };
                 return (
-                  <div key={i} style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 8, padding: "18px 22px" }}>
+                  <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "18px 22px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                       <div>
                         <div style={{ color: "#e8e8e8", fontWeight: 600 }}>{g.name}</div>
-                        {g.autoKey && <div style={{ color: "#444", fontSize: 9, fontFamily: "monospace", marginTop: 2 }}>{autoLabel[g.autoKey] || ""}</div>}
+                        {g.autoKey && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, marginTop: 2 }}>{autoLabel[g.autoKey] || ""}</div>}
                       </div>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <div style={{ color: "#555", fontSize: 12 }}>${current.toLocaleString(undefined,{maximumFractionDigits:0})} / ${g.target.toLocaleString()}</div>
-                        <button onClick={() => openEditGoal(i)} style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: 9, fontFamily: "monospace", padding: "3px 8px", borderRadius: 4, cursor: "pointer" }}>EDIT</button>
-                        <button onClick={() => deleteGoal(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", padding: "2px 7px", borderRadius: 4, cursor: "pointer" }}>✕</button>
+                        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>${current.toLocaleString(undefined,{maximumFractionDigits:0})} / ${g.target.toLocaleString()}</div>
+                        <button onClick={() => openEditGoal(i)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", fontSize: 9, padding: "3px 8px", borderRadius: 8, cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => deleteGoal(i)} style={{ background: "none", border: "1px solid #ff3b3b44", color: "#ff3b3b", fontSize: 11, padding: "2px 7px", borderRadius: 8, cursor: "pointer" }}>✕</button>
                       </div>
                     </div>
-                    <div style={{ background: "#1a1a1a", borderRadius: 4, height: 8, overflow: "hidden" }}>
+                    <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: 8, overflow: "hidden" }}>
                       <div style={{ background: pct >= 100 ? "#00ff88" : "#e879f9", width: `${pct}%`, height: "100%", borderRadius: 4, transition: "width 0.5s" }} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
-                      <div style={{ color: "#555", fontSize: 10 }}>{pct.toFixed(0)}% complete · ${Math.max(0, g.target - current).toLocaleString(undefined,{maximumFractionDigits:0})} to go</div>
+                      <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>{pct.toFixed(0)}% complete · ${Math.max(0, g.target - current).toLocaleString(undefined,{maximumFractionDigits:0})} to go</div>
                       {(() => {
                         const remaining = Math.max(0, g.target - current);
-                        if (pct >= 100) return <span style={{ color: "#00ff88", fontSize: 10, fontFamily: "monospace" }}>✓ REACHED</span>;
+                        if (pct >= 100) return <span style={{ color: "#00ff88", fontSize: 10, }}>✓ REACHED</span>;
                         if (nwDailyGain <= 0 || remaining === 0) return null;
                         const days = remaining / nwDailyGain;
                         if (days > 365 * 3) return null;
                         const label = days < 7 ? `< 1 week` : days < 60 ? `~${Math.round(days / 7)}wk` : `~${Math.round(days / 30)}mo`;
-                        return <span style={{ color: "#38bdf8", fontSize: 10, fontFamily: "monospace" }}>ETA {label}</span>;
+                        return <span style={{ color: "#38bdf8", fontSize: 10, }}>ETA {label}</span>;
                       })()}
                     </div>
                   </div>
@@ -1154,9 +1157,9 @@ export default function App() {
       {/* ── MODALS ──────────────────────────────────────────────────────────── */}
 
       {modal === "shift" && (
-        <Modal title={form._editIdx !== undefined ? "EDIT SHIFT" : "LOG SHIFT"} onClose={() => setModal(null)}>
+        <Modal title={form._editIdx !== undefined ? "Edit Shift" : "Log Shift"} onClose={() => setModal(null)}>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Date</label>
+            <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Date</label>
             <input type="date" value={form.rawDate || ""}
               onChange={e => {
                 const raw = e.target.value;
@@ -1165,88 +1168,88 @@ export default function App() {
                 const label = new Date(+y, +m-1, +d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
                 setForm({ ...form, rawDate: raw, date: label });
               }}
-              style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", colorScheme: "dark" }} />
-            {form.date && <div style={{ color: "#555", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>→ will save as "{form.date}"</div>}
+              style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontSize: 13, outline: "none", boxSizing: "border-box", colorScheme: "dark" }} />
+            {form.date && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginTop: 4 }}>→ will save as "{form.date}"</div>}
           </div>
           <Input label="Hours Worked" type="number" value={form.hours || ""} onChange={v => setForm({ ...form, hours: v })} placeholder="6" />
           <Input label="Total Made Today ($)" type="number" value={form.total || ""} onChange={v => setForm({ ...form, total: v })} placeholder="396.00" />
           {form.hours && form.total && (
-            <div style={{ marginBottom: 14, background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: 6, padding: "10px 14px" }}>
+            <div style={{ marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "10px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: "#555", fontSize: 11, fontFamily: "monospace" }}>Wage ({form.hours}hr × ${HOURLY_WAGE})</span>
-                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>${(+form.hours * HOURLY_WAGE).toFixed(2)}</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, }}>Wage ({form.hours}hr × ${HOURLY_WAGE})</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>${(+form.hours * HOURLY_WAGE).toFixed(2)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#a78bfa", fontSize: 11, fontFamily: "monospace" }}>Tips (calculated)</span>
-                <span style={{ color: "#a78bfa", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>${Math.max(0, +form.total - +form.hours * HOURLY_WAGE).toFixed(2)}</span>
+                <span style={{ color: "#a78bfa", fontSize: 11, }}>Tips (calculated)</span>
+                <span style={{ color: "#a78bfa", fontSize: 11, fontWeight: 700 }}>${Math.max(0, +form.total - +form.hours * HOURLY_WAGE).toFixed(2)}</span>
               </div>
             </div>
           )}
-          {form._error && <div style={{ color: "#ff3b3b", fontSize: 11, fontFamily: "monospace", textAlign: "center", marginBottom: 10, padding: "8px", background: "#ff3b3b11", borderRadius: 6, border: "1px solid #ff3b3b33" }}>⚠ {form._error}</div>}
+          {form._error && <div style={{ color: "#ff3b3b", fontSize: 11, textAlign: "center", marginBottom: 10, padding: "8px", background: "#ff3b3b11", borderRadius: 6, border: "1px solid #ff3b3b33" }}>⚠ {form._error}</div>}
           <Btn onClick={addShift} style={{ width: "100%", marginTop: 4, opacity: (form.date && form.hours && form.total) ? 1 : 0.5 }}>
-            {form._editIdx !== undefined ? "SAVE CHANGES" : "LOG SHIFT"}
+            {form._editIdx !== undefined ? "Save Changes" : "Log Shift"}
           </Btn>
         </Modal>
       )}
 
       {modal === "flip" && (
-        <Modal title={form._editIdx !== undefined ? "EDIT FLIP" : "ADD FLIP"} onClose={() => setModal(null)}>
+        <Modal title={form._editIdx !== undefined ? "Edit Flip" : "Add Flip"} onClose={() => setModal(null)}>
           <Input label="Item Name" value={form.item || ""} onChange={v => setForm({ ...form, item: v })} placeholder="Jordan 1 Bred" />
           <Input label="Buy Price ($)" type="number" value={form.bought || ""} onChange={v => setForm({ ...form, bought: v })} placeholder="215" />
           <Input label="Sell Price ($) — leave blank if active" type="number" value={form.sold || ""} onChange={v => setForm({ ...form, sold: v })} placeholder="380" />
           <Input label="Platform Fee % (e.g. 12.9 for eBay)" type="number" value={form.fees || ""} onChange={v => setForm({ ...form, fees: v })} placeholder="0" />
           {form.bought && form.sold && form.fees && (
-            <div style={{ marginBottom: 14, background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: 6, padding: "10px 14px" }}>
+            <div style={{ marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "10px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: "#555", fontSize: 11, fontFamily: "monospace" }}>Gross profit</span>
-                <span style={{ color: "#555", fontFamily: "monospace", fontSize: 11 }}>${(+form.sold - +form.bought).toFixed(2)}</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, }}>Gross profit</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>${(+form.sold - +form.bought).toFixed(2)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: "#555", fontSize: 11, fontFamily: "monospace" }}>Platform fee ({form.fees}%)</span>
-                <span style={{ color: "#ff3b3b", fontFamily: "monospace", fontSize: 11 }}>-${((+form.sold - +form.bought) * +form.fees / 100).toFixed(2)}</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, }}>Platform fee ({form.fees}%)</span>
+                <span style={{ color: "#ff3b3b", fontSize: 11 }}>-${((+form.sold - +form.bought) * +form.fees / 100).toFixed(2)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#00ff88", fontSize: 11, fontFamily: "monospace" }}>Net profit</span>
-                <span style={{ color: "#00ff88", fontFamily: "monospace", fontSize: 11, fontWeight: 700 }}>${((+form.sold - +form.bought) * (1 - +form.fees / 100)).toFixed(2)}</span>
+                <span style={{ color: "#00ff88", fontSize: 11, }}>Net profit</span>
+                <span style={{ color: "#00ff88", fontSize: 11, fontWeight: 700 }}>${((+form.sold - +form.bought) * (1 - +form.fees / 100)).toFixed(2)}</span>
               </div>
             </div>
           )}
           <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
+            <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
             <select value={form.category || ""} onChange={e => setForm({ ...form, category: e.target.value })} style={selStyle}>
               <option value="">— Select Category —</option>
               {["Shoes", "Electronics", "Clothing", "Collectibles", "Tickets", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Status</label>
+            <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Status</label>
             <select value={form.status || "listed"} onChange={e => setForm({ ...form, status: e.target.value })} style={selStyle}>
               <option value="listed">Listed / Active</option>
               <option value="sold">Sold</option>
             </select>
           </div>
-          <Btn onClick={saveFlip} color="#ff8c00" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "SAVE CHANGES" : "ADD FLIP"}</Btn>
+          <Btn onClick={saveFlip} color="#ff8c00" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "Save Changes" : "Add Flip"}</Btn>
         </Modal>
       )}
 
       {modal === "stock" && (
-        <Modal title={form._editIdx !== undefined ? "EDIT POSITION" : "ADD POSITION"} onClose={() => setModal(null)}>
+        <Modal title={form._editIdx !== undefined ? "Edit Position" : "Add Position"} onClose={() => setModal(null)}>
           <Input label="Ticker" value={form.ticker || ""} onChange={v => setForm({ ...form, ticker: v })} placeholder="NVDA" />
           <Input label="Name / Description" value={form.name || ""} onChange={v => setForm({ ...form, name: v })} placeholder="Nvidia Corp" />
           <Input label="Shares" type="number" value={form.shares || ""} onChange={v => setForm({ ...form, shares: v })} placeholder="2" />
           <Input label="Avg Buy Price ($)" type="number" value={form.buyPrice || ""} onChange={v => setForm({ ...form, buyPrice: v })} placeholder="480" />
           <Input label="Current Price ($)" type="number" value={form.currentPrice || ""} onChange={v => setForm({ ...form, currentPrice: v })} placeholder="875" />
           <Input label="Alert Below Price ($) — optional" type="number" value={form.alertBelow || ""} onChange={v => setForm({ ...form, alertBelow: v })} placeholder="55.00" />
-          <Btn onClick={saveStock} color="#60a5fa" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "SAVE CHANGES" : "ADD POSITION"}</Btn>
+          <Btn onClick={saveStock} color="#60a5fa" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "Save Changes" : "Add Position"}</Btn>
         </Modal>
       )}
 
       {modal === "goal" && (
-        <Modal title={form._editIdx !== undefined ? "EDIT GOAL" : "ADD GOAL"} onClose={() => setModal(null)}>
+        <Modal title={form._editIdx !== undefined ? "Edit Goal" : "Add Goal"} onClose={() => setModal(null)}>
           <Input label="Goal Name" value={form.name || ""} onChange={v => setForm({ ...form, name: v })} placeholder="New Car Fund" />
           <Input label="Target Amount ($)" type="number" value={form.target || ""} onChange={v => setForm({ ...form, target: v })} placeholder="5000" />
           <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Auto-sync Progress From</label>
+            <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Auto-sync Progress From</label>
             <select value={form.autoKey || "none"} onChange={e => setForm({ ...form, autoKey: e.target.value })} style={selStyle}>
               <option value="none">Manual (enter below)</option>
               <option value="bank">Checking Balance</option>
@@ -1257,25 +1260,25 @@ export default function App() {
           {(!form.autoKey || form.autoKey === "none") && (
             <Input label="Current Amount ($)" type="number" value={form.current || ""} onChange={v => setForm({ ...form, current: v })} placeholder="0" />
           )}
-          <Btn onClick={saveGoal} color="#e879f9" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "SAVE CHANGES" : "ADD GOAL"}</Btn>
+          <Btn onClick={saveGoal} color="#e879f9" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "Save Changes" : "Add Goal"}</Btn>
         </Modal>
       )}
 
       {modal === "balance" && (
-        <Modal title="UPDATE BALANCES" onClose={() => setModal(null)}>
+        <Modal title="Update Balances" onClose={() => setModal(null)}>
           <Input label="Checking Balance ($)" type="number" value={form.bank || ""} onChange={v => setForm({ ...form, bank: v })} placeholder="3256.03" />
           <Input label="Savings Balance ($)" type="number" value={form.savings || ""} onChange={v => setForm({ ...form, savings: v })} placeholder="25.69" />
           <Input label="Liquid / Deploy Capital ($)" type="number" value={form.liquid || ""} onChange={v => setForm({ ...form, liquid: v })} placeholder="3256.03" />
-          <Btn onClick={updateBalance} style={{ width: "100%", marginTop: 8 }}>UPDATE</Btn>
+          <Btn onClick={updateBalance} style={{ width: "100%", marginTop: 8 }}>Update</Btn>
         </Modal>
       )}
 
       {modal === "expense" && (
-        <Modal title="ADD EXPENSE" onClose={() => setModal(null)}>
+        <Modal title="Add Expense" onClose={() => setModal(null)}>
           <Input label="Description" value={form.desc || ""} onChange={v => setForm({ ...form, desc: v })} placeholder="Groceries at Fry's" />
           <Input label="Amount ($)" type="number" value={form.amount || ""} onChange={v => setForm({ ...form, amount: v })} placeholder="47.50" />
           <div style={{ marginBottom: 14 }}>
-            <label style={{ color: "#666", fontSize: 10, fontFamily: "monospace", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
+            <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Category</label>
             <select value={form.category || "Food & Dining"} onChange={e => setForm({ ...form, category: e.target.value })} style={selStyle}>
               {["Food & Dining","Transportation","Entertainment","Shopping","Bills & Utilities","Other"].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -1288,7 +1291,7 @@ export default function App() {
             const exp = { id: Date.now(), desc, amount: +amount, category: category || "Other", date: n.toLocaleDateString("en-US",{month:"short",day:"numeric"}), month: mk };
             save({ ...data, expenses: [...(data.expenses||[]), exp] });
             setModal(null); setForm({});
-          }} color="#34d399" style={{ width: "100%", marginTop: 8 }}>ADD EXPENSE</Btn>
+          }} color="#34d399" style={{ width: "100%", marginTop: 8 }}>Add Expense</Btn>
         </Modal>
       )}
     </div>
