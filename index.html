@@ -43,22 +43,21 @@
         header h1 { font-size: 17px !important; }
       }
 
-      /* ── Tab slide animations ───────────────────────────────────── */
-      /* Slide in from right (navigating forward / swipe left) */
+      /* ── Tab slide animations (tab-bar clicks) ─────────────────── */
       @keyframes slideFromRight {
-        from { opacity: 0; transform: translateX(60px); }
-        to   { opacity: 1; transform: translateX(0); }
+        0%   { opacity: 0; transform: translateX(80px) scale(0.97); }
+        100% { opacity: 1; transform: translateX(0) scale(1); }
       }
-      /* Slide in from left (navigating back / swipe right) */
       @keyframes slideFromLeft {
-        from { opacity: 0; transform: translateX(-60px); }
-        to   { opacity: 1; transform: translateX(0); }
+        0%   { opacity: 0; transform: translateX(-80px) scale(0.97); }
+        100% { opacity: 1; transform: translateX(0) scale(1); }
       }
-      main.slide-in-left  { animation: slideFromRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
-      main.slide-in-right { animation: slideFromLeft  0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+      main.slide-in-left  { animation: slideFromRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) both; }
+      main.slide-in-right { animation: slideFromLeft  0.26s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-      /* Prevent horizontal overflow during animations */
-      main { overflow: hidden; will-change: transform, opacity; }
+      /* Prevent horizontal overflow during animations/swipes */
+      main { overflow: hidden; }
+      body { overflow-x: hidden; }
 
       /* Improve tap feedback */
       button:active { opacity: 0.7; transform: scale(0.97); }
