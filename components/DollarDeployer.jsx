@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { gemini } from "./gemini.js";
+import parseJSON from "./parseJSON.js";
+import useGeminiCooldown from "./useGeminiCooldown.js";
 
 export default function DollarDeployer({ data, netWorth, avgTips }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const liquid = data.liquidCash || data.bankBalance;
   const emergencyGap = Math.max(0, (data.goals?.[0]?.target || 5000) - (data.goals?.[0]?.current || data.bankBalance));
   const flipCapGap = Math.max(0, (data.goals?.[1]?.target || 2000) - (data.goals?.[1]?.current || 0));
@@ -22,10 +23,9 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
     setPlan({ total: a, buffer, emergency, flipFund, invest, spend, reasoning: "Aggressive 30/20/25/25 split: buffer, emergency, flip fuel, invest." });
   };
 
-  const fetchAIPlan = async () => {
+  const doFetchAIPlan = useCallback(async () => {
     const amt = +(amount || liquid);
     if (!amt) return;
-    setLoading(true);
     setError(null);
     try {
       const text = await gemini(
@@ -33,15 +33,15 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
         `Allocate $${amt}. Liquid: $${liquid}, net worth: $${Math.round(netWorth)}, emergency gap: $${emergencyGap}, flip capital gap: $${flipCapGap}, avg shift: $${Math.round(avgTips)}, active flips: ${(data.flips||[]).filter(f=>f.status==="listed").length}. Risk: AGGRESSIVE.`,
         600
       );
-      const match  = text.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("No JSON in response — try again.");
-      const parsed = JSON.parse(match[0]);
+      const parsed = parseJSON(text, "object");
+      if (!parsed) throw new Error("No JSON in response — try again.");
       setPlan({ total: amt, ...parsed });
     } catch (err) {
       setError(err.message || "AI unavailable");
     }
-    setLoading(false);
-  };
+  }, [amount, liquid, netWorth, emergencyGap, flipCapGap, avgTips, data.flips]);
+
+  const { execute: fetchAIPlan, loading, onCooldown, cooldownLeft } = useGeminiCooldown(doFetchAIPlan, 15000);
 
   const ALLOC = plan ? [
     { label: "LIQUID BUFFER",    value: plan.buffer,    color: "#00ff88", icon: "🏦" },
@@ -73,8 +73,8 @@ export default function DollarDeployer({ data, netWorth, avgTips }) {
           <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
             <input type="number" placeholder="Custom amount..." value={amount} onChange={e => setAmount(e.target.value)}
               style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "9px 12px", color: "#e8e8e8", fontSize: 13, outline: "none" }} />
-            <button onClick={fetchAIPlan} disabled={loading} style={{ background: "#ffd70012", border: "1px solid #ffd70044", color: "#ffd700", fontSize: 11, padding: "9px 16px", borderRadius: 12, cursor: "pointer" }}>
-              {loading ? "..." : "AI SPLIT"}
+            <button onClick={fetchAIPlan} disabled={loading || onCooldown} aria-label="AI split allocation" style={{ background: (loading || onCooldown) ? "rgba(255,255,255,0.04)" : "#ffd70012", border: "1px solid #ffd70044", color: (loading || onCooldown) ? "rgba(255,255,255,0.2)" : "#ffd700", fontSize: 11, padding: "9px 16px", borderRadius: 12, cursor: (loading || onCooldown) ? "not-allowed" : "pointer", opacity: (loading || onCooldown) ? 0.5 : 1 }}>
+              {loading ? "..." : onCooldown ? `${cooldownLeft}s` : "AI SPLIT"}
             </button>
           </div>
           {error && (

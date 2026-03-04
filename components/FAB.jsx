@@ -12,7 +12,7 @@ export default function FAB({ onAction }) {
   return (
     <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 12 }}>
       {open && ACTIONS.map((a) => (
-        <div key={a.key} style={{ display: "flex", alignItems: "center", gap: 10 }}
+        <button key={a.key} aria-label={a.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer" }}
           onClick={() => { onAction(a.key); setOpen(false); }}>
           <span style={{
             background: "rgba(20,20,30,0.85)",
@@ -38,10 +38,12 @@ export default function FAB({ onAction }) {
           }}>
             {a.icon}
           </div>
-        </div>
+        </button>
       ))}
-      <div
+      <button
         onClick={() => setOpen(!open)}
+        aria-label={open ? "Close quick actions" : "Open quick actions"}
+        aria-expanded={open}
         style={{
           width: 56, height: 56, borderRadius: 18,
           background: open ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00e676, #00b0ff)",
@@ -54,7 +56,7 @@ export default function FAB({ onAction }) {
           transform: open ? "rotate(45deg)" : "rotate(0deg)",
         }}>
         +
-      </div>
+      </button>
     </div>
   );
 }

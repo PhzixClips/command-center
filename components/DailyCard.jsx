@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { gemini } from "./gemini.js";
+import parseJSON from "./parseJSON.js";
+import useGeminiCooldown from "./useGeminiCooldown.js";
 
 export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
   const [card, setCard] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const fetchCard = async () => {
-    setLoading(true);
+  const doFetch = useCallback(async () => {
     setError(null);
     const liquid = data.liquidCash || data.bankBalance;
     const upcoming = (data.schedule || []).filter(s => !s.logged);
@@ -20,22 +20,17 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
         `Today: ${today}. Liquid: $${liquid}. Net worth: $${Math.round(netWorth)}. Portfolio: $${Math.round(stockValue)}. Next shift: ${nextShift ? nextShift.date + " " + nextShift.time : "none"}. Active flips: ${flipsPending}. Avg tips/shift: $${Math.round(avgTips)}. Shifts logged: ${data.shifts.length}. Emergency fund: $${data.goals?.[0]?.current || 0}/$${data.goals?.[0]?.target || 5000}. Risk: AGGRESSIVE.`,
         800, false, true
       );
-      let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        const m = text.match(/\{[\s\S]*\}/);
-        if (!m) throw new Error(`Model returned: ${text.slice(0, 80) || "(empty)"}`);
-        parsed = JSON.parse(m[0]);
-      }
+      const parsed = parseJSON(text, "object");
+      if (!parsed || !parsed.priority) throw new Error(`Model returned unusable data: ${(text || "").slice(0, 80) || "(empty)"}`);
       setCard(parsed);
     } catch (err) {
       setError(err.message || "AI unavailable");
     }
-    setLoading(false);
-  };
+  }, [data, netWorth, avgTips, stockValue]);
 
-  useEffect(() => { fetchCard(); }, []);
+  const { execute: fetchCard, loading, onCooldown, cooldownLeft } = useGeminiCooldown(doFetch, 15000);
+
+  useEffect(() => { fetchCard(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const CAT_COLOR = { HUSTLE: "#a78bfa", INVEST: "#60a5fa", FLIP: "#ff8c00", SAVE: "#34d399", REST: "#555" };
   const URG_COLOR = { NOW: "#ff3b3b", TODAY: "#ffd700", "THIS WEEK": "#00ff88" };
@@ -67,7 +62,7 @@ export default function DailyCard({ data, netWorth, avgTips, stockValue }) {
           </div>
         </>
       ) : null}
-      <button onClick={fetchCard} style={{ position: "absolute", bottom: 14, right: 18, background: "none", border: "none", color: "rgba(255,255,255,0.15)", fontSize: 10, cursor: "pointer", letterSpacing: 1, transition: "color 0.2s" }} onMouseEnter={e => e.target.style.color = "rgba(255,255,255,0.4)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.15)"}>REFRESH ↻</button>
+      <button onClick={fetchCard} disabled={loading || onCooldown} aria-label="Refresh daily card" style={{ position: "absolute", bottom: 14, right: 18, background: "none", border: "none", color: (loading || onCooldown) ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)", fontSize: 10, cursor: (loading || onCooldown) ? "not-allowed" : "pointer", letterSpacing: 1, transition: "color 0.2s" }} onMouseEnter={e => { if (!loading && !onCooldown) e.target.style.color = "rgba(255,255,255,0.4)"; }} onMouseLeave={e => e.target.style.color = (loading || onCooldown) ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)"}>{loading ? "..." : onCooldown ? `${cooldownLeft}s` : "REFRESH ↻"}</button>
     </div>
   );
 }
