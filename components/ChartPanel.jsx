@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { DEFAULT_AVG_PER_SHIFT } from "./constants.js";
 
 const CHART_VIEWS = [
   { key: "networth",  label: "NET WORTH",    color: "#00ff88" },
@@ -40,7 +41,7 @@ function buildChartData(data, stockValue, totalShiftEarnings, netWorth) {
   let lastNW  = null;
   let lastBal = null;
   let lastStk = null;
-  const avgShift = data.shifts.length ? totalShiftEarnings / data.shifts.length : 275;
+  const avgShift = data.shifts.length ? totalShiftEarnings / data.shifts.length : DEFAULT_AVG_PER_SHIFT;
   const rows = [];
 
   for (const [i, date] of base.entries()) {
@@ -62,7 +63,10 @@ function buildChartData(data, stockValue, totalShiftEarnings, netWorth) {
 
 export default function ChartPanel({ data, stockValue, totalShiftEarnings, netWorth }) {
   const [view, setView] = useState("networth");
-  const chartData = buildChartData(data, stockValue, totalShiftEarnings, netWorth);
+  const chartData = useMemo(
+    () => buildChartData(data, stockValue, totalShiftEarnings, netWorth),
+    [data, stockValue, totalShiftEarnings, netWorth]
+  );
   const current   = CHART_VIEWS.find(v => v.key === view);
   const first = chartData[0]?.[view] || 0;
   const last  = chartData[chartData.length - 1]?.[view] || 0;
