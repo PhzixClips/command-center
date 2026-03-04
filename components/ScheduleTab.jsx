@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 export default function ScheduleTab({ data, save, onLogShift }) {
+  const [openWeek, setOpenWeek] = useState(null); // index of expanded week, or null
   const year = new Date().getFullYear();
 
   // Build per-day-of-week avg from actual shift history
@@ -76,21 +79,67 @@ export default function ScheduleTab({ data, save, onLogShift }) {
           const weekShifts = upcoming.filter(s => wk.dates.includes(s.date));
           const proj = weekShifts.reduce((a, s) => a + estForShift(s), 0);
           const pct  = Math.min(100, (proj / (4 * globalAvg)) * 100);
+          const isOpen = openWeek === wi;
           return (
             <div key={wi} style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>{wk.label}</div>
-                <div style={{ color: "#a78bfa", fontSize: 10 }}>${Math.round(proj)} · {weekShifts.length} shifts</div>
+              <div
+                onClick={() => setOpenWeek(isOpen ? null : wi)}
+                style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", marginBottom: 5 }}
+              >
+                <div style={{ color: isOpen ? "#fff" : "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: isOpen ? 600 : 400, transition: "color 0.2s" }}>
+                  {isOpen ? "▼ " : "▶ "}{wk.label}
+                </div>
+                <div style={{ color: "#a78bfa", fontSize: 10 }}>${Math.round(proj)} · {weekShifts.length} shift{weekShifts.length !== 1 ? "s" : ""}</div>
               </div>
-              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: 6 }}>
-                <div style={{ background: "linear-gradient(90deg, #a78bfa, #7c3aed)", width: pct + "%", height: "100%", borderRadius: 6, transition: "width 0.4s" }} />
+              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: isOpen ? 8 : 6, transition: "height 0.2s" }}>
+                <div style={{ background: isOpen ? "linear-gradient(90deg, #fff, #a78bfa)" : "linear-gradient(90deg, #a78bfa, #7c3aed)", width: pct + "%", height: "100%", borderRadius: 6, transition: "width 0.4s" }} />
               </div>
+              {isOpen && (
+                <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                  {weekShifts.length === 0 && (
+                    <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 11, padding: "8px 0", textAlign: "center" }}>No shifts this week</div>
+                  )}
+                  {weekShifts.map((s, si) => {
+                    const est = estForShift(s);
+                    const isToday = s.date === todayLabel;
+                    return (
+                      <div key={si} style={{
+                        background: isToday ? "rgba(0,230,118,0.04)" : "rgba(255,255,255,0.03)",
+                        border: isToday ? "1px solid rgba(0,230,118,0.15)" : "1px solid rgba(255,255,255,0.06)",
+                        borderRadius: 12, padding: "10px 14px",
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}>
+                        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                          <div style={{ textAlign: "center", minWidth: 32 }}>
+                            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{s.day}</div>
+                            <div style={{ color: isToday ? "#00ff88" : "#e8e8e8", fontWeight: 700, fontSize: 15 }}>{s.date.split(" ")[1]}</div>
+                          </div>
+                          <div>
+                            <div style={{ color: isToday ? "#00ff88" : "#e8e8e8", fontWeight: 600, fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                              {s.date}
+                              {isToday && <span style={{ color: "#00ff88", fontSize: 8, background: "#00e67615", border: "1px solid #00e67633", padding: "1px 5px", borderRadius: 8 }}>Today</span>}
+                            </div>
+                            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginTop: 1 }}>{s.time} · {s.role}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>~${Math.round(est)}</div>
+                          <button onClick={() => handleLog(s)} style={{
+                            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 9,
+                            padding: "4px 10px", borderRadius: 10, cursor: "pointer", letterSpacing: 1,
+                          }}>Log ✓</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
       <div style={{ display: "grid", gap: 8 }}>
-        {upcoming.map((s, i) => {
+        {(openWeek !== null ? [] : upcoming).map((s, i) => {
           const isToday  = s.date === todayLabel;
           const est      = estForShift(s);
           const hasDayAvg = avgByDay[s.day] !== undefined;
