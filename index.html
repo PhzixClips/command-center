@@ -15,6 +15,41 @@
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
       ::selection { background: rgba(100,160,255,0.3); }
       input, select, button { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif !important; }
+
+      /* ── Mobile Responsiveness ──────────────────────────────────── */
+      @media (max-width: 480px) {
+        /* Larger touch targets */
+        button { min-height: 36px; }
+        nav[role="tablist"] { padding: 10px 12px !important; gap: 2px !important; }
+        nav[role="tablist"] button { padding: 8px 10px !important; font-size: 11px !important; }
+        main { padding: 16px !important; }
+        header { padding: 16px !important; }
+
+        /* Stack grid layouts vertically on very small screens */
+        .monthly-pl-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+        /* Forecast section stacks */
+        .forecast-panel { flex-direction: column !important; }
+        .forecast-panel > div:last-child {
+          border-left: none !important;
+          border-top: 1px solid rgba(255,255,255,0.06) !important;
+          padding-left: 0 !important;
+          padding-top: 16px !important;
+        }
+      }
+
+      @media (max-width: 360px) {
+        nav[role="tablist"] button { padding: 6px 8px !important; font-size: 10px !important; }
+        header h1 { font-size: 17px !important; }
+      }
+
+      /* Smooth tab transitions */
+      main > div { animation: fadeIn 0.15s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* Improve tap feedback */
+      button:active { opacity: 0.7; transform: scale(0.97); }
+      button { transition: opacity 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
     </style>
   </head>
   <body>
