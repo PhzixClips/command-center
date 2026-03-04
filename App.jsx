@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { gemini }              from "./components/gemini.js";
 import { S }                   from "./components/storage.js";
 import { defaultState, generateOpportunities } from "./components/defaults.js";
+import ErrorBoundary           from "./components/ErrorBoundary.jsx";
 
 import StatCard        from "./components/StatCard.jsx";
 import OpportunityCard from "./components/OpportunityCard.jsx";
@@ -18,6 +19,12 @@ import BudgetTab        from "./components/BudgetTab.jsx";
 import OpportunitiesTab from "./components/OpportunitiesTab.jsx";
 import FAB              from "./components/FAB.jsx";
 
+const DEFAULT_HOURLY_WAGE = 12.15;
+const getHourlyWage = () => {
+  const stored = localStorage.getItem("cc-hourly-wage");
+  return stored ? parseFloat(stored) : DEFAULT_HOURLY_WAGE;
+};
+
 const fetchYahooPrice = async (ticker) => {
   try {
     const proxy = `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
@@ -29,7 +36,6 @@ const fetchYahooPrice = async (ticker) => {
   return null;
 };
 
-const HOURLY_WAGE = 12.15;
 const TABS = ["overview", "schedule", "shifts", "flips", "stocks", "opportunities", "goals", "budget"];
 
 const resolveGoalCurrent = (g, bankBalance, stockValue, flipProfit) => {
@@ -62,15 +68,19 @@ export default function App() {
   const [openWeeks,        setOpenWeeks]        = useState(() => new Set(["__latest__"]));
   const [priceAlerts,      setPriceAlerts]      = useState([]);
   const [showBackupPrompt, setShowBackupPrompt] = useState(false);
+  const [hourlyWage,       setHourlyWage]       = useState(getHourlyWage);
+  const [wageDraft,        setWageDraft]        = useState("");
+  const [aiCooldown,       setAiCooldown]       = useState(0);
   const importRef       = useRef(null);
   const lastSyncedMsRef = useRef(null);
+  const aiCooldownRef   = useRef(null);
 
   useEffect(() => {
     (async () => {
       let d = await S.get("fcc-data") || defaultState;
 
       if (d.shifts.some(s => s.wage === 0)) {
-        d = { ...d, shifts: d.shifts.map(s => s.wage === 0 ? { ...s, wage: HOURLY_WAGE } : s) };
+        d = { ...d, shifts: d.shifts.map(s => s.wage === 0 ? { ...s, wage: getHourlyWage() } : s) };
       }
 
       d = {
@@ -157,6 +167,7 @@ export default function App() {
   }, []);
 
   const fetchAIInsight = useCallback(async (d) => {
+    if (aiCooldown > 0) return;
     setAiLoading(true);
     setAiInsight("");
     const sv = d.stocks.reduce((s, st) => s + st.shares * st.currentPrice, 0);
@@ -175,7 +186,16 @@ export default function App() {
       setAiInsight(text || "Unable to generate insight.");
     } catch (err) { setAiInsight(`Error: ${err.message || "check connection"}`); }
     setAiLoading(false);
-  }, []);
+    // Start cooldown
+    setAiCooldown(20);
+    if (aiCooldownRef.current) clearInterval(aiCooldownRef.current);
+    aiCooldownRef.current = setInterval(() => {
+      setAiCooldown(prev => {
+        if (prev <= 1) { clearInterval(aiCooldownRef.current); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [aiCooldown]);
 
   // ── Stock price sync + alert check ──────────────────────────────────────────
   const syncStockPrices = useCallback(async () => {
@@ -402,8 +422,8 @@ export default function App() {
   const addShift = () => {
     const { date, hours, total, _editIdx, _scheduleEntry } = form;
     if (!date || !hours || !total) { setForm({ ...form, _error: `Missing: ${!date ? "date" : !hours ? "hours worked" : "total made today"}` }); return; }
-    const tips     = Math.max(0, +total - +hours * HOURLY_WAGE);
-    const newShift = { date, hours: +hours, tips: +tips.toFixed(2), wage: HOURLY_WAGE };
+    const tips     = Math.max(0, +total - +hours * hourlyWage);
+    const newShift = { date, hours: +hours, tips: +tips.toFixed(2), wage: hourlyWage };
     const newShifts = _editIdx !== undefined
       ? data.shifts.map((s, i) => i === _editIdx ? newShift : s)
       : [...data.shifts, newShift];
@@ -530,12 +550,28 @@ export default function App() {
             placeholder="gemini-3-flash"
             style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
           />
+          <div style={{ marginBottom: 8, color: "rgba(255,255,255,0.35)", fontSize: 11, fontWeight: 500, letterSpacing: 0.8 }}>HOURLY WAGE ($)</div>
+          <input
+            type="number"
+            value={wageDraft}
+            onChange={e => setWageDraft(e.target.value)}
+            placeholder={String(hourlyWage)}
+            min="0" step="0.01"
+            aria-label="Hourly wage"
+            style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
+          />
           <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginBottom: 20 }}>
-            Stored in your browser only — never sent to any server.<br />
-            Get a key at <span style={{ color: "#60a5fa" }}>aistudio.google.com/apikey</span>
+            All settings stored in your browser only — never sent to any server.<br />
+            Get an API key at <span style={{ color: "#60a5fa" }}>aistudio.google.com/apikey</span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Btn onClick={() => { localStorage.setItem("cc-gemini-key", apiKeyDraft.trim()); localStorage.setItem("cc-gemini-model", modelDraft.trim()); setShowSettings(false); }}>Save</Btn>
+            <Btn onClick={() => {
+              localStorage.setItem("cc-gemini-key", apiKeyDraft.trim());
+              localStorage.setItem("cc-gemini-model", modelDraft.trim());
+              const newWage = parseFloat(wageDraft);
+              if (!isNaN(newWage) && newWage > 0) { localStorage.setItem("cc-hourly-wage", String(newWage)); setHourlyWage(newWage); }
+              setShowSettings(false);
+            }}>Save</Btn>
             {localStorage.getItem("cc-gemini-key") && (
               <Btn onClick={() => { localStorage.removeItem("cc-gemini-key"); setApiKeyDraft(""); setShowSettings(false); }} color="#ff3b3b">Remove Key</Btn>
             )}
@@ -544,9 +580,9 @@ export default function App() {
       )}
 
       {/* Header */}
-      <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)" }}>
+      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)" }}>
         <div>
-          <div style={{ color: "#e8e8e8", fontSize: 20, fontWeight: 700, letterSpacing: -0.3 }}>Capital Command</div>
+          <h1 style={{ color: "#e8e8e8", fontSize: 20, fontWeight: 700, letterSpacing: -0.3, margin: 0 }}>Capital Command</h1>
           <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 400, marginTop: 2 }}>Personal Finance Intelligence</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -555,17 +591,17 @@ export default function App() {
             <div style={{ color: "#00e676", fontSize: 24, fontWeight: 700, letterSpacing: -0.5 }}>${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
           </div>
           <button
-            onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-3-flash"); setShowSettings(true); }}
+            onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-3-flash"); setWageDraft(String(hourlyWage)); setShowSettings(true); }}
             title="Settings"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 16, padding: "8px 12px", lineHeight: 1 }}
           >⚙</button>
         </div>
-      </div>
+      </header>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+      <nav aria-label="Main navigation" style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", overflowX: "auto", WebkitOverflowScrolling: "touch" }} role="tablist">
         {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
+          <button key={t} onClick={() => setTab(t)} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} style={{
             background: tab === t ? "rgba(255,255,255,0.08)" : "transparent",
             border: "none",
             color: tab === t ? "#fff" : "rgba(255,255,255,0.3)",
@@ -574,13 +610,14 @@ export default function App() {
             transition: "all 0.2s ease",
           }}>{t}</button>
         ))}
-      </div>
+      </nav>
 
-      <div style={{ padding: "24px" }}>
+      <main style={{ padding: "24px" }} role="tabpanel" id={`panel-${tab}`}>
 
         {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
         {tab === "overview" && (
           <div>
+            <ErrorBoundary>
             <DailyCard data={data} netWorth={netWorth} avgTips={avgTips} stockValue={stockValue} />
 
             {/* Stat cards */}
@@ -657,15 +694,22 @@ export default function App() {
               </div>
             </div>
 
+            </ErrorBoundary>
+            <ErrorBoundary>
             <ChartPanel data={data} stockValue={stockValue} totalShiftEarnings={totalShiftEarnings} netWorth={netWorth} />
+            </ErrorBoundary>
+            <ErrorBoundary>
             <DollarDeployer data={data} netWorth={netWorth} avgTips={avgTips} />
+            </ErrorBoundary>
+            <ErrorBoundary>
             <AlertsFeed liquid={data.liquidCash || data.bankBalance} onStartFlip={startFlipFromOpp} />
+            </ErrorBoundary>
 
             {/* AI Brief */}
             <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: 22, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div style={{ color: "#ffd700", fontSize: 13, fontWeight: 600 }}>AI Money Brief</div>
-                <Btn onClick={() => fetchAIInsight(data)} color="#ffd700" style={{ fontSize: 11 }}>{aiLoading ? "Thinking..." : "Get Brief"}</Btn>
+                <Btn onClick={() => fetchAIInsight(data)} color="#ffd700" style={{ fontSize: 11 }} disabled={aiLoading || aiCooldown > 0} ariaLabel="Get AI money brief">{aiLoading ? "Thinking..." : aiCooldown > 0 ? `Wait ${aiCooldown}s` : "Get Brief"}</Btn>
               </div>
               {aiInsight
                 ? <p style={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.8, fontSize: 14, margin: 0 }}>{aiInsight}</p>
@@ -684,7 +728,7 @@ export default function App() {
         )}
 
         {/* ── SCHEDULE ──────────────────────────────────────────────────────── */}
-        {tab === "schedule" && <ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} />}
+        {tab === "schedule" && <ErrorBoundary><ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} /></ErrorBoundary>}
 
         {/* ── SHIFTS ────────────────────────────────────────────────────────── */}
         {tab === "shifts" && (
@@ -1096,7 +1140,7 @@ export default function App() {
 
         {/* ── OPPORTUNITIES ─────────────────────────────────────────────────── */}
         {tab === "opportunities" && (
-          <OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} />
+          <ErrorBoundary><OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} /></ErrorBoundary>
         )}
 
         {/* ── GOALS ─────────────────────────────────────────────────────────── */}
@@ -1147,9 +1191,9 @@ export default function App() {
         )}
 
         {/* ── BUDGET ────────────────────────────────────────────────────────── */}
-        {tab === "budget" && <BudgetTab data={data} save={save} />}
+        {tab === "budget" && <ErrorBoundary><BudgetTab data={data} save={save} /></ErrorBoundary>}
 
-      </div>
+      </main>
 
       {/* ── FAB ─────────────────────────────────────────────────────────────── */}
       <FAB onAction={handleFAB} />
@@ -1171,17 +1215,17 @@ export default function App() {
               style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, padding: "9px 12px", color: "#e8e8e8", fontSize: 13, outline: "none", boxSizing: "border-box", colorScheme: "dark" }} />
             {form.date && <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginTop: 4 }}>→ will save as "{form.date}"</div>}
           </div>
-          <Input label="Hours Worked" type="number" value={form.hours || ""} onChange={v => setForm({ ...form, hours: v })} placeholder="6" />
-          <Input label="Total Made Today ($)" type="number" value={form.total || ""} onChange={v => setForm({ ...form, total: v })} placeholder="396.00" />
+          <Input label="Hours Worked" type="number" value={form.hours || ""} onChange={v => setForm({ ...form, hours: v })} placeholder="6" min="0.5" max="24" step="0.5" error={form.hours && (+form.hours <= 0 || +form.hours > 24) ? "Must be between 0.5 and 24" : undefined} />
+          <Input label="Total Made Today ($)" type="number" value={form.total || ""} onChange={v => setForm({ ...form, total: v })} placeholder="396.00" min="0" step="0.01" error={form.total && +form.total < 0 ? "Cannot be negative" : undefined} />
           {form.hours && form.total && (
             <div style={{ marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "10px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, }}>Wage ({form.hours}hr × ${HOURLY_WAGE})</span>
-                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>${(+form.hours * HOURLY_WAGE).toFixed(2)}</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, }}>Wage ({form.hours}hr × ${hourlyWage})</span>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>${(+form.hours * hourlyWage).toFixed(2)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#a78bfa", fontSize: 11, }}>Tips (calculated)</span>
-                <span style={{ color: "#a78bfa", fontSize: 11, fontWeight: 700 }}>${Math.max(0, +form.total - +form.hours * HOURLY_WAGE).toFixed(2)}</span>
+                <span style={{ color: "#a78bfa", fontSize: 11, fontWeight: 700 }}>${Math.max(0, +form.total - +form.hours * hourlyWage).toFixed(2)}</span>
               </div>
             </div>
           )}
@@ -1195,9 +1239,9 @@ export default function App() {
       {modal === "flip" && (
         <Modal title={form._editIdx !== undefined ? "Edit Flip" : "Add Flip"} onClose={() => setModal(null)}>
           <Input label="Item Name" value={form.item || ""} onChange={v => setForm({ ...form, item: v })} placeholder="Jordan 1 Bred" />
-          <Input label="Buy Price ($)" type="number" value={form.bought || ""} onChange={v => setForm({ ...form, bought: v })} placeholder="215" />
-          <Input label="Sell Price ($) — leave blank if active" type="number" value={form.sold || ""} onChange={v => setForm({ ...form, sold: v })} placeholder="380" />
-          <Input label="Platform Fee % (e.g. 12.9 for eBay)" type="number" value={form.fees || ""} onChange={v => setForm({ ...form, fees: v })} placeholder="0" />
+          <Input label="Buy Price ($)" type="number" value={form.bought || ""} onChange={v => setForm({ ...form, bought: v })} placeholder="215" min="0" step="0.01" error={form.bought && +form.bought < 0 ? "Cannot be negative" : undefined} />
+          <Input label="Sell Price ($) — leave blank if active" type="number" value={form.sold || ""} onChange={v => setForm({ ...form, sold: v })} placeholder="380" min="0" step="0.01" error={form.sold && +form.sold < 0 ? "Cannot be negative" : undefined} />
+          <Input label="Platform Fee % (e.g. 12.9 for eBay)" type="number" value={form.fees || ""} onChange={v => setForm({ ...form, fees: v })} placeholder="0" min="0" max="100" step="0.1" error={form.fees && (+form.fees < 0 || +form.fees > 100) ? "Must be 0-100%" : undefined} />
           {form.bought && form.sold && form.fees && (
             <div style={{ marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "10px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
@@ -1236,10 +1280,10 @@ export default function App() {
         <Modal title={form._editIdx !== undefined ? "Edit Position" : "Add Position"} onClose={() => setModal(null)}>
           <Input label="Ticker" value={form.ticker || ""} onChange={v => setForm({ ...form, ticker: v })} placeholder="NVDA" />
           <Input label="Name / Description" value={form.name || ""} onChange={v => setForm({ ...form, name: v })} placeholder="Nvidia Corp" />
-          <Input label="Shares" type="number" value={form.shares || ""} onChange={v => setForm({ ...form, shares: v })} placeholder="2" />
-          <Input label="Avg Buy Price ($)" type="number" value={form.buyPrice || ""} onChange={v => setForm({ ...form, buyPrice: v })} placeholder="480" />
-          <Input label="Current Price ($)" type="number" value={form.currentPrice || ""} onChange={v => setForm({ ...form, currentPrice: v })} placeholder="875" />
-          <Input label="Alert Below Price ($) — optional" type="number" value={form.alertBelow || ""} onChange={v => setForm({ ...form, alertBelow: v })} placeholder="55.00" />
+          <Input label="Shares" type="number" value={form.shares || ""} onChange={v => setForm({ ...form, shares: v })} placeholder="2" min="0.001" step="0.001" error={form.shares && +form.shares <= 0 ? "Must be positive" : undefined} />
+          <Input label="Avg Buy Price ($)" type="number" value={form.buyPrice || ""} onChange={v => setForm({ ...form, buyPrice: v })} placeholder="480" min="0" step="0.01" error={form.buyPrice && +form.buyPrice < 0 ? "Cannot be negative" : undefined} />
+          <Input label="Current Price ($)" type="number" value={form.currentPrice || ""} onChange={v => setForm({ ...form, currentPrice: v })} placeholder="875" min="0" step="0.01" error={form.currentPrice && +form.currentPrice < 0 ? "Cannot be negative" : undefined} />
+          <Input label="Alert Below Price ($) — optional" type="number" value={form.alertBelow || ""} onChange={v => setForm({ ...form, alertBelow: v })} placeholder="55.00" min="0" step="0.01" />
           <Btn onClick={saveStock} color="#60a5fa" style={{ width: "100%", marginTop: 8 }}>{form._editIdx !== undefined ? "Save Changes" : "Add Position"}</Btn>
         </Modal>
       )}
@@ -1247,7 +1291,7 @@ export default function App() {
       {modal === "goal" && (
         <Modal title={form._editIdx !== undefined ? "Edit Goal" : "Add Goal"} onClose={() => setModal(null)}>
           <Input label="Goal Name" value={form.name || ""} onChange={v => setForm({ ...form, name: v })} placeholder="New Car Fund" />
-          <Input label="Target Amount ($)" type="number" value={form.target || ""} onChange={v => setForm({ ...form, target: v })} placeholder="5000" />
+          <Input label="Target Amount ($)" type="number" value={form.target || ""} onChange={v => setForm({ ...form, target: v })} placeholder="5000" min="1" step="1" error={form.target && +form.target <= 0 ? "Must be positive" : undefined} />
           <div style={{ marginBottom: 14 }}>
             <label style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 5 }}>Auto-sync Progress From</label>
             <select value={form.autoKey || "none"} onChange={e => setForm({ ...form, autoKey: e.target.value })} style={selStyle}>

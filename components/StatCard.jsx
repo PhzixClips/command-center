@@ -1,6 +1,6 @@
 export default function StatCard({ label, value, sub, accent = "#00ff88" }) {
   return (
-    <div style={{
+    <article aria-label={label} style={{
       background: "rgba(255,255,255,0.03)",
       backdropFilter: "blur(40px)",
       WebkitBackdropFilter: "blur(40px)",
@@ -17,6 +17,6 @@ export default function StatCard({ label, value, sub, accent = "#00ff88" }) {
       <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8, fontWeight: 500 }}>{label}</div>
       <div style={{ color: accent, fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>{value}</div>
       {sub && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 6, fontWeight: 400 }}>{sub}</div>}
-    </div>
+    </article>
   );
 }

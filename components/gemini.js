@@ -27,11 +27,23 @@ export const gemini = async (system, userContent, maxTokens = 400, useSearch = f
   const key = getKey();
   if (!key) throw new Error("No Gemini API key set. Tap ⚙ in the header to add your key.");
 
-  const res = await fetch(getUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
+  let res;
+  try {
+    res = await fetch(getUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === "AbortError") throw new Error("Request timed out after 30s — try again.");
+    throw err;
+  }
+  clearTimeout(timeout);
 
   const json = await res.json();
 
