@@ -1,8 +1,11 @@
 import { useCallback } from "react";
 
 /**
- * Opens a native mobile app. On Android uses intent URLs with package name,
- * on iOS attempts the app URL scheme then falls back to the App Store.
+ * Opens a native mobile app.
+ * - iOS: tries the app's custom URL scheme first; if the app doesn't open
+ *   within 1.5s, falls back to the App Store page.
+ * - Android: uses intent:// with the package name to launch directly.
+ * - Desktop: opens the fallback website URL.
  */
 function openNativeApp(appLink) {
   if (!appLink) return;
@@ -13,8 +16,25 @@ function openNativeApp(appLink) {
   if (isAndroid && appLink.androidPackage) {
     window.location.href =
       `intent://#Intent;package=${appLink.androidPackage};launchFlags=0x10000000;end`;
-  } else if (isIOS && appLink.iosAppId) {
-    window.location.href = `https://apps.apple.com/app/id${appLink.iosAppId}`;
+  } else if (isIOS && appLink.iosScheme) {
+    // Track whether the app opened (page will become hidden)
+    let didLeave = false;
+    const onBlur = () => { didLeave = true; };
+    window.addEventListener("pagehide", onBlur);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) didLeave = true;
+    });
+
+    // Attempt the custom URL scheme
+    window.location.href = appLink.iosScheme;
+
+    // If we're still here after 1.5s, the scheme didn't work → App Store
+    setTimeout(() => {
+      window.removeEventListener("pagehide", onBlur);
+      if (!didLeave && appLink.iosAppId) {
+        window.location.href = `https://apps.apple.com/app/id${appLink.iosAppId}`;
+      }
+    }, 1500);
   } else if (appLink.fallbackUrl) {
     window.open(appLink.fallbackUrl, "_blank", "noopener");
   }
