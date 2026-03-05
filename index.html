@@ -85,15 +85,15 @@
 
       /* ── Tab slide animations (tab-bar clicks) ─────────────────── */
       @keyframes slideFromRight {
-        0%   { opacity: 0; transform: translateX(80px) scale(0.97); }
-        100% { opacity: 1; transform: translateX(0) scale(1); }
+        0%   { opacity: 0; transform: translateX(40px); }
+        100% { opacity: 1; transform: translateX(0); }
       }
       @keyframes slideFromLeft {
-        0%   { opacity: 0; transform: translateX(-80px) scale(0.97); }
-        100% { opacity: 1; transform: translateX(0) scale(1); }
+        0%   { opacity: 0; transform: translateX(-40px); }
+        100% { opacity: 1; transform: translateX(0); }
       }
-      main.slide-in-left  { animation: slideFromRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) both; }
-      main.slide-in-right { animation: slideFromLeft  0.26s cubic-bezier(0.16, 1, 0.3, 1) both; }
+      main.slide-in-left  { animation: slideFromRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+      main.slide-in-right { animation: slideFromLeft  0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
       /* Prevent horizontal overflow during animations/swipes */
       body { overflow-x: hidden; }
