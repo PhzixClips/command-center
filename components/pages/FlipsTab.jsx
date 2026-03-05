@@ -13,7 +13,7 @@ export default function FlipsTab({
           <div style={{ color: "#ff8c00", fontSize: 14, fontWeight: 600 }}>Flip Tracker</div>
           <button onClick={() => setTab("opportunities")}
             style={{ background: "none", border: "none", cursor: "pointer", color: "#ffd700", fontSize: 12, fontWeight: 500, padding: 0, marginTop: 4 }}>
-            Find opportunities →
+            Browse marketplace →
           </button>
         </div>
         <Btn onClick={() => { setModal("flip"); setForm({ status: "listed" }); }} color="#ff8c00">+ Add Flip</Btn>

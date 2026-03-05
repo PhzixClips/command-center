@@ -32,7 +32,9 @@ const TAB_ICONS = {
   ),
   opportunities: (c) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+      <path d="M3 9l1-4h16l1 4" />
+      <path d="M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9" />
+      <path d="M9 21V13h6v8" />
     </svg>
   ),
   planning: (c) => (
