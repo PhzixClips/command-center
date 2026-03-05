@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import ErrorBoundary from "../ErrorBoundary.jsx";
+import HeroCard      from "../HeroCard.jsx";
+import MoneyVelocity from "../MoneyVelocity.jsx";
 import StatCard      from "../StatCard.jsx";
 import DailyCard     from "../DailyCard.jsx";
 import DollarDeployer from "../DollarDeployer.jsx";
@@ -20,6 +22,17 @@ export default function OverviewTab({
   return (
     <div>
       <ErrorBoundary>
+        <HeroCard netWorth={netWorth} netWorthHistory={data.netWorthHistory} dailyDelta={(() => {
+          const h = data.netWorthHistory || [];
+          if (h.length < 2) return 0;
+          return h[h.length - 1].value - h[h.length - 2].value;
+        })()} />
+
+        <MoneyVelocity
+          monthShiftIncome={monthShiftIncome} monthFlipIncome={monthFlipIncome}
+          monthExpensesTotal={monthExpensesTotal} savings={data.savings}
+        />
+
         <DailyCard data={data} netWorth={netWorth} avgTips={avgTips} stockValue={stockValue} />
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>

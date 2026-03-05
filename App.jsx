@@ -246,23 +246,22 @@ export default function App() {
 
       {/* Header */}
       <header style={{
-        padding: "20px 24px 16px",
+        padding: "14px 24px",
         background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)",
         position: "relative",
       }}>
-        {/* Top row: brand + settings */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 10,
+              width: 30, height: 30, borderRadius: 9,
               background: "linear-gradient(135deg, #00e676, #00b0ff)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, fontWeight: 800, color: "#0a0a10",
-              boxShadow: "0 4px 12px rgba(0,230,118,0.2)",
+              fontSize: 12, fontWeight: 800, color: "#0a0a10",
+              boxShadow: "0 4px 12px rgba(0,230,118,0.15)",
             }}>CC</div>
             <div>
-              <h1 style={{ color: "#fff", fontSize: 16, fontWeight: 700, letterSpacing: -0.3, margin: 0, lineHeight: 1.2 }}>Capital Command</h1>
-              <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 9, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase" }}>Personal Finance</div>
+              <h1 style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: -0.3, margin: 0, lineHeight: 1.2 }}>Capital Command</h1>
+              <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 9, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase" }}>Personal Finance</div>
             </div>
           </div>
           <button
@@ -275,14 +274,6 @@ export default function App() {
             }}
           >⚙</button>
         </div>
-        {/* Net worth hero */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <div style={{ color: "#00e676", fontSize: 32, fontWeight: 800, letterSpacing: -1, lineHeight: 1 }}>
-            ${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </div>
-          <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, fontWeight: 500 }}>net worth</div>
-        </div>
-        {/* Subtle divider */}
         <div style={{ position: "absolute", bottom: 0, left: 24, right: 24, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
       </header>
 
