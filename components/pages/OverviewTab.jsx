@@ -11,19 +11,16 @@ import Btn           from "../Btn.jsx";
 
 /* ── App deep-link configs ──────────────────────────────────────────── */
 const DESERT_FINANCIAL = {
-  iosScheme: "desertfinancial://",
   androidPackage: "com.desertschools.mobilebanking",
   iosAppId: "530666695",
   fallbackUrl: "https://www.desertfinancial.com/access-my-account",
 };
 const DAILYPAY = {
-  iosScheme: "dailypay://",
   androidPackage: "com.DailyPay.DailyPay",
   iosAppId: "1399085077",
   fallbackUrl: "https://www.dailypay.com",
 };
 const FIDELITY = {
-  iosScheme: "fidelity://",
   androidPackage: "com.fidelity.android",
   iosAppId: "348177453",
   fallbackUrl: "https://digital.fidelity.com/prgw/digital/login/full-page",
