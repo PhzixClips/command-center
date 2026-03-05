@@ -425,7 +425,7 @@ function scoreOpp(opp, liquid, bankBalance, flips, hasTruck) {
   if (opp.id === "gpu-flip" && usedCats.has("electronics")) score += 12;
   if (opp.truckRequired && hasTruck) score += 15;
   if (!opp.isService) {
-    const roi = opp.roiRange[0];
+    const roi = (opp.roiRange || [0, 0])[0];
     if (roi >= 100) score += 15;
     else if (roi >= 50) score += 10;
     else if (roi >= 20) score += 5;
@@ -471,15 +471,16 @@ function OppCard({ opp, liquid, onExecute, onDismiss, rank }) {
   const [open, setOpen] = useState(false);
   const isFB = opp.lane === "FBMKT";
   const gap = isFB
-    ? (opp.buyRange[0] > 0 ? Math.max(0, opp.buyRange[0] - liquid) : 0)
+    ? ((opp.buyRange || [0, 0])[0] > 0 ? Math.max(0, (opp.buyRange || [0, 0])[0] - liquid) : 0)
     : (!opp.isService && opp.minCapital > 0 ? Math.max(0, opp.minCapital - liquid) : 0);
   const locked = gap > 0;
 
-  const buyUnder = isFB ? opp.buyRange[1] : (opp.maxCapital || opp.minCapital);
-  const profitLow = isFB ? (opp.sellRange[0] - opp.buyRange[1]) : Math.round(opp.minCapital * (opp.roiRange[0] / 100));
-  const profitHigh = isFB ? (opp.sellRange[1] - opp.buyRange[0]) : Math.round(opp.maxCapital * (opp.roiRange[1] / 100));
-  const sellLow = isFB ? opp.sellRange[0] : Math.round(opp.minCapital * (1 + opp.roiRange[0] / 100));
-  const sellHigh = isFB ? opp.sellRange[1] : Math.round(opp.maxCapital * (1 + opp.roiRange[1] / 100));
+  const roi = opp.roiRange || [0, 0];
+  const buyUnder = isFB ? (opp.buyRange || [0, 0])[1] : (opp.maxCapital || opp.minCapital || 0);
+  const profitLow = isFB ? ((opp.sellRange || [0, 0])[0] - (opp.buyRange || [0, 0])[1]) : Math.round((opp.minCapital || 0) * (roi[0] / 100));
+  const profitHigh = isFB ? ((opp.sellRange || [0, 0])[1] - (opp.buyRange || [0, 0])[0]) : Math.round((opp.maxCapital || 0) * (roi[1] / 100));
+  const sellLow = isFB ? (opp.sellRange || [0, 0])[0] : Math.round((opp.minCapital || 0) * (1 + roi[0] / 100));
+  const sellHigh = isFB ? (opp.sellRange || [0, 0])[1] : Math.round((opp.maxCapital || 0) * (1 + roi[1] / 100));
 
   const scout = (term) =>
     window.open(`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(term)}`, "_blank");
