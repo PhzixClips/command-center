@@ -20,7 +20,7 @@ export default function FlipsTab({
       </div>
 
       {soldFlips.length > 0 && (
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid #ff8c0022", borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid #ff8c0022", borderRadius: 20, padding: "16px 20px", marginBottom: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
           <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, fontWeight: 500, marginBottom: 14 }}>Flip Analytics · Net of Fees</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
             {[
@@ -71,7 +71,7 @@ export default function FlipsTab({
           })() : null;
           const isStale = daysListed !== null && daysListed > STALE_FLIP_DAYS;
           return (
-            <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${isStale ? "#ff3b3b44" : f.status==="sold" ? "#00ff8822" : "#1a1a1a"}`, borderRadius: 14, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div key={i} style={{ background: isStale ? "rgba(255,59,59,0.04)" : f.status==="sold" ? "rgba(0,255,136,0.02)" : "rgba(255,255,255,0.03)", border: `1px solid ${isStale ? "#ff3b3b44" : f.status==="sold" ? "#00ff8822" : "rgba(255,255,255,0.06)"}`, borderRadius: 16, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <div style={{ color: "#e8e8e8", fontWeight: 600 }}>{f.item}</div>

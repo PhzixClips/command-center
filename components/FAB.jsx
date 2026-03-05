@@ -12,7 +12,7 @@ export default function FAB({ onAction }) {
   return (
     <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 12 }}>
       {open && ACTIONS.map((a) => (
-        <button key={a.key} aria-label={a.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        <button key={a.key} className="fab-item" aria-label={a.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer" }}
           onClick={() => { onAction(a.key); setOpen(false); }}>
           <span style={{
             background: "rgba(20,20,30,0.85)",
