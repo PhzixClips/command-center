@@ -14,12 +14,12 @@ export default function Modal({ title, children, onClose }) {
   };
 
   return (
-    <div ref={backdropRef} onClick={handleBackdropClick} role="dialog" aria-modal="true" aria-label={title} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999 }}>
+    <div ref={backdropRef} onClick={handleBackdropClick} role="dialog" aria-modal="true" aria-label={title} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(30px)", WebkitBackdropFilter: "blur(30px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999 }}>
       <div style={{
-        background: "rgba(20,20,30,0.9)",
+        background: "rgba(18,18,28,0.95)",
         backdropFilter: "blur(40px)",
         WebkitBackdropFilter: "blur(40px)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.1)",
         borderRadius: 24,
         padding: 28,
         minWidth: 340,
@@ -27,7 +27,7 @@ export default function Modal({ title, children, onClose }) {
         width: "90%",
         maxHeight: "90vh",
         overflowY: "auto",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+        boxShadow: "0 32px 96px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h2 style={{ color: "#e8e8e8", fontWeight: 600, fontSize: 16, margin: 0 }}>{title}</h2>

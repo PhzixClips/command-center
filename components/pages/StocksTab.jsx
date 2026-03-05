@@ -39,7 +39,7 @@ export default function StocksTab({
           const plPct     = ((pl / cost) * 100).toFixed(1);
           const isAlerted = s.alertBelow && s.currentPrice < s.alertBelow;
           return (
-            <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${isAlerted ? "#ff3b3b55" : pl>=0?"#00ff8822":"#ff3b3b22"}`, borderRadius: 14, padding: "14px 18px" }}>
+            <div key={i} style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: `1px solid ${isAlerted ? "#ff3b3b55" : pl>=0?"#00ff8822":"#ff3b3b22"}`, borderRadius: 16, padding: "14px 18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -63,7 +63,7 @@ export default function StocksTab({
         })}
       </div>
 
-      <div style={{ marginTop: 20, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "14px 18px", display: "flex", gap: 32 }}>
+      <div style={{ marginTop: 20, background: "rgba(255,255,255,0.03)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, padding: "14px 18px", display: "flex", gap: 32, boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>PORTFOLIO VALUE</div><div style={{ color: "#60a5fa", fontSize: 18, fontWeight: 700 }}>${Math.round(stockValue).toLocaleString()}</div></div>
         <div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>TOTAL P&L</div><div style={{ color: stockValue>=stockCost?"#00ff88":"#ff3b3b", fontSize: 18, fontWeight: 700 }}>{stockValue>=stockCost?"+":""}${Math.round(stockValue-stockCost).toLocaleString()}</div></div>
       </div>
