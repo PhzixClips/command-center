@@ -29,7 +29,7 @@ export const TAB_LABELS = {
   overview: "Overview",
   income: "Income",
   investments: "Investments",
-  opportunities: "Marketplace",
+  opportunities: "Deals",
   planning: "Planning",
   budget: "Budget",
 };
