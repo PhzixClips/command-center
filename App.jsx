@@ -8,7 +8,7 @@ import Modal             from "./components/Modal.jsx";
 import Btn               from "./components/Btn.jsx";
 import FAB               from "./components/FAB.jsx";
 import AppModals         from "./components/pages/AppModals.jsx";
-import { TABS }          from "./components/constants.js";
+import { TABS, TAB_LABELS } from "./components/constants.js";
 
 // ── Lazy-loaded tab pages (code-split) ──────────────────────────────────────
 const OverviewTab      = lazy(() => import("./components/pages/OverviewTab.jsx"));
@@ -26,6 +26,40 @@ const TabFallback = () => (
   </div>
 );
 
+// Income tab: combines Schedule, Shifts, and Flips into one view
+function IncomeTab(props) {
+  const [sub, setSub] = useState("shifts");
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+        {[{ key: "shifts", label: "Shifts" }, { key: "schedule", label: "Schedule" }, { key: "flips", label: "Flips" }].map(s => (
+          <button key={s.key} onClick={() => setSub(s.key)} style={{
+            background: sub === s.key ? "rgba(0,230,118,0.08)" : "rgba(255,255,255,0.03)",
+            border: sub === s.key ? "1px solid rgba(0,230,118,0.2)" : "1px solid rgba(255,255,255,0.06)",
+            color: sub === s.key ? "#00e676" : "rgba(255,255,255,0.3)",
+            padding: "8px 18px", borderRadius: 14, cursor: "pointer",
+            fontSize: 12, fontWeight: sub === s.key ? 600 : 400, transition: "all 0.15s",
+          }}>{s.label}</button>
+        ))}
+      </div>
+      <Suspense fallback={<TabFallback />}>
+        {sub === "shifts" && <ShiftsTab {...props.shiftsProps} />}
+        {sub === "schedule" && <ErrorBoundary><ScheduleTab data={props.data} save={props.save} onLogShift={props.logShiftFromSchedule} /></ErrorBoundary>}
+        {sub === "flips" && <FlipsTab {...props.flipsProps} />}
+      </Suspense>
+    </div>
+  );
+}
+
+// Planning tab: Goals
+function PlanningTab(props) {
+  return (
+    <Suspense fallback={<TabFallback />}>
+      <GoalsTab {...props} />
+    </Suspense>
+  );
+}
+
 export default function App() {
   const state = useAppState();
   const { requestPermission, notifyPriceAlert } = useNotifications();
@@ -37,7 +71,6 @@ export default function App() {
     handlers: { onTouchStart, onTouchMove, onTouchEnd },
   } = useSwipe(tabIdx, TABS.length);
 
-  // When swipe commits and settle animation finishes, switch the actual tab
   useEffect(() => {
     if (phase === "settling" && committed) {
       const timer = setTimeout(() => {
@@ -51,7 +84,6 @@ export default function App() {
     }
   }, [phase, committed, tabIdx, state.setTab, settle, transitionMs]);
 
-  // Tab-bar click: CSS animation (no swipe involved)
   const [clickAnim, setClickAnim] = useState(null);
   const handleTabClick = useCallback((t) => {
     const fromIdx = TABS.indexOf(state.tab);
@@ -62,7 +94,6 @@ export default function App() {
     setTimeout(() => setClickAnim(null), 280);
   }, [state.tab, state.setTab]);
 
-  // Determine which adjacent tab to show during swipe
   const adjacentTab = (swipeDirection === "right" && tabIdx > 0)
     ? TABS[tabIdx - 1]
     : (swipeDirection === "left" && tabIdx < TABS.length - 1)
@@ -70,7 +101,6 @@ export default function App() {
       : null;
   const showDual = (phase === "dragging" || phase === "settling") && adjacentTab;
 
-  // Swipe styles for current and adjacent panels
   const isAnimating  = phase === "settling";
   const transition   = isAnimating ? `transform ${transitionMs}ms cubic-bezier(0.2, 0.9, 0.3, 1)` : "none";
   const currentStyle = {
@@ -128,38 +158,40 @@ export default function App() {
           setModal={setModal} setForm={setForm} startFlipFromOpp={startFlipFromOpp}
         />
       );
-      case "schedule": return <ErrorBoundary><ScheduleTab data={data} save={save} onLogShift={logShiftFromSchedule} /></ErrorBoundary>;
-      case "shifts": return (
-        <ShiftsTab
-          data={data} thisYear={thisYear} now={now}
-          totalShiftEarnings={totalShiftEarnings} avgPerShift={avgPerShift} avgTips={avgTips}
-          dayEntries={dayEntries} maxDayAvg={maxDayAvg}
-          filterDay={filterDay} setFilterDay={setFilterDay}
-          openWeeks={openWeeks} setOpenWeeks={setOpenWeeks}
-          openEditShift={openEditShift} deleteShift={deleteShift}
-          setModal={setModal} setForm={setForm}
+      case "income": return (
+        <IncomeTab
+          data={data} save={save} logShiftFromSchedule={logShiftFromSchedule}
+          shiftsProps={{
+            data, thisYear, now,
+            totalShiftEarnings, avgPerShift, avgTips,
+            dayEntries, maxDayAvg,
+            filterDay, setFilterDay,
+            openWeeks, setOpenWeeks,
+            openEditShift, deleteShift,
+            setModal, setForm,
+          }}
+          flipsProps={{
+            data, thisYear, setTab,
+            flipProfit, soldFlips, avgFlipROI,
+            bestFlip, avgDaysToSell, flipsByCategory,
+            openEditFlip, deleteFlip,
+            setModal, setForm,
+          }}
         />
       );
-      case "flips": return (
-        <FlipsTab
-          data={data} thisYear={thisYear} setTab={setTab}
-          flipProfit={flipProfit} soldFlips={soldFlips} avgFlipROI={avgFlipROI}
-          bestFlip={bestFlip} avgDaysToSell={avgDaysToSell} flipsByCategory={flipsByCategory}
-          openEditFlip={openEditFlip} deleteFlip={deleteFlip}
-          setModal={setModal} setForm={setForm}
-        />
-      );
-      case "stocks": return (
-        <StocksTab
-          data={data} stockValue={stockValue} stockCost={stockCost}
-          priceAlerts={priceAlerts} syncLoading={syncLoading} lastSynced={lastSynced}
-          syncStockPrices={syncStockPrices} openEditStock={openEditStock}
-          deleteStock={deleteStock} setModal={setModal} setForm={setForm}
-        />
+      case "investments": return (
+        <ErrorBoundary>
+          <StocksTab
+            data={data} stockValue={stockValue} stockCost={stockCost}
+            priceAlerts={priceAlerts} syncLoading={syncLoading} lastSynced={lastSynced}
+            syncStockPrices={syncStockPrices} openEditStock={openEditStock}
+            deleteStock={deleteStock} setModal={setModal} setForm={setForm}
+          />
+        </ErrorBoundary>
       );
       case "opportunities": return <ErrorBoundary><OpportunitiesTab data={data} save={save} onStartFlip={startFlipFromOpp} /></ErrorBoundary>;
-      case "goals": return (
-        <GoalsTab
+      case "planning": return (
+        <PlanningTab
           data={data} stockValue={stockValue} flipProfit={flipProfit}
           nwDailyGain={nwDailyGain} openEditGoal={openEditGoal}
           deleteGoal={deleteGoal} setModal={setModal} setForm={setForm}
@@ -218,11 +250,19 @@ export default function App() {
             style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", color: "#e8e8e8", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
           />
           <div style={{ marginBottom: 12 }}>
-            <Btn onClick={requestPermission} color="#38bdf8" style={{ fontSize: 11, width: "100%" }}>
+            <Btn onClick={requestPermission} color="#60a5fa" style={{ fontSize: 11, width: "100%" }}>
               Enable Notifications
             </Btn>
             <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 10, marginTop: 4, textAlign: "center" }}>
               Get alerts for price drops and shift reminders
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <Btn onClick={() => { exportJSON(); }} color="#60a5fa" style={{ fontSize: 11, width: "100%" }}>
+              Export Backup
+            </Btn>
+            <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 10, marginTop: 4, textAlign: "center" }}>
+              Download a JSON backup of all your data
             </div>
           </div>
           <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginBottom: 20 }}>
@@ -246,48 +286,48 @@ export default function App() {
 
       {/* Header */}
       <header style={{
-        padding: "14px 24px",
+        padding: "16px 24px",
         background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)",
         position: "relative",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 30, height: 30, borderRadius: 9,
+              width: 32, height: 32, borderRadius: 10,
               background: "linear-gradient(135deg, #00e676, #00b0ff)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 12, fontWeight: 800, color: "#0a0a10",
-              boxShadow: "0 4px 12px rgba(0,230,118,0.15)",
+              boxShadow: "0 4px 16px rgba(0,230,118,0.2)",
             }}>CC</div>
             <div>
-              <h1 style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: -0.3, margin: 0, lineHeight: 1.2 }}>Capital Command</h1>
-              <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 9, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase" }}>Personal Finance</div>
+              <h1 style={{ color: "#fff", fontSize: 16, fontWeight: 700, letterSpacing: -0.3, margin: 0, lineHeight: 1.2 }}>Capital Command</h1>
+              <div style={{ color: "rgba(255,255,255,0.15)", fontSize: 9, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase" }}>Personal Finance</div>
             </div>
           </div>
           <button
             onClick={() => { setApiKeyDraft(localStorage.getItem("cc-gemini-key") || ""); setModelDraft(localStorage.getItem("cc-gemini-model") || "gemini-3-flash"); setWageDraft(String(hourlyWage)); setShowSettings(true); }}
             title="Settings"
             style={{
-              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 12, color: "rgba(255,255,255,0.4)", cursor: "pointer",
-              fontSize: 15, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 12, color: "rgba(255,255,255,0.3)", cursor: "pointer",
+              fontSize: 15, width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >⚙</button>
         </div>
-        <div style={{ position: "absolute", bottom: 0, left: 24, right: 24, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 24, right: 24, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)" }} />
       </header>
 
-      {/* Tabs */}
-      <nav aria-label="Main navigation" style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.04)", overflowX: "auto", WebkitOverflowScrolling: "touch" }} role="tablist">
+      {/* Tabs — consolidated */}
+      <nav aria-label="Main navigation" style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.03)", overflowX: "auto", WebkitOverflowScrolling: "touch" }} role="tablist">
         {TABS.map(t => (
           <button key={t} onClick={() => handleTabClick(t)} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} style={{
-            background: tab === t ? "rgba(255,255,255,0.08)" : "transparent",
+            background: tab === t ? "rgba(255,255,255,0.07)" : "transparent",
             border: "none",
-            color: tab === t ? "#fff" : "rgba(255,255,255,0.3)",
-            padding: "8px 16px", borderRadius: 16, cursor: "pointer",
-            fontSize: 12, fontWeight: tab === t ? 600 : 400, letterSpacing: 0.3, textTransform: "capitalize", whiteSpace: "nowrap",
+            color: tab === t ? "#fff" : "rgba(255,255,255,0.25)",
+            padding: "8px 18px", borderRadius: 16, cursor: "pointer",
+            fontSize: 12, fontWeight: tab === t ? 600 : 400, letterSpacing: 0.3, whiteSpace: "nowrap",
             transition: "all 0.2s ease",
-          }}>{t}</button>
+          }}>{TAB_LABELS[t] || t}</button>
         ))}
       </nav>
 
@@ -301,7 +341,7 @@ export default function App() {
         {/* Current tab */}
         <main
           className={!showDual && clickAnim === "left" ? "slide-in-left" : !showDual && clickAnim === "right" ? "slide-in-right" : ""}
-          style={{ padding: "24px", minHeight: "calc(100vh - 140px)", willChange: showDual ? "transform" : "auto", ...(showDual ? currentStyle : {}) }}
+          style={{ padding: "28px 24px", minHeight: "calc(100vh - 140px)", willChange: showDual ? "transform" : "auto", ...(showDual ? currentStyle : {}) }}
           role="tabpanel"
           id={`panel-${tab}`}
         >
@@ -313,7 +353,7 @@ export default function App() {
         {/* Adjacent tab (only rendered during swipe) */}
         {showDual && (
           <div
-            style={{ ...adjacentStyle, padding: "24px", minHeight: "calc(100vh - 140px)", willChange: "transform" }}
+            style={{ ...adjacentStyle, padding: "28px 24px", minHeight: "calc(100vh - 140px)", willChange: "transform" }}
             aria-hidden
           >
             <Suspense fallback={<TabFallback />}>

@@ -22,7 +22,17 @@ export const BUDGET_WARN_THRESHOLD  = 0.8;  // 80% of budget triggers warning
 export const STALE_FLIP_DAYS        = 30;   // days before a listed flip is "stale"
 
 // ── Tab Keys ─────────────────────────────────────────────────────────────────
-export const TABS = ["overview", "schedule", "shifts", "flips", "stocks", "opportunities", "goals", "budget"];
+export const TABS = ["overview", "income", "investments", "opportunities", "planning", "budget"];
+
+// Map display names for the consolidated tabs
+export const TAB_LABELS = {
+  overview: "Overview",
+  income: "Income",
+  investments: "Investments",
+  opportunities: "Opportunities",
+  planning: "Planning",
+  budget: "Budget",
+};
 
 // ── Day-of-Week Maps ─────────────────────────────────────────────────────────
 export const SHORT_TO_FULL_DAY = {
