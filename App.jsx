@@ -10,6 +10,47 @@ import FAB               from "./components/FAB.jsx";
 import AppModals         from "./components/pages/AppModals.jsx";
 import { TABS, TAB_LABELS } from "./components/constants.js";
 
+// ── SVG icons for bottom tab bar ────────────────────────────────────────────
+const TAB_ICONS = {
+  overview: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  ),
+  income: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+    </svg>
+  ),
+  investments: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  ),
+  opportunities: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  ),
+  planning: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  ),
+  budget: (c) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M6 16h4" />
+    </svg>
+  ),
+};
+
 // ── Lazy-loaded tab pages (code-split) ──────────────────────────────────────
 const OverviewTab      = lazy(() => import("./components/pages/OverviewTab.jsx"));
 const ShiftsTab        = lazy(() => import("./components/pages/ShiftsTab.jsx"));
@@ -218,7 +259,7 @@ export default function App() {
   );
 
   return (
-    <div style={{ background: "#0a0a10", minHeight: "100vh", color: "#e8e8e8", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif", padding: "0 0 80px" }}>
+    <div style={{ background: "#0a0a10", minHeight: "100vh", color: "#e8e8e8", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif", padding: "0 0 100px" }}>
 
       {/* Settings modal */}
       {showSettings && (
@@ -317,20 +358,6 @@ export default function App() {
         <div style={{ position: "absolute", bottom: 0, left: 24, right: 24, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)" }} />
       </header>
 
-      {/* Tabs — consolidated */}
-      <nav aria-label="Main navigation" style={{ display: "flex", gap: 4, padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.03)", overflowX: "auto", WebkitOverflowScrolling: "touch" }} role="tablist">
-        {TABS.map(t => (
-          <button key={t} onClick={() => handleTabClick(t)} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} style={{
-            background: tab === t ? "rgba(255,255,255,0.07)" : "transparent",
-            border: "none",
-            color: tab === t ? "#fff" : "rgba(255,255,255,0.25)",
-            padding: "8px 18px", borderRadius: 16, cursor: "pointer",
-            fontSize: 12, fontWeight: tab === t ? 600 : 400, letterSpacing: 0.3, whiteSpace: "nowrap",
-            transition: "all 0.2s ease",
-          }}>{TAB_LABELS[t] || t}</button>
-        ))}
-      </nav>
-
       {/* ── Swipe viewport ──────────────────────────────────────────────── */}
       <div
         style={{ position: "relative", overflow: "hidden", minHeight: "calc(100vh - 140px)" }}
@@ -363,7 +390,72 @@ export default function App() {
         )}
       </div>
 
-      <FAB onAction={handleFAB} />
+      <FAB onAction={handleFAB} bottomOffset={88} />
+
+      {/* ── Floating bottom tab bar (iOS-style) ────────────────────── */}
+      <nav
+        aria-label="Main navigation"
+        role="tablist"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 400,
+          padding: "0 0 env(safe-area-inset-bottom, 0px)",
+          background: "rgba(10,10,16,0.82)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div style={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          padding: "8px 8px 10px",
+          maxWidth: 480,
+          margin: "0 auto",
+        }}>
+          {TABS.map(t => {
+            const active = tab === t;
+            const color = active ? "#00e676" : "rgba(255,255,255,0.25)";
+            const renderIcon = TAB_ICONS[t];
+            return (
+              <button
+                key={t}
+                onClick={() => handleTabClick(t)}
+                role="tab"
+                aria-selected={active}
+                aria-controls={`panel-${t}`}
+                style={{
+                  background: "none",
+                  border: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 3,
+                  cursor: "pointer",
+                  padding: "4px 10px",
+                  minWidth: 0,
+                  transition: "all 0.2s",
+                }}
+              >
+                <div style={{ opacity: active ? 1 : 0.7, transition: "opacity 0.2s" }}>
+                  {renderIcon ? renderIcon(color) : null}
+                </div>
+                <span style={{
+                  color,
+                  fontSize: 9,
+                  fontWeight: active ? 600 : 400,
+                  letterSpacing: 0.3,
+                  transition: "color 0.2s",
+                }}>{TAB_LABELS[t]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       <AppModals
         modal={modal} setModal={setModal} form={form} setForm={setForm}
