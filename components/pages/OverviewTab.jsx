@@ -46,21 +46,21 @@ export default function OverviewTab({
         {/* ── Liquid Assets ───────────────────────────────────────── */}
         <SectionLabel>Liquid Assets</SectionLabel>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
-          <StatCard label="Checking"  value={`$${data.bankBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`} sub="Desert Financial CU" accent="#00e676" />
-          <StatCard label="Savings"   value={`$${(data.savings||0).toFixed(2)}`} sub="Membership Savings" accent="#00e676" />
+          <StatCard label="Checking"  value={`$${data.bankBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`} sub="Desert Financial CU" accent="#00e676" href="https://www.desertfinancial.com/access-my-account" />
+          <StatCard label="Savings"   value={`$${(data.savings||0).toFixed(2)}`} sub="Membership Savings" accent="#00e676" href="https://www.desertfinancial.com/access-my-account" />
         </div>
 
         {/* ── Income Streams ──────────────────────────────────────── */}
         <SectionLabel>Income Streams</SectionLabel>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
-          <StatCard label="Shift Income" value={`$${Math.round(totalShiftEarnings).toLocaleString()}`} sub={`$${Math.round(avgPerShift)}/shift avg`} accent="#00e676" />
+          <StatCard label="Shift Income" value={`$${Math.round(totalShiftEarnings).toLocaleString()}`} sub={`$${Math.round(avgPerShift)}/shift avg`} accent="#00e676" href="https://www.dailypay.com/app" />
           <StatCard label="Flip Income"  value={`$${Math.round(flipProfit)}`} sub="Net of fees" accent="#00e676" />
         </div>
 
         {/* ── Investments ─────────────────────────────────────────── */}
         <SectionLabel>Investments</SectionLabel>
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14, marginBottom: 32 }}>
-          <StatCard label="Portfolio" value={`$${stockValue.toLocaleString(undefined,{maximumFractionDigits:0})}`} sub="CHPY · GDXY · TDAX" accent="#60a5fa" />
+          <StatCard label="Portfolio" value={`$${stockValue.toLocaleString(undefined,{maximumFractionDigits:0})}`} sub="CHPY · GDXY · TDAX" accent="#60a5fa" href="https://digital.fidelity.com/prgw/digital/login/full-page" />
         </div>
 
         {/* ── Money Velocity ──────────────────────────────────────── */}
