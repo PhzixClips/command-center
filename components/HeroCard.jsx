@@ -1,10 +1,15 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   const [expanded, setExpanded] = useState(false);
-  const [holdBar, setHoldBar] = useState(null); // { index, x, y, date, value }
+  const [holdBar, setHoldBar] = useState(null); // { index, date, value }
+  const holdActiveRef = useRef(false); // ref mirror for immediate reads in touch handlers
   const longPressTimer = useRef(null);
   const touchStartPos = useRef(null);
+  const cardRef = useRef(null);
+
+  // Keep ref in sync with state
+  useEffect(() => { holdActiveRef.current = holdBar !== null; }, [holdBar]);
 
   // Build sparkline from last 30 data points
   const points = (netWorthHistory || []).slice(-30);
@@ -22,6 +27,33 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   const deltaSign = dailyDelta >= 0 ? "+" : "";
   const deltaColor = dailyDelta >= 0 ? "#00e676" : "#ff3b3b";
 
+  // Helper: find closest bar index from a touch clientX
+  const findClosestBar = useCallback((clientX) => {
+    const svg = cardRef.current?.querySelector("svg");
+    if (!svg) return -1;
+    const rect = svg.getBoundingClientRect();
+    const touchX = clientX - rect.left;
+    const scaleX = W / rect.width;
+    const svgX = touchX * scaleX;
+
+    let closest = 0;
+    let closestDist = Infinity;
+    for (let i = 0; i < values.length; i++) {
+      const barCenter = i * (barW + gap) + barW / 2;
+      const dist = Math.abs(svgX - barCenter);
+      if (dist < closestDist) { closestDist = dist; closest = i; }
+    }
+    return closest;
+  }, [values, barW, gap]);
+
+  const activateHold = useCallback((clientX) => {
+    const idx = findClosestBar(clientX);
+    if (idx >= 0 && points[idx]) {
+      holdActiveRef.current = true;
+      setHoldBar({ index: idx, date: points[idx].date, value: points[idx].value });
+    }
+  }, [findClosestBar, points]);
+
   // Long-press handlers
   const clearLongPress = useCallback(() => {
     if (longPressTimer.current) {
@@ -31,78 +63,48 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   }, []);
 
   const handleTouchStart = useCallback((e) => {
-    const touch = e.touches[0];
-    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-    longPressTimer.current = setTimeout(() => {
-      // Find which bar is closest to the touch point
-      const svg = e.currentTarget.querySelector("svg");
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left;
-      const scaleX = W / rect.width;
-      const svgX = touchX * scaleX;
-
-      // Find closest bar
-      let closest = 0;
-      let closestDist = Infinity;
-      for (let i = 0; i < values.length; i++) {
-        const barCenter = i * (barW + gap) + barW / 2;
-        const dist = Math.abs(svgX - barCenter);
-        if (dist < closestDist) { closestDist = dist; closest = i; }
-      }
-
-      if (points[closest]) {
-        setHoldBar({
-          index: closest,
-          date: points[closest].date,
-          value: points[closest].value,
-        });
-      }
-      longPressTimer.current = null;
-    }, 400);
-  }, [points, values, barW, gap]);
-
-  const handleTouchMove = useCallback((e) => {
-    if (holdBar !== null) {
-      // If already in hold mode, update which bar is selected
-      const touch = e.touches[0];
-      const svg = e.currentTarget.querySelector("svg");
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const touchX = touch.clientX - rect.left;
-      const scaleX = W / rect.width;
-      const svgX = touchX * scaleX;
-
-      let closest = 0;
-      let closestDist = Infinity;
-      for (let i = 0; i < values.length; i++) {
-        const barCenter = i * (barW + gap) + barW / 2;
-        const dist = Math.abs(svgX - barCenter);
-        if (dist < closestDist) { closestDist = dist; closest = i; }
-      }
-
-      if (points[closest]) {
-        setHoldBar({
-          index: closest,
-          date: points[closest].date,
-          value: points[closest].value,
-        });
-      }
-      e.preventDefault();
+    // If already in hold mode from a previous gesture, stop propagation immediately
+    if (holdActiveRef.current) {
+      e.stopPropagation();
       return;
     }
 
-    // If moved too far before long press triggers, cancel it
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
+    longPressTimer.current = setTimeout(() => {
+      activateHold(touch.clientX);
+      longPressTimer.current = null;
+    }, 400);
+  }, [activateHold]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (holdActiveRef.current) {
+      // In hold/scrub mode — stop swipe from firing, update bar selection
+      e.stopPropagation();
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const idx = findClosestBar(touch.clientX);
+      if (idx >= 0 && points[idx]) {
+        setHoldBar({ index: idx, date: points[idx].date, value: points[idx].value });
+      }
+      return;
+    }
+
+    // Not in hold mode yet — check if moved too far (cancel long press, let swipe take over)
     if (touchStartPos.current) {
       const touch = e.touches[0];
       const dx = Math.abs(touch.clientX - touchStartPos.current.x);
       const dy = Math.abs(touch.clientY - touchStartPos.current.y);
       if (dx > 10 || dy > 10) clearLongPress();
     }
-  }, [holdBar, points, values, barW, gap, clearLongPress]);
+  }, [findClosestBar, points, clearLongPress]);
 
-  const handleTouchEnd = useCallback(() => {
-    if (holdBar !== null) {
+  const handleTouchEnd = useCallback((e) => {
+    if (holdActiveRef.current) {
+      e.stopPropagation();
+      holdActiveRef.current = false;
       setHoldBar(null);
       return;
     }
@@ -111,10 +113,11 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
       clearLongPress();
       setExpanded(prev => !prev);
     }
-  }, [holdBar, clearLongPress]);
+  }, [clearLongPress]);
 
   return (
     <div
+      ref={cardRef}
       style={{
         background: "rgba(255,255,255,0.03)",
         border: "1px solid rgba(0,230,118,0.12)",
@@ -127,11 +130,12 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
         cursor: "pointer",
         userSelect: "none",
         WebkitUserSelect: "none",
+        touchAction: "pan-y",
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={() => { if (!holdBar) setExpanded(prev => !prev); }}
+      onClick={() => { if (!holdActiveRef.current) setExpanded(prev => !prev); }}
     >
       {/* Subtle top glow */}
       <div style={{
