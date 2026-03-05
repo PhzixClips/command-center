@@ -128,7 +128,7 @@ export default function useAppState() {
 
   // Auto-sync stocks
   useEffect(() => {
-    if (tab !== "stocks" || !data || syncLoading) return;
+    if (tab !== "investments" || !data || syncLoading) return;
     const isStale = !lastSyncedMsRef.current || (Date.now() - lastSyncedMsRef.current > STOCK_STALE_THRESHOLD);
     if (isStale) syncStockPrices();
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -490,13 +490,13 @@ export default function useAppState() {
   };
 
   const handleFAB = (key) => {
-    if (key === "shift")   { setTab("shifts");  setModal("shift");   setForm({}); }
-    if (key === "flip")    { setTab("flips");   setModal("flip");    setForm({ status: "listed" }); }
+    if (key === "shift")   { setTab("income");  setModal("shift");   setForm({}); }
+    if (key === "flip")    { setTab("income");  setModal("flip");    setForm({ status: "listed" }); }
     if (key === "expense") { setTab("budget");  setModal("expense"); setForm({ category: "Food & Dining" }); }
   };
 
   const startFlipFromOpp = (opp) => {
-    setTab("flips");
+    setTab("income");
     setForm({ item: opp.title, bought: opp.capital ? String(opp.capital) : "", status: "listed" });
     setModal("flip");
   };
@@ -504,7 +504,7 @@ export default function useAppState() {
   const logShiftFromSchedule = (schedShift) => {
     const rawDate = toDateInput(schedShift.date);
     setForm({ rawDate, date: schedShift.date, hours: "6", _scheduleEntry: { date: schedShift.date, time: schedShift.time } });
-    setTab("shifts");
+    setTab("income");
     setModal("shift");
   };
 

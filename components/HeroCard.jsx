@@ -9,15 +9,13 @@ const PERIODS = [
 
 export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   const [period, setPeriod] = useState("1M");
-  const [scrub, setScrub] = useState(null); // { index, date, value }
+  const [scrub, setScrub] = useState(null);
   const svgRef = useRef(null);
 
-  // Filter history by period
   const allPoints = netWorthHistory || [];
   const periodDays = PERIODS.find(p => p.key === period)?.days || 30;
   const points = periodDays === Infinity ? allPoints : allPoints.slice(-periodDays);
   const values = points.map(p => p.value);
-
   if (values.length === 0) values.push(netWorth);
 
   const first = values[0];
@@ -27,10 +25,10 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   const isUp = delta >= 0;
   const lineColor = isUp ? "#00e676" : "#ff3b3b";
 
-  // SVG line chart
-  const W = 320;
-  const H = 120;
-  const PAD = 2;
+  // SVG chart dimensions
+  const W = 360;
+  const H = 160;
+  const PAD = 4;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -39,11 +37,8 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
   const getY = (v) => PAD + (1 - (v - min) / range) * (H - PAD * 2);
 
   const pathD = values.map((v, i) => `${i === 0 ? "M" : "L"}${getX(i).toFixed(1)},${getY(v).toFixed(1)}`).join(" ");
-
-  // Gradient fill path (line + close to bottom)
   const fillD = pathD + ` L${getX(values.length - 1).toFixed(1)},${H} L${getX(0).toFixed(1)},${H} Z`;
 
-  // Touch scrub: find closest data point from touch position
   const findPointFromTouch = useCallback((clientX) => {
     const svg = svgRef.current;
     if (!svg) return null;
@@ -75,50 +70,60 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
     setScrub(null);
   }, []);
 
-  // Display values
   const displayValue = scrub ? scrub.value : netWorth;
   const displayDate = scrub ? scrub.date : null;
-  const displayDelta = scrub ? scrub.value - first : dailyDelta;
-  const displayDeltaLabel = scrub ? `${delta >= 0 ? "+" : ""}$${Math.abs(Math.round(delta)).toLocaleString()} (${deltaPct}%)` : `${dailyDelta >= 0 ? "+" : ""}$${Math.abs(Math.round(dailyDelta)).toLocaleString()} today`;
+  const displayDeltaLabel = scrub
+    ? `${delta >= 0 ? "+" : ""}$${Math.abs(Math.round(delta)).toLocaleString()} (${deltaPct}%)`
+    : `${dailyDelta >= 0 ? "+" : ""}$${Math.abs(Math.round(dailyDelta)).toLocaleString()} today`;
   const displayDeltaColor = scrub ? lineColor : (dailyDelta >= 0 ? "#00e676" : "#ff3b3b");
 
-  // Scrub indicator position
   const scrubX = scrub ? getX(scrub.index) : null;
   const scrubY = scrub ? getY(scrub.value) : null;
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
-      border: `1px solid ${lineColor}18`,
-      borderRadius: 24,
-      padding: "24px 24px 16px",
-      marginBottom: 20,
+      background: "rgba(255,255,255,0.02)",
+      border: `1px solid ${lineColor}12`,
+      borderRadius: 28,
+      padding: "32px 28px 20px",
+      marginBottom: 28,
       position: "relative",
       overflow: "hidden",
-      boxShadow: `0 0 40px ${lineColor}08, 0 4px 20px rgba(0,0,0,0.3)`,
+      boxShadow: `0 0 60px ${lineColor}06, 0 8px 32px rgba(0,0,0,0.4)`,
     }}>
-      {/* Top glow */}
+      {/* Ambient glow behind the number */}
+      <div style={{
+        position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)",
+        width: 280, height: 120,
+        background: `radial-gradient(ellipse, ${lineColor}08, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+      {/* Top line glow */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: 1,
-        background: `linear-gradient(90deg, transparent, ${lineColor}44, transparent)`,
+        background: `linear-gradient(90deg, transparent, ${lineColor}33, transparent)`,
       }} />
 
       {/* Net worth display */}
-      <div style={{ textAlign: "center", marginBottom: 2 }}>
-        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 500, letterSpacing: 1.5, marginBottom: 6 }}>
+      <div style={{ textAlign: "center", marginBottom: 8, position: "relative" }}>
+        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 600, letterSpacing: 2.5, marginBottom: 10, textTransform: "uppercase" }}>
           {displayDate || "NET WORTH"}
         </div>
-        <div style={{ color: "#fff", fontSize: 36, fontWeight: 800, letterSpacing: -1.5, lineHeight: 1 }}>
+        <div style={{
+          color: "#fff", fontSize: 64, fontWeight: 800,
+          letterSpacing: -3, lineHeight: 1,
+          fontFeatureSettings: '"tnum"',
+        }}>
           ${displayValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </div>
-        <div style={{ color: displayDeltaColor, fontSize: 13, fontWeight: 600, marginTop: 6 }}>
+        <div style={{ color: displayDeltaColor, fontSize: 14, fontWeight: 600, marginTop: 10 }}>
           {displayDeltaLabel}
         </div>
       </div>
 
-      {/* Line chart with touch scrub */}
+      {/* Line chart */}
       <div
-        style={{ margin: "18px -8px 0", position: "relative", touchAction: "none" }}
+        style={{ margin: "20px -12px 0", position: "relative", touchAction: "none" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -133,36 +138,33 @@ export default function HeroCard({ netWorth, netWorthHistory, dailyDelta }) {
         >
           <defs>
             <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColor} stopOpacity={0.15} />
+              <stop offset="0%" stopColor={lineColor} stopOpacity={0.18} />
               <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
             </linearGradient>
           </defs>
-          {/* Fill under the line */}
           <path d={fillD} fill="url(#heroFill)" />
-          {/* The line */}
-          <path d={pathD} fill="none" stroke={lineColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-          {/* Scrub indicator */}
+          <path d={pathD} fill="none" stroke={lineColor} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
           {scrub !== null && scrubX !== null && (
             <>
-              <line x1={scrubX} y1={0} x2={scrubX} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth={1} strokeDasharray="3,3" />
-              <circle cx={scrubX} cy={scrubY} r={5} fill={lineColor} stroke="#fff" strokeWidth={2} />
+              <line x1={scrubX} y1={0} x2={scrubX} y2={H} stroke="rgba(255,255,255,0.12)" strokeWidth={1} strokeDasharray="3,3" />
+              <circle cx={scrubX} cy={scrubY} r={6} fill={lineColor} stroke="#fff" strokeWidth={2} />
             </>
           )}
         </svg>
       </div>
 
       {/* Period selector */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
         {PERIODS.map(p => (
           <button
             key={p.key}
             onClick={() => setPeriod(p.key)}
             style={{
-              background: period === p.key ? `${lineColor}18` : "transparent",
-              border: period === p.key ? `1px solid ${lineColor}33` : "1px solid transparent",
-              color: period === p.key ? lineColor : "rgba(255,255,255,0.25)",
-              fontSize: 10, fontWeight: 600, letterSpacing: 0.5,
-              padding: "5px 12px", borderRadius: 10, cursor: "pointer",
+              background: period === p.key ? `${lineColor}15` : "transparent",
+              border: period === p.key ? `1px solid ${lineColor}28` : "1px solid transparent",
+              color: period === p.key ? lineColor : "rgba(255,255,255,0.2)",
+              fontSize: 11, fontWeight: 600, letterSpacing: 0.5,
+              padding: "6px 16px", borderRadius: 12, cursor: "pointer",
               transition: "all 0.15s",
             }}
           >{p.key}</button>
